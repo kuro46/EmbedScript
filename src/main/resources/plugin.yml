@@ -1,0 +1,5 @@
+name: ${project.artifactId}
+version: ${project.version}
+author: shirokuro
+description: Script embedder
+main: shirokuro.embedscript.EmbedScriptPlugin
