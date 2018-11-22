@@ -166,7 +166,7 @@ public class ScriptManager {
         String worldName = world != null
             ? world.getName()
             : location.getWorld();
-        String tpCommand = "/tp " + player.getName() + " " + location.getX() + " "
+        String tpCommand = "/embedscript teleport " + location.getWorld() + " " + location.getX() + " "
             + location.getY() + " " + location.getZ();
         BaseComponent[] baseComponents = new ComponentBuilder("")
             .append(prefix)
