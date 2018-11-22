@@ -51,8 +51,8 @@ public class MainCommandExecutor implements CommandExecutor {
             }
             case "help": {
                 player.sendMessage(new String[]{
-                    "/es teleport <world> <x> <y> <z> - Teleport to specific location.",
-                    "/es help - Display this message."
+                    "/embedscript teleport <world> <x> <y> <z> - Teleport to specific location.",
+                    "/embedscript help - Display this message."
                 });
                 return true;
             }
