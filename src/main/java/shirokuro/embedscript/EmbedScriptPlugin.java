@@ -28,7 +28,7 @@ public class EmbedScriptPlugin extends JavaPlugin {
             getCommand(eventType.getCommandName())
                 .setExecutor(new EventCommandExecutor(eventType, requests, scriptManager));
         }
-        getCommand("es").setExecutor(new MainCommandExecutor());
+        getCommand("embedscript").setExecutor(new MainCommandExecutor());
         CommandPerformer commandPerformer = new CommandPerformer(this);
         new InteractListener(this, scriptManager, requests, commandPerformer);
         new MoveListener(this, scriptManager, commandPerformer);
