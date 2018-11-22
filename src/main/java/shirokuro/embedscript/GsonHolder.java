@@ -9,10 +9,6 @@ import java.lang.ref.WeakReference;
  * @author shirokuro
  */
 public final class GsonHolder {
-    @Deprecated
-    public static final Gson GSON = new GsonBuilder()
-        .enableComplexMapKeySerialization()
-        .create();
     private static WeakReference<Gson> gsonRef = new WeakReference<>(null);
 
     private GsonHolder() {
