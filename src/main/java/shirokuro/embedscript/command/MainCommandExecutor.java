@@ -36,10 +36,13 @@ public class MainCommandExecutor implements CommandExecutor {
                     return true;
                 }
                 try {
+                    Location playerLocation = player.getLocation();
                     player.teleport(new Location(world,
-                        Double.parseDouble(args[2]),
-                        Double.parseDouble(args[3]),
-                        Double.parseDouble(args[4])));
+                        Integer.parseInt(args[2]) + 0.5,
+                        Integer.parseInt(args[3]),
+                        Integer.parseInt(args[4]) + 0.5,
+                        playerLocation.getYaw(),
+                        playerLocation.getPitch()));
                 } catch (NumberFormatException e) {
                     player.sendMessage("X or Y or Z is not valid number.");
                 }
