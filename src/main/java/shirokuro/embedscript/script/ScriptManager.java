@@ -165,7 +165,7 @@ public class ScriptManager {
         World world = Bukkit.getWorld(location.getWorld());
         String worldName = world != null
             ? world.getName()
-            : location.getWorld().toString();
+            : location.getWorld();
         String tpCommand = "/tp " + player.getName() + " " + location.getX() + " "
             + location.getY() + " " + location.getZ();
         BaseComponent[] baseComponents = new ComponentBuilder("")
