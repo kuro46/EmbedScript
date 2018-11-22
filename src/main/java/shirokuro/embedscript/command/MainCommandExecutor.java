@@ -49,6 +49,13 @@ public class MainCommandExecutor implements CommandExecutor {
             case "migrate": {
                 return true;
             }
+            case "help": {
+                player.sendMessage(new String[]{
+                    "/es teleport <world> <x> <y> <z> - Teleport to specific location.",
+                    "/es help - Display this message."
+                });
+                return true;
+            }
             default:
                 return false;
         }
