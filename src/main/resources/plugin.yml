@@ -3,3 +3,29 @@ version: ${project.version}
 author: shirokuro
 description: Script embedder
 main: shirokuro.embedscript.EmbedScriptPlugin
+commands:
+  esinteract:
+    description: Operations for interact event.
+    aliases:
+      - sbinteract
+    usage: /<command> help
+    permission: embedscript.admin
+  eswalk:
+    description: Operations for walk event.
+    aliases:
+      - sbwalk
+    usage: /<command> help
+    permission: embedscript.admin
+  embedscript:
+    description: Main command.
+    usage: /<command> help
+    permission: embedscript.admin
+permissions:
+  embedscript.*:
+    default: op
+    description: EmbedScript main permission.
+    children:
+      - embedscript.admin: true
+  embedscript.admin:
+    default: op
+    description: EmbedScript administration permission.
