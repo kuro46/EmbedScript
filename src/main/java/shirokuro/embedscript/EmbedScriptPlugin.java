@@ -2,6 +2,7 @@ package shirokuro.embedscript;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import shirokuro.embedscript.command.EventCommandExecutor;
+import shirokuro.embedscript.command.MainCommandExecutor;
 import shirokuro.embedscript.listener.InteractListener;
 import shirokuro.embedscript.listener.MoveListener;
 import shirokuro.embedscript.request.Requests;
@@ -27,6 +28,7 @@ public class EmbedScriptPlugin extends JavaPlugin {
             getCommand(eventType.getCommandName())
                 .setExecutor(new EventCommandExecutor(eventType, requests, scriptManager));
         }
+        getCommand("es").setExecutor(new MainCommandExecutor());
         CommandPerformer commandPerformer = new CommandPerformer(this);
         new InteractListener(this, scriptManager, requests, commandPerformer);
         new MoveListener(this, scriptManager, commandPerformer);
