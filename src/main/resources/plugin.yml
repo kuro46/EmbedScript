@@ -8,17 +8,17 @@ commands:
     description: Operations for interact event.
     aliases:
       - sbinteract
-    usage: /<command> help
+    usage: "Usage: /<command> help"
     permission: embedscript.admin
   eswalk:
     description: Operations for walk event.
     aliases:
       - sbwalk
-    usage: /<command> help
+    usage: "Usage: /<command> help"
     permission: embedscript.admin
   embedscript:
     description: Main command.
-    usage: /<command> help
+    usage: "Usage: /<command> help"
     permission: embedscript.admin
 permissions:
   embedscript.*:
