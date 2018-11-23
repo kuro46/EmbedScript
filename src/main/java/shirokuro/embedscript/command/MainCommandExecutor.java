@@ -49,9 +49,6 @@ public class MainCommandExecutor implements CommandExecutor {
                 player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.");
                 return true;
             }
-            case "migrate": {
-                return true;
-            }
             case "help": {
                 player.sendMessage(new String[]{
                     "/embedscript teleport <world> <x> <y> <z> - Teleport to specific location.",

@@ -2,6 +2,8 @@ name: ${project.artifactId}
 version: ${project.version}
 author: shirokuro
 description: Script embedder
+softdepend:
+  - ScriptBlock
 main: shirokuro.embedscript.EmbedScriptPlugin
 commands:
   esinteract:
