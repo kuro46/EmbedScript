@@ -2,14 +2,12 @@ package shirokuro.embedscript.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.gson.reflect.TypeToken;
-import shirokuro.embedscript.GsonHolder;
+import com.google.gson.stream.JsonReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -33,11 +31,13 @@ public final class MojangUtil {
         try {
             String stringUniqueId = uniqueId.toString().replace("-", "");
             URL url = new URL("https://api.mojang.com/user/profiles/" + stringUniqueId + "/names");
-            String name;
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
-                List<Name> history = GsonHolder.get().fromJson(reader, new TypeToken<List<Name>>() {
-                }.getType());
-                name = history.get(history.size() - 1).name;
+            String name = null;
+            try (JsonReader reader = new JsonReader(new BufferedReader(new InputStreamReader(url.openStream())))) {
+                reader.beginArray();
+                while (reader.hasNext()) {
+                    name = readName(reader);
+                }
+                reader.endArray();
             }
             if (name != null) {
                 NAME_CACHE.put(uniqueId, name);
@@ -49,24 +49,19 @@ public final class MojangUtil {
         return null;
     }
 
-    public static class Name {
-        private String name;
-        private long changedToAt;
+    private static String readName(JsonReader reader) throws IOException {
+        String name = null;
 
-        public String getName() {
-            return name;
+        reader.beginObject();
+        while (reader.hasNext()) {
+            if (reader.nextName().equals("name")) {
+                name = reader.nextString();
+            } else {
+                reader.skipValue();
+            }
         }
+        reader.endObject();
 
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public long getChangedToAt() {
-            return changedToAt;
-        }
-
-        public void setChangedToAt(long changedToAt) {
-            this.changedToAt = changedToAt;
-        }
+        return name;
     }
 }
