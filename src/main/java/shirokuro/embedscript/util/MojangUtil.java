@@ -18,6 +18,9 @@ public final class MojangUtil {
     private static final Cache<UUID, String> NAME_CACHE = CacheBuilder.newBuilder()
         .expireAfterAccess(1, TimeUnit.HOURS)
         .build();
+    private static final Cache<String, UUID> UUID_CACHE = CacheBuilder.newBuilder()
+        .expireAfterAccess(1, TimeUnit.HOURS)
+        .build();
 
     private MojangUtil() {
 
@@ -63,5 +66,47 @@ public final class MojangUtil {
         reader.endObject();
 
         return name;
+    }
+
+    public static UUID getUUID(String name) {
+        UUID cache = UUID_CACHE.getIfPresent(name);
+        if (cache != null) {
+            return cache;
+        }
+        try {
+            URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + name);
+            String stringUniqueId = null;
+            try (JsonReader reader = new JsonReader(new BufferedReader(new InputStreamReader(url.openStream())))) {
+                reader.beginObject();
+                while (reader.hasNext()) {
+                    if (reader.nextName().equals("id")) {
+                        stringUniqueId = reader.nextString();
+                    } else {
+                        reader.skipValue();
+                    }
+                }
+                reader.endObject();
+            }
+
+            if (stringUniqueId != null) {
+                UUID uniqueId = toUUID(stringUniqueId);
+                UUID_CACHE.put(name, uniqueId);
+                return uniqueId;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static UUID toUUID(String shortUUID) {
+        StringBuilder sb = new StringBuilder(36);
+        sb.append(shortUUID);
+        sb.insert(20, '-');
+        sb.insert(16, '-');
+        sb.insert(12, '-');
+        sb.insert(8, '-');
+
+        return UUID.fromString(sb.toString());
     }
 }
