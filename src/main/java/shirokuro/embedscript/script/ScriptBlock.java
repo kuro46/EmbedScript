@@ -11,7 +11,7 @@ import java.util.Objects;
  * @author shirokuro
  */
 @JsonAdapter(ScriptBlockAdapter.class)
-public class ScriptBlock {
+public class ScriptBlock implements Comparable<ScriptBlock> {
     private final String world;
     private final int x, y, z;
 
@@ -60,6 +60,27 @@ public class ScriptBlock {
     @Override
     public int hashCode() {
         return Objects.hash(world, x, y, z);
+    }
+
+    @Override
+    public int compareTo(ScriptBlock o) {
+        int xCompareTo = Integer.compare(x, o.x);
+        if (xCompareTo != 0) {
+            return xCompareTo;
+        }
+        int yCompareTo = Integer.compare(y, o.y);
+        if (yCompareTo != 0) {
+            return yCompareTo;
+        }
+        int zCompareTo = Integer.compare(z, o.z);
+        if (zCompareTo != 0) {
+            return zCompareTo;
+        }
+        int worldCompareTo = world.compareTo(o.world);
+        if (worldCompareTo != 0) {
+            return worldCompareTo;
+        }
+        return 0;
     }
 
     @Override
