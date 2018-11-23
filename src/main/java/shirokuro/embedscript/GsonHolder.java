@@ -1,7 +1,6 @@
 package shirokuro.embedscript;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.lang.ref.WeakReference;
 
@@ -17,9 +16,7 @@ public final class GsonHolder {
     public static Gson get() {
         Gson gson = gsonRef.get();
         if (gson == null) {
-            gsonRef = new WeakReference<>(gson = new GsonBuilder()
-                .enableComplexMapKeySerialization()
-                .create());
+            gsonRef = new WeakReference<>(gson = new Gson());
         }
         return gson;
     }

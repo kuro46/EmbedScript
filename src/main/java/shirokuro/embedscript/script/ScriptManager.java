@@ -16,6 +16,7 @@ import shirokuro.embedscript.Prefix;
 import shirokuro.embedscript.script.command.Command;
 import shirokuro.embedscript.script.command.data.BypassPermCommandData;
 import shirokuro.embedscript.script.command.data.CommandData;
+import shirokuro.embedscript.script.holders.ScriptHolder;
 import shirokuro.embedscript.util.MojangUtil;
 
 import java.io.BufferedReader;
@@ -25,9 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -38,7 +37,7 @@ import java.util.stream.Collectors;
  * @author shirokuro
  */
 public class ScriptManager {
-    private final Map<EventType, Map<ScriptBlock, Script>> scripts = new EnumMap<>(EventType.class);
+    private final Map<EventType, ScriptHolder> scripts = new EnumMap<>(EventType.class);
     private final Map<EventType, Path> paths = new EnumMap<>(EventType.class);
     private final Plugin plugin;
 
@@ -58,7 +57,7 @@ public class ScriptManager {
                       EventType type,
                       ScriptBlock location,
                       Script script) {
-        Map<ScriptBlock, Script> scripts = getScripts(type);
+        ScriptHolder scripts = getScripts(type);
         if (scripts.putIfAbsent(location, script) != null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.");
             return;
@@ -72,7 +71,7 @@ public class ScriptManager {
                     EventType type,
                     ScriptBlock block,
                     Script script) {
-        Map<ScriptBlock, Script> scripts = getScripts(type);
+        ScriptHolder scripts = getScripts(type);
         Script baseScript = getScript(type, block);
         if (baseScript == null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
@@ -85,7 +84,7 @@ public class ScriptManager {
     }
 
     public void remove(CommandSender sender, EventType type, ScriptBlock location) {
-        Map<ScriptBlock, Script> scripts = getScripts(type);
+        ScriptHolder scripts = getScripts(type);
         if (scripts.remove(location) == null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
@@ -186,29 +185,25 @@ public class ScriptManager {
         return getScripts(eventType).get(block);
     }
 
-    private Map<ScriptBlock, Script> getScripts(EventType eventType) {
+    private ScriptHolder getScripts(EventType eventType) {
         return scripts.get(eventType);
-    }
-
-    public Map<ScriptBlock, Script> getScriptsView(EventType eventType) {
-        return Collections.unmodifiableMap(scripts.get(eventType));
     }
 
     private Path getPath(EventType eventType) {
         return paths.get(eventType);
     }
 
-    private Map<ScriptBlock, Script> readScripts(Path path) throws IOException {
+    private ScriptHolder readScripts(Path path) throws IOException {
         if (Files.notExists(path)) {
-            return new HashMap<>();
+            return new ScriptHolder();
         }
         try (BufferedReader reader = Files.newBufferedReader(path)) {
-            return GsonHolder.get().fromJson(reader, new TypeToken<Map<ScriptBlock, Script>>() {
+            return GsonHolder.get().fromJson(reader, new TypeToken<ScriptHolder>() {
             }.getType());
         }
     }
 
-    private void writeScripts(Path path, Map<ScriptBlock, Script> scripts) throws IOException {
+    private void writeScripts(Path path, ScriptHolder scripts) throws IOException {
         if (Files.notExists(path)) {
             Files.createFile(path);
         }
@@ -217,7 +212,7 @@ public class ScriptManager {
         }
     }
 
-    private void writeScriptsAsync(Path path, Map<ScriptBlock, Script> scripts) {
+    private void writeScriptsAsync(Path path, ScriptHolder scripts) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 writeScripts(path, scripts);
