@@ -130,15 +130,12 @@ public class ScriptManager {
      * @param type   Event type
      * @param world  World (Nullable)
      */
-    public void list(Player player, EventType type, World world) {
+    public void list(Player player, EventType type, String world) {
         Predicate<ScriptBlock> predicate;
         if (world == null) {
             predicate = location -> true;
         } else {
-            predicate = location -> {
-                World locationWorld = Bukkit.getWorld(location.getWorld());
-                return world.equals(locationWorld);
-            };
+            predicate = location -> world.equals(location.getWorld());
         }
         BaseComponent[] prefixComponent = TextComponent.fromLegacyText(Prefix.PREFIX);
         Set<ScriptBlock> blocks = getScripts(type).keySet().stream()

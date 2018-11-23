@@ -1,7 +1,5 @@
 package shirokuro.embedscript.command;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -43,8 +41,7 @@ public class EventCommandExecutor implements CommandExecutor {
             return false;
         }
         Player player = (Player) sender;
-        String args0 = args[0].toLowerCase(Locale.ENGLISH);
-        switch (args0) {
+        switch (args[0].toLowerCase(Locale.ENGLISH)) {
             case "view":
                 player.sendMessage(Prefix.PREFIX + "Click the block to view the script.");
                 requests.putRequest(player, new Request(RequestType.VIEW, eventType));
@@ -80,16 +77,9 @@ public class EventCommandExecutor implements CommandExecutor {
                 requests.putRequest(player, new Request(RequestType.REMOVE, eventType));
                 return true;
             case "list":
-                World world;
-                if (args.length < 2) {
-                    world = null;
-                } else {
-                    world = Bukkit.getWorld(args[1]);
-                    if (world == null) {
-                        player.sendMessage(Prefix.ERROR_PREFIX + "World: " + args[1] + " not found.");
-                        return true;
-                    }
-                }
+                String world = args.length < 2
+                    ? null
+                    : args[1];
                 scriptManager.list(player, eventType, world);
                 return true;
             case "help":
