@@ -28,7 +28,7 @@ public class CommandPerformer {
         switch (data.getType()) {
             case BYPASS: {
                 PermissionAttachment attachment = trigger.addAttachment(plugin);
-                Bukkit.getPluginManager().getDefaultPermissions(true).forEach(permission -> {
+                Bukkit.getPluginManager().getPermissions().forEach(permission -> {
                     if (trigger.hasPermission(permission))
                         return;
                     attachment.setPermission(permission, true);
@@ -36,7 +36,7 @@ public class CommandPerformer {
                 try {
                     trigger.performCommand(commandLine);
                 } finally {
-                    trigger.removeAttachment(attachment);
+                    attachment.remove();
                 }
                 break;
             }
@@ -49,7 +49,7 @@ public class CommandPerformer {
                     try {
                         trigger.performCommand(commandLine);
                     } finally {
-                        trigger.removeAttachment(attachment);
+                        attachment.remove();
                     }
                 }
                 break;
