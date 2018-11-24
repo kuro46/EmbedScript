@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -102,7 +103,7 @@ public final class MojangUtil {
 
     private static JsonReader newReader(String urlString) throws IOException {
         URL url = new URL(urlString);
-        return new JsonReader(new BufferedReader(new InputStreamReader(url.openStream())));
+        return new JsonReader(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)));
     }
 
     private static UUID toUUID(String shortUUID) {
