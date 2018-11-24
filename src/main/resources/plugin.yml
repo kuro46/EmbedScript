@@ -4,6 +4,10 @@ author: shirokuro
 description: Script embedder
 softdepend:
   - ScriptBlock
+depend:
+  - LuckPerms
+loadbefore:
+  - Vault
 main: shirokuro.embedscript.EmbedScriptPlugin
 commands:
   esinteract:
