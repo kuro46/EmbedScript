@@ -2,8 +2,6 @@ name: ${project.artifactId}
 version: ${project.version}
 author: shirokuro
 description: Script embedder
-softdepend:
-  - ScriptBlock
 depend:
   - LuckPerms
 loadbefore:

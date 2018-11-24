@@ -2,8 +2,10 @@ package shirokuro.embedscript;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import shirokuro.embedscript.command.EventCommandExecutor;
 import shirokuro.embedscript.command.MainCommandExecutor;
@@ -18,10 +20,11 @@ import java.io.IOException;
 /**
  * @author shirokuro
  */
-public class EmbedScriptPlugin extends JavaPlugin {
+public class EmbedScriptPlugin extends JavaPlugin implements Listener {
+    private ScriptManager scriptManager;
+
     @Override
     public void onEnable() {
-        ScriptManager scriptManager;
         try {
             scriptManager = new ScriptManager(this);
         } catch (IOException e) {
@@ -36,16 +39,20 @@ public class EmbedScriptPlugin extends JavaPlugin {
         CommandPerformer commandPerformer = new CommandPerformer(this);
         new InteractListener(this, scriptManager, requests, commandPerformer);
         new MoveListener(this, scriptManager, commandPerformer);
+        Bukkit.getPluginManager().registerEvents(this, this);
+    }
 
-        PluginManager pluginManager = Bukkit.getPluginManager();
-        Plugin scriptBlock = pluginManager.getPlugin("ScriptBlock");
-        ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
-        if (scriptBlock != null) {
+    @SuppressWarnings("unused")
+    @EventHandler
+    public void onPluginEnable(PluginEnableEvent event) {
+        Plugin plugin = event.getPlugin();
+        if (plugin.getName().equals("ScriptBlock")) {
+            ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
             consoleSender.sendMessage(Prefix.PREFIX + "ScriptBlock found! Migrating scripts.");
-            new Migrator(consoleSender, scriptManager, scriptBlock);
+            new Migrator(consoleSender, scriptManager, plugin);
             consoleSender.sendMessage(Prefix.SUCCESS_PREFIX + "Scripts has been migrated. Disabling ScriptBlock.");
 
-            pluginManager.disablePlugin(scriptBlock);
+            Bukkit.getPluginManager().disablePlugin(plugin);
         }
     }
 }
