@@ -11,6 +11,7 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 import shirokuro.embedscript.GsonHolder;
 import shirokuro.embedscript.Prefix;
 import shirokuro.embedscript.script.command.Command;
@@ -40,6 +41,7 @@ public class ScriptManager {
     private final Map<EventType, ScriptHolder> scripts = new EnumMap<>(EventType.class);
     private final Map<EventType, Path> paths = new EnumMap<>(EventType.class);
     private final Plugin plugin;
+    private BukkitTask writeTask;
 
     public ScriptManager(Plugin plugin) throws IOException {
         this.plugin = plugin;
@@ -210,13 +212,16 @@ public class ScriptManager {
     }
 
     private void writeScriptsAsync(Path path, ScriptHolder scripts) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        if (writeTask != null) {
+            writeTask.cancel();
+        }
+        writeTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
             try {
                 writeScripts(path, scripts);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        });
+        }, 20);
     }
 
 }
