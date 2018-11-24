@@ -192,7 +192,7 @@ public class ScriptManager {
         return paths.get(eventType);
     }
 
-    private ScriptHolder readScripts(Path path) throws IOException {
+    private synchronized ScriptHolder readScripts(Path path) throws IOException {
         if (Files.notExists(path)) {
             return new ScriptHolder();
         }
@@ -202,7 +202,7 @@ public class ScriptManager {
         }
     }
 
-    private void writeScripts(Path path, ScriptHolder scripts) throws IOException {
+    private synchronized void writeScripts(Path path, ScriptHolder scripts) throws IOException {
         if (Files.notExists(path)) {
             Files.createFile(path);
         }
@@ -223,5 +223,4 @@ public class ScriptManager {
             }
         }, 20);
     }
-
 }
