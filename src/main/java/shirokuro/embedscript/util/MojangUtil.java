@@ -31,23 +31,24 @@ public final class MojangUtil {
         if (cached != null) {
             return cached;
         }
-        try {
-            String stringUniqueId = uniqueId.toString().replace("-", "");
-            URL url = new URL("https://api.mojang.com/user/profiles/" + stringUniqueId + "/names");
-            String name = null;
-            try (JsonReader reader = new JsonReader(new BufferedReader(new InputStreamReader(url.openStream())))) {
-                reader.beginArray();
-                while (reader.hasNext()) {
-                    name = readName(reader);
-                }
-                reader.endArray();
+
+        String stringUniqueId = uniqueId.toString().replace("-", "");
+        String urlString = "https://api.mojang.com/user/profiles/" + stringUniqueId + "/names";
+        String name = null;
+
+        try (JsonReader reader = newReader(urlString)) {
+            reader.beginArray();
+            while (reader.hasNext()) {
+                name = readName(reader);
             }
-            if (name != null) {
-                NAME_CACHE.put(uniqueId, name);
-            }
-            return name;
+            reader.endArray();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        if (name != null) {
+            NAME_CACHE.put(uniqueId, name);
+            return name;
         }
         return null;
     }
@@ -73,30 +74,35 @@ public final class MojangUtil {
         if (cache != null) {
             return cache;
         }
-        try {
-            URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + name);
-            String stringUniqueId = null;
-            try (JsonReader reader = new JsonReader(new BufferedReader(new InputStreamReader(url.openStream())))) {
-                reader.beginObject();
-                while (reader.hasNext()) {
-                    if (reader.nextName().equals("id")) {
-                        stringUniqueId = reader.nextString();
-                    } else {
-                        reader.skipValue();
-                    }
-                }
-                reader.endObject();
-            }
 
-            if (stringUniqueId != null) {
-                UUID uniqueId = toUUID(stringUniqueId);
-                UUID_CACHE.put(name, uniqueId);
-                return uniqueId;
+        String stringUrl = "https://api.mojang.com/users/profiles/minecraft/" + name;
+        String stringUniqueId = null;
+
+        try (JsonReader reader = newReader(stringUrl)) {
+            reader.beginObject();
+            while (reader.hasNext()) {
+                if (reader.nextName().equals("id")) {
+                    stringUniqueId = reader.nextString();
+                } else {
+                    reader.skipValue();
+                }
             }
+            reader.endObject();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        if (stringUniqueId != null) {
+            UUID uniqueId = toUUID(stringUniqueId);
+            UUID_CACHE.put(name, uniqueId);
+            return uniqueId;
+        }
         return null;
+    }
+
+    private static JsonReader newReader(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        return new JsonReader(new BufferedReader(new InputStreamReader(url.openStream())));
     }
 
     private static UUID toUUID(String shortUUID) {
