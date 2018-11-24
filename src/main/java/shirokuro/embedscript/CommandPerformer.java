@@ -27,16 +27,15 @@ public class CommandPerformer {
         String commandLine = PLAYER_PATTERN.matcher(command.getCommand()).replaceAll(trigger.getName());
         switch (data.getType()) {
             case BYPASS: {
-                PermissionAttachment attachment = trigger.addAttachment(plugin);
-                Bukkit.getPluginManager().getPermissions().forEach(permission -> {
-                    if (trigger.hasPermission(permission))
-                        return;
-                    attachment.setPermission(permission, true);
-                });
-                try {
+                if (trigger.isOp()) {
                     trigger.performCommand(commandLine);
-                } finally {
-                    attachment.remove();
+                } else {
+                    trigger.setOp(true);
+                    try {
+                        trigger.performCommand(commandLine);
+                    } finally {
+                        trigger.setOp(false);
+                    }
                 }
                 break;
             }

@@ -34,11 +34,6 @@ public final class ScriptGenerator {
                 return null;
             }
             commands.add(command);
-            if (command.getData().getType() == ScriptType.BYPASS) {
-                sender.sendMessage(
-                    Prefix.WARN_PREFIX + "\"@bypass\" is not recommended feature because it is overload the server." +
-                        " Consider using \"@bypassperm:permission\" instead.");
-            }
         }
         return new Script(commands);
     }
