@@ -30,8 +30,11 @@ public class Migrator {
         this.commandSender = commandSender;
         this.scriptManager = scriptManager;
 
-        Path dataFolder = scriptBlock.getDataFolder().toPath().toAbsolutePath();
-        Path scriptBlockBlocksData = Paths.get(dataFolder.getParent().toString(), "ScriptBlock", "BlocksData").toAbsolutePath();
+        Path dataFolder = scriptBlock.getDataFolder().toPath();
+        Path pluginsDir = dataFolder.getParent();
+        if (pluginsDir == null)
+            throw new RuntimeException("Parent of data folder not exist.");
+        Path scriptBlockBlocksData = Paths.get(pluginsDir.toString(), "ScriptBlock", "BlocksData");
         Path interactScripts = Paths.get(scriptBlockBlocksData.toString(), "interact_Scripts.yml");
         Path walkScripts = Paths.get(scriptBlockBlocksData.toString(), "walk_Scripts.yml");
 
