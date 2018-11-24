@@ -4,7 +4,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.Plugin;
 import shirokuro.embedscript.CommandPerformer;
@@ -40,7 +39,6 @@ public class InteractListener extends AbstractListener {
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        Action action = event.getAction();
         if (!event.hasBlock() || interval.getIfPresent(player) != null)
             return;
         interval.put(player, Boolean.TRUE);
