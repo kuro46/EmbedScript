@@ -48,7 +48,7 @@ public class CommandPerformer {
                     try {
                         trigger.performCommand(commandLine);
                     } finally {
-                        attachment.remove();
+                        trigger.removeAttachment(attachment);
                     }
                 }
                 break;
