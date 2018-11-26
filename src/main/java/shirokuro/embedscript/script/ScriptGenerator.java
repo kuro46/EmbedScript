@@ -28,6 +28,11 @@ public final class ScriptGenerator {
         }
         List<Command> commands = new ArrayList<>(stringCommands.length);
         for (String stringCommand : stringCommands) {
+            if (stringCommand.startsWith("@bypass")) {
+                sender.sendMessage(Prefix.ERROR_PREFIX + "@bypass is not implemented in EmbedScript," +
+                    " Because it is have a vulnerability.");
+                return null;
+            }
             Command command = generateCommandFromString(author, stringCommand);
             if (command == null) {
                 sender.sendMessage(Prefix.ERROR_PREFIX + "Bad script!");

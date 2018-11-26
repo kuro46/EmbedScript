@@ -1,6 +1,5 @@
 package shirokuro.embedscript.script;
 
-import shirokuro.embedscript.script.command.data.BypassCommandData;
 import shirokuro.embedscript.script.command.data.BypassPermCommandData;
 import shirokuro.embedscript.script.command.data.CommandCommandData;
 import shirokuro.embedscript.script.command.data.CommandData;
@@ -13,12 +12,6 @@ import java.util.regex.Pattern;
  * @author shirokuro
  */
 public enum ScriptType {
-    BYPASS("@bypass") {
-        @Override
-        public CommandData newDataFromString(String string) {
-            return new BypassCommandData();
-        }
-    },
     BYPASS_PERMISSION("@bypassperm:") {
         private final transient Pattern pattern;
         {

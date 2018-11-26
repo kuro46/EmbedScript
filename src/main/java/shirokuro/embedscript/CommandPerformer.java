@@ -26,19 +26,6 @@ public class CommandPerformer {
         CommandData data = command.getData();
         String commandLine = PLAYER_PATTERN.matcher(command.getCommand()).replaceAll(trigger.getName());
         switch (data.getType()) {
-            case BYPASS: {
-                if (trigger.isOp()) {
-                    trigger.performCommand(commandLine);
-                } else {
-                    trigger.setOp(true);
-                    try {
-                        trigger.performCommand(commandLine);
-                    } finally {
-                        trigger.setOp(false);
-                    }
-                }
-                break;
-            }
             case BYPASS_PERMISSION: {
                 String permission = ((BypassPermCommandData) data).getPermission();
                 if (trigger.hasPermission(permission)) {

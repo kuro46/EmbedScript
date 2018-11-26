@@ -1,6 +1,5 @@
 package shirokuro.embedscript;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import org.yaml.snakeyaml.Yaml;
@@ -66,8 +65,13 @@ public class Migrator {
                 String[] coordinate = listEntry.getKey().split(",");
 
                 List<String> strings = listEntry.getValue();
-                Script script = ScriptGenerator.generateFromString(Bukkit.getConsoleSender(),
+                Script script = ScriptGenerator.generateFromString(commandSender,
                     MojangUtil.getUUID(strings.get(0).split("/")[0].split(":")[1]), strings.get(1));
+
+                if (script == null) {
+                    commandSender.sendMessage(Prefix.ERROR_PREFIX + "Failed to generate script!");
+                    throw new RuntimeException("Failed to generate script!");
+                }
 
                 ScriptBlock block = new ScriptBlock(entry.getKey(),
                     Integer.parseInt(coordinate[0]),
