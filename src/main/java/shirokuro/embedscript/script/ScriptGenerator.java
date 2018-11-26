@@ -8,6 +8,7 @@ import shirokuro.embedscript.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -28,7 +29,8 @@ public final class ScriptGenerator {
         }
         List<Command> commands = new ArrayList<>(stringCommands.length);
         for (String stringCommand : stringCommands) {
-            if (stringCommand.startsWith("@bypass")) {
+            String lowerStringCommand = stringCommand.toLowerCase(Locale.ENGLISH);
+            if (lowerStringCommand.startsWith("@bypass") && !lowerStringCommand.startsWith("@bypassperm")) {
                 sender.sendMessage(Prefix.ERROR_PREFIX + "@bypass is not implemented in EmbedScript," +
                     " Because it is have a vulnerability. Consider using @bypassPerm:permission instead.");
                 return null;
