@@ -49,7 +49,12 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         if (plugin.getName().equals("ScriptBlock")) {
             ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
             consoleSender.sendMessage(Prefix.PREFIX + "ScriptBlock found! Migrating scripts.");
-            new Migrator(consoleSender, scriptManager, plugin);
+            try {
+                new Migrator(consoleSender, scriptManager, plugin);
+            } catch (Exception e) {
+                Bukkit.getPluginManager().disablePlugin(this);
+                throw new RuntimeException("Failed to migration! Disabling EmbedScript.", e);
+            }
             consoleSender.sendMessage(Prefix.SUCCESS_PREFIX + "Scripts has been migrated. Disabling ScriptBlock.");
 
             Bukkit.getPluginManager().disablePlugin(plugin);
