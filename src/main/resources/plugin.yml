@@ -6,7 +6,7 @@ depend:
   - LuckPerms
 loadbefore:
   - Vault
-main: shirokuro.embedscript.EmbedScriptPlugin
+main: com.github.kuro46.embedscript.EmbedScriptPlugin
 commands:
   esinteract:
     description: Operations for interact event.
