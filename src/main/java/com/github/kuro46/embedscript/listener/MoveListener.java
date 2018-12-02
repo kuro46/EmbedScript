@@ -16,12 +16,13 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author shirokuro
  */
 public class MoveListener extends AbstractListener {
-    private final Map<Player, ScriptBlock> beforeWalked = new HashMap<>();
+    private final Map<UUID, ScriptBlock> beforeWalked = new HashMap<>();
     private final ScriptManager scriptManager;
     private final CommandPerformer performer;
 
@@ -40,10 +41,10 @@ public class MoveListener extends AbstractListener {
 
         Player player = event.getPlayer();
 
-        ScriptBlock before = beforeWalked.get(player);
+        ScriptBlock before = beforeWalked.get(player.getUniqueId());
         if (before != null && before.equals(scriptBlock))
             return;
-        beforeWalked.put(player, scriptBlock);
+        beforeWalked.put(player.getUniqueId(), scriptBlock);
 
         Script script = scriptManager.getScript(EventType.WALK, scriptBlock);
         if (script == null)
@@ -62,6 +63,6 @@ public class MoveListener extends AbstractListener {
     @SuppressWarnings("unused")
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        beforeWalked.remove(event.getPlayer());
+        beforeWalked.remove(event.getPlayer().getUniqueId());
     }
 }
