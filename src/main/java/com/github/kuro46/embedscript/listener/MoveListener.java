@@ -6,6 +6,8 @@ import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptBlock;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -46,7 +48,15 @@ public class MoveListener extends AbstractListener {
         Script script = scriptManager.getScript(EventType.WALK, scriptBlock);
         if (script == null)
             return;
-        performer.perform(player, script.getCommands());
+        Block blockAt = to.getWorld().getBlockAt(scriptBlock.getX(), scriptBlock.getY(), scriptBlock.getZ());
+        if (blockAt.getType() != Material.AIR) {
+            double y = to.getY();
+            if (y != (int) y)
+                return;
+            performer.perform(player, script.getCommands());
+        } else {
+            performer.perform(player, script.getCommands());
+        }
     }
 
     @SuppressWarnings("unused")
