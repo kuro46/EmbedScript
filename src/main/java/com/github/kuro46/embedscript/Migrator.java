@@ -8,15 +8,12 @@ import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.util.MojangUtil;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
-import org.yaml.snakeyaml.Yaml;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
+import java.util.UUID;
 
 /**
  * @author shirokuro
@@ -25,65 +22,75 @@ public class Migrator {
     private final ScriptManager scriptManager;
     private final CommandSender commandSender;
 
-    public Migrator(CommandSender commandSender, ScriptManager scriptManager, Plugin scriptBlock) {
+    public Migrator(CommandSender commandSender, ScriptManager scriptManager, Plugin scriptBlock) throws ReflectiveOperationException {
         this.commandSender = commandSender;
         this.scriptManager = scriptManager;
 
-        Path dataFolder = scriptBlock.getDataFolder().toPath();
-        Path pluginsDir = dataFolder.getParent();
-        if (pluginsDir == null)
-            throw new RuntimeException("Parent of data folder not exist.");
-        Path scriptBlockBlocksData = Paths.get(pluginsDir.toString(), "ScriptBlock", "BlocksData");
-        Path interactScripts = Paths.get(scriptBlockBlocksData.toString(), "interact_Scripts.yml");
-        Path walkScripts = Paths.get(scriptBlockBlocksData.toString(), "walk_Scripts.yml");
+        List<Object> scriptManagerList = getField(scriptBlock, "scriptManagerList");
+        for (Object sbScriptManagerExtended : scriptManagerList) {
+            Class<?> sbScriptManagerExtendedClass = sbScriptManagerExtended.getClass();
+            Class<?> sbScriptManagerClass = sbScriptManagerExtendedClass.getSuperclass();
+            Object mapManager = getField(sbScriptManagerClass, sbScriptManagerExtended, "mapManager");
+            Map<String, List<String>> blocksMap = getField(mapManager, "blocksMap");
 
-        Yaml yaml = new Yaml();
-
-        Map<String, Map<String, List<String>>> interactList;
-        try (BufferedReader reader = Files.newBufferedReader(interactScripts)) {
-            interactList = yaml.load(reader);
-        } catch (IOException e) {
-            commandSender.sendMessage(Prefix.ERROR_PREFIX + "Failed to load list of interact script from ScriptBlock.");
-            throw new RuntimeException("Failed to load list of interact script from ScriptBlock.", e);
-        }
-
-        Map<String, Map<String, List<String>>> walkList;
-        try (BufferedReader reader = Files.newBufferedReader(walkScripts)) {
-            walkList = yaml.load(reader);
-        } catch (IOException e) {
-            commandSender.sendMessage(Prefix.ERROR_PREFIX + "Failed to load list of walk script from ScriptBlock.");
-            throw new RuntimeException("Failed to load list of walk script from ScriptBlock.", e);
-        }
-
-        migrate(EventType.INTERACT, interactList);
-        migrate(EventType.WALK, walkList);
-    }
-
-    private void migrate(EventType type, Map<String, Map<String, List<String>>> map) {
-        for (Map.Entry<String, Map<String, List<String>>> entry : map.entrySet()) {
-            for (Map.Entry<String, List<String>> listEntry : entry.getValue().entrySet()) {
-                String[] coordinate = listEntry.getKey().split(",");
-
-                List<String> strings = listEntry.getValue();
-                Script script = ScriptGenerator.generateFromString(commandSender,
-                    MojangUtil.getUUID(strings.get(0).split("/")[0].split(":")[1]), strings.get(1));
-
-                if (script == null) {
-                    commandSender.sendMessage(Prefix.ERROR_PREFIX + "Failed to generate script!");
-                    throw new RuntimeException("Failed to generate script!");
+            EventType type;
+            String simpleName = sbScriptManagerExtendedClass.getSimpleName();
+            switch (simpleName) {
+                case "PlayerInteractBlock": {
+                    type = EventType.INTERACT;
+                    break;
                 }
-
-                ScriptBlock block = new ScriptBlock(entry.getKey(),
-                    Integer.parseInt(coordinate[0]),
-                    Integer.parseInt(coordinate[1]),
-                    Integer.parseInt(coordinate[2]));
-
-                if (scriptManager.hasScript(type, block)) {
-                    scriptManager.add(commandSender, type, block, script);
-                } else {
-                    scriptManager.embed(commandSender, type, block, script);
+                case "PlayerWalkBlock": {
+                    type = EventType.WALK;
+                    break;
+                }
+                default: {
+                    throw new IllegalArgumentException(simpleName);
                 }
             }
+            migrate(type, blocksMap);
         }
+    }
+
+    private <T> T getField(Object object, String name) throws ReflectiveOperationException {
+        return getField(object.getClass(), object, name);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T getField(Class clazz, Object object, String name) throws ReflectiveOperationException {
+        Field declaredField = clazz.getDeclaredField(name);
+        declaredField.setAccessible(true);
+        return (T) declaredField.get(object);
+    }
+
+    private void migrate(EventType type, Map<String, List<String>> blocksMap) {
+        blocksMap.forEach((locationSource, data) -> {
+            String[] location = locationSource.split(",");
+            //Author:MCID/Group → MCID/Group → MCID
+            String authorName = data.get(0).split(":")[1].split("/")[0];
+            UUID author = MojangUtil.getUUID(authorName);
+            StringJoiner commandsJoiner = new StringJoiner("][", "[", "]");
+            for (int i = 1; i < data.size(); i++)
+                commandsJoiner.add(data.get(i));
+            String commands = commandsJoiner.toString();
+
+            Script script = ScriptGenerator.generateFromString(commandSender, author, commands);
+
+            if (script == null) {
+                commandSender.sendMessage(Prefix.ERROR_PREFIX + "Failed to generate script!");
+                throw new RuntimeException("Failed to generate script!");
+            }
+
+            ScriptBlock block = new ScriptBlock(location[0],
+                Integer.parseInt(location[1]),
+                Integer.parseInt(location[2]),
+                Integer.parseInt(location[3]));
+
+            if (scriptManager.hasScript(type, block)) {
+                scriptManager.add(commandSender, type, block, script);
+            } else {
+                scriptManager.embed(commandSender, type, block, script);
+            }
+        });
     }
 }
