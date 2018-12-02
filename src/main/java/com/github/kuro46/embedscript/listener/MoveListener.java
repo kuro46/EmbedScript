@@ -49,15 +49,14 @@ public class MoveListener extends AbstractListener {
         Script script = scriptManager.getScript(EventType.WALK, scriptBlock);
         if (script == null)
             return;
-        Block blockAt = to.getWorld().getBlockAt(scriptBlock.getX(), scriptBlock.getY(), scriptBlock.getZ());
-        if (blockAt.getType() != Material.AIR) {
-            double y = to.getY();
-            if (y != (int) y)
-                return;
-            performer.perform(player, script.getCommands());
-        } else {
-            performer.perform(player, script.getCommands());
-        }
+        Block blockAt = to.getWorld().getBlockAt(
+            scriptBlock.getX(),
+            scriptBlock.getY(),
+            scriptBlock.getZ());
+        double y = to.getY();
+        if (blockAt.getType() != Material.AIR && y != (int) y)
+            return;
+        performer.perform(player, script.getCommands());
     }
 
     @SuppressWarnings("unused")
