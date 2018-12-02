@@ -48,6 +48,6 @@ public class CommandDataAdapter extends TypeAdapter<CommandData> {
 
         if (type == null)
             throw new JsonSyntaxException("Key: \"type\" not found.");
-        return type.newDataFromString(type.getString() + (permission == null ? "" : permission));
+        return type.newDataFromString(type.getString() + (permission == null ? "" : ":" + permission));
     }
 }
