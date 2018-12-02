@@ -12,10 +12,10 @@ import java.util.regex.Pattern;
  * @author shirokuro
  */
 public enum ScriptType {
-    BYPASS_PERMISSION("@bypassperm:") {
+    BYPASS_PERMISSION("@bypassperm") {
         private final transient Pattern pattern;
         {
-            pattern = Pattern.compile(string + "[^:]+");
+            pattern = Pattern.compile(string + ":[^:]+", Pattern.CASE_INSENSITIVE);
         }
 
         @Override
