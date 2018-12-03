@@ -57,10 +57,10 @@ public class ScriptManager {
 
     public void embed(CommandSender sender,
                       EventType type,
-                      ScriptBlock location,
+                      ScriptPosition position,
                       Script script) {
         ScriptHolder scripts = getScripts(type);
-        if (scripts.putIfAbsent(location, script) != null) {
+        if (scripts.putIfAbsent(position, script) != null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.");
             return;
         }
@@ -71,10 +71,10 @@ public class ScriptManager {
 
     public void add(CommandSender sender,
                     EventType type,
-                    ScriptBlock block,
+                    ScriptPosition position,
                     Script script) {
         ScriptHolder scripts = getScripts(type);
-        Script baseScript = getScript(type, block);
+        Script baseScript = getScript(type, position);
         if (baseScript == null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
@@ -85,9 +85,9 @@ public class ScriptManager {
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully added.");
     }
 
-    public void remove(CommandSender sender, EventType type, ScriptBlock location) {
+    public void remove(CommandSender sender, EventType type, ScriptPosition position) {
         ScriptHolder scripts = getScripts(type);
-        if (scripts.remove(location) == null) {
+        if (scripts.remove(position) == null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
         }
@@ -96,8 +96,8 @@ public class ScriptManager {
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully removed.");
     }
 
-    public void view(CommandSender sender, EventType type, ScriptBlock block) {
-        Script script = getScript(type, block);
+    public void view(CommandSender sender, EventType type, ScriptPosition position) {
+        Script script = getScript(type, position);
         if (script == null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
@@ -133,24 +133,24 @@ public class ScriptManager {
      * @param world  World (Nullable)
      */
     public void list(Player player, EventType type, String world) {
-        Predicate<ScriptBlock> predicate;
+        Predicate<ScriptPosition> predicate;
         if (world == null) {
             predicate = location -> true;
         } else {
             predicate = location -> world.equals(location.getWorld());
         }
         BaseComponent[] prefixComponent = TextComponent.fromLegacyText(Prefix.PREFIX);
-        Set<ScriptBlock> blocks = getScripts(type).keySet().stream()
+        Set<ScriptPosition> positions = getScripts(type).keySet().stream()
             .filter(predicate)
             .collect(Collectors.toSet());
         int i = 0;
-        for (ScriptBlock block : blocks) {
+        for (ScriptPosition position : positions) {
             ++i;
             BaseComponent[] baseComponents = new ComponentBuilder("")
                 .append(prefixComponent)
                 .append("[" + i + "] ")
                 .create();
-            sendScriptInfo(player, baseComponents, block);
+            sendScriptInfo(player, baseComponents, position);
         }
         if (i == 0) {
             player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists.");
@@ -159,29 +159,29 @@ public class ScriptManager {
 
     //TODO: EDIT OPERATION
 
-    private void sendScriptInfo(Player player, BaseComponent[] prefix, ScriptBlock location) {
-        World world = Bukkit.getWorld(location.getWorld());
+    private void sendScriptInfo(Player player, BaseComponent[] prefix, ScriptPosition position) {
+        World world = Bukkit.getWorld(position.getWorld());
         String worldName = world != null
             ? world.getName()
-            : location.getWorld();
-        String tpCommand = "/embedscript teleport " + location.getWorld() + " " + location.getX() + " "
-            + location.getY() + " " + location.getZ();
+            : position.getWorld();
+        String tpCommand = "/embedscript teleport " + position.getWorld() + " " + position.getX() + " "
+            + position.getY() + " " + position.getZ();
         BaseComponent[] baseComponents = new ComponentBuilder("")
             .append(prefix)
-            .append("World: " + worldName + " X: " + location.getX()
-                + " Y: " + location.getY() + " Z: " + location.getZ() + " (click to teleport)")
+            .append("World: " + worldName + " X: " + position.getX()
+                + " Y: " + position.getY() + " Z: " + position.getZ() + " (click to teleport)")
             .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
             .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
             .create();
         player.spigot().sendMessage(baseComponents);
     }
 
-    public boolean hasScript(EventType eventType, ScriptBlock block) {
-        return getScripts(eventType).containsKey(block);
+    public boolean hasScript(EventType eventType, ScriptPosition position) {
+        return getScripts(eventType).containsKey(position);
     }
 
-    public Script getScript(EventType eventType, ScriptBlock block) {
-        return getScripts(eventType).get(block);
+    public Script getScript(EventType eventType, ScriptPosition position) {
+        return getScripts(eventType).get(position);
     }
 
     private ScriptHolder getScripts(EventType eventType) {

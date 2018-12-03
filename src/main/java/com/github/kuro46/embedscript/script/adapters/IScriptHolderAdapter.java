@@ -2,7 +2,7 @@ package com.github.kuro46.embedscript.script.adapters;
 
 import com.github.kuro46.embedscript.GsonHolder;
 import com.github.kuro46.embedscript.script.Script;
-import com.github.kuro46.embedscript.script.ScriptBlock;
+import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.github.kuro46.embedscript.script.holders.IScriptHolder;
 import com.github.kuro46.embedscript.script.holders.LegacyScriptHolder;
 import com.github.kuro46.embedscript.script.holders.ScriptHolder;
@@ -31,17 +31,17 @@ public class IScriptHolderAdapter extends TypeAdapter<IScriptHolder> {
         out.endObject();
     }
 
-    private void writeScripts(JsonWriter out, Set<Map.Entry<ScriptBlock, Script>> scripts) throws IOException {
+    private void writeScripts(JsonWriter out, Set<Map.Entry<ScriptPosition, Script>> scripts) throws IOException {
         out.beginArray();
-        for (Map.Entry<ScriptBlock, Script> entry : scripts) {
+        for (Map.Entry<ScriptPosition, Script> entry : scripts) {
             writePair(out, entry.getKey(), entry.getValue());
         }
         out.endArray();
     }
 
-    private void writePair(JsonWriter out, ScriptBlock block, Script script) throws IOException {
+    private void writePair(JsonWriter out, ScriptPosition position, Script script) throws IOException {
         out.beginObject();
-        out.name("coordinate").jsonValue(GsonHolder.get().toJson(block));
+        out.name("coordinate").jsonValue(GsonHolder.get().toJson(position));
         out.name("script").jsonValue(GsonHolder.get().toJson(script));
         out.endObject();
     }
@@ -86,7 +86,7 @@ public class IScriptHolderAdapter extends TypeAdapter<IScriptHolder> {
         if (pairs == null)
             throw new JsonSyntaxException("Illegal syntax");
         ScriptHolder scriptHolder = new ScriptHolder();
-        pairs.forEach(pair -> scriptHolder.put(pair.block, pair.script));
+        pairs.forEach(pair -> scriptHolder.put(pair.position, pair.script));
         return scriptHolder;
     }
 
@@ -103,14 +103,14 @@ public class IScriptHolderAdapter extends TypeAdapter<IScriptHolder> {
     }
 
     private ScriptBlockScriptPair readPair(JsonReader in) throws IOException {
-        ScriptBlock block = null;
+        ScriptPosition position = null;
         Script script = null;
 
         in.beginObject();
         while (in.hasNext()) {
             switch (in.nextName()) {
                 case "coordinate": {
-                    block = GsonHolder.get().fromJson(in, new TypeToken<ScriptBlock>() {
+                    position = GsonHolder.get().fromJson(in, new TypeToken<ScriptPosition>() {
                     }.getType());
                     break;
                 }
@@ -126,17 +126,17 @@ public class IScriptHolderAdapter extends TypeAdapter<IScriptHolder> {
         }
         in.endObject();
 
-        if (block == null || script == null)
+        if (position == null || script == null)
             throw new JsonSyntaxException("Illegal syntax.");
-        return new ScriptBlockScriptPair(block, script);
+        return new ScriptBlockScriptPair(position, script);
     }
 
     private static class ScriptBlockScriptPair {
-        private final ScriptBlock block;
+        private final ScriptPosition position;
         private final Script script;
 
-        ScriptBlockScriptPair(ScriptBlock block, Script script) {
-            this.block = block;
+        ScriptBlockScriptPair(ScriptPosition position, Script script) {
+            this.position = position;
             this.script = script;
         }
     }

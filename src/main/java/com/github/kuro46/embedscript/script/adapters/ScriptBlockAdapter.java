@@ -1,6 +1,6 @@
 package com.github.kuro46.embedscript.script.adapters;
 
-import com.github.kuro46.embedscript.script.ScriptBlock;
+import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
@@ -11,9 +11,9 @@ import java.io.IOException;
 /**
  * @author shirokuro
  */
-public class ScriptBlockAdapter extends TypeAdapter<ScriptBlock> {
+public class ScriptBlockAdapter extends TypeAdapter<ScriptPosition> {
     @Override
-    public void write(JsonWriter out, ScriptBlock value) throws IOException {
+    public void write(JsonWriter out, ScriptPosition value) throws IOException {
         out.beginObject();
         out.name("world").value(value.getWorld());
         out.name("x").value(value.getX());
@@ -23,7 +23,7 @@ public class ScriptBlockAdapter extends TypeAdapter<ScriptBlock> {
     }
 
     @Override
-    public ScriptBlock read(JsonReader in) throws IOException {
+    public ScriptPosition read(JsonReader in) throws IOException {
         String world = null;
         Integer x = null;
         Integer y = null;
@@ -52,6 +52,6 @@ public class ScriptBlockAdapter extends TypeAdapter<ScriptBlock> {
 
         if (world == null || x == null || y == null || z == null)
             throw new JsonSyntaxException("Illegal syntax");
-        return new ScriptBlock(world, x, y, z);
+        return new ScriptPosition(world, x, y, z);
     }
 }

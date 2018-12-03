@@ -2,9 +2,9 @@ package com.github.kuro46.embedscript;
 
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
-import com.github.kuro46.embedscript.script.ScriptBlock;
 import com.github.kuro46.embedscript.script.ScriptGenerator;
 import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.github.kuro46.embedscript.util.MojangUtil;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
@@ -81,15 +81,15 @@ public class Migrator {
                 throw new RuntimeException("Failed to generate script!");
             }
 
-            ScriptBlock block = new ScriptBlock(location[0],
+            ScriptPosition position = new ScriptPosition(location[0],
                 Integer.parseInt(location[1]),
                 Integer.parseInt(location[2]),
                 Integer.parseInt(location[3]));
 
-            if (scriptManager.hasScript(type, block)) {
-                scriptManager.add(commandSender, type, block, script);
+            if (scriptManager.hasScript(type, position)) {
+                scriptManager.add(commandSender, type, position, script);
             } else {
-                scriptManager.embed(commandSender, type, block, script);
+                scriptManager.embed(commandSender, type, position, script);
             }
         });
     }

@@ -11,19 +11,19 @@ import java.util.Objects;
  * @author shirokuro
  */
 @JsonAdapter(ScriptBlockAdapter.class)
-public class ScriptBlock implements Comparable<ScriptBlock> {
+public class ScriptPosition implements Comparable<ScriptPosition> {
     private final String world;
     private final int x, y, z;
 
-    public ScriptBlock(Block block) {
+    public ScriptPosition(Block block) {
         this(block.getWorld().getName(), block.getX(), block.getY(), block.getZ());
     }
 
-    public ScriptBlock(Location location) {
+    public ScriptPosition(Location location) {
         this(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
-    public ScriptBlock(String world, int x, int y, int z) {
+    public ScriptPosition(String world, int x, int y, int z) {
         this.world = world;
         this.x = x;
         this.y = y;
@@ -50,7 +50,7 @@ public class ScriptBlock implements Comparable<ScriptBlock> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ScriptBlock that = (ScriptBlock) o;
+        ScriptPosition that = (ScriptPosition) o;
         return x == that.x &&
             y == that.y &&
             z == that.z &&
@@ -63,7 +63,7 @@ public class ScriptBlock implements Comparable<ScriptBlock> {
     }
 
     @Override
-    public int compareTo(ScriptBlock o) {
+    public int compareTo(ScriptPosition o) {
         int xCompareTo = Integer.compare(x, o.x);
         if (xCompareTo != 0) {
             return xCompareTo;

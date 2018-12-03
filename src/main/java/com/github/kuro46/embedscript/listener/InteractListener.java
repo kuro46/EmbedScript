@@ -4,8 +4,8 @@ import com.github.kuro46.embedscript.CommandPerformer;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
-import com.github.kuro46.embedscript.script.ScriptBlock;
 import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.bukkit.entity.Player;
@@ -42,10 +42,10 @@ public class InteractListener extends AbstractListener {
         if (!event.hasBlock() || interval.getIfPresent(player) != null)
             return;
         interval.put(player, Boolean.TRUE);
-        ScriptBlock scriptBlock = new ScriptBlock(event.getClickedBlock());
-        if (requests.executeRequest(player, scriptBlock))
+        ScriptPosition position = new ScriptPosition(event.getClickedBlock());
+        if (requests.executeRequest(player, position))
             return;
-        Script script = scriptManager.getScript(EventType.INTERACT, scriptBlock);
+        Script script = scriptManager.getScript(EventType.INTERACT, position);
         if (script == null)
             return;
 

@@ -1,8 +1,8 @@
 package com.github.kuro46.embedscript.request;
 
 import com.github.kuro46.embedscript.script.EventType;
-import com.github.kuro46.embedscript.script.ScriptBlock;
 import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -37,7 +37,7 @@ public class Requests implements Listener {
         return requests.containsKey(player);
     }
 
-    public boolean executeRequest(Player player, ScriptBlock block) {
+    public boolean executeRequest(Player player, ScriptPosition position) {
         Request request = removeRequest(player);
         if (request == null)
             return false;
@@ -45,21 +45,21 @@ public class Requests implements Listener {
         EventType eventType = request.getEventType();
         switch (request.getRequestType()) {
             case VIEW: {
-                scriptManager.view(player, eventType, block);
+                scriptManager.view(player, eventType, position);
                 break;
             }
             case EMBED: {
                 scriptManager.embed(player, eventType,
-                    block, ((RequestWithScript) request).getScript());
+                    position, ((RequestWithScript) request).getScript());
                 break;
             }
             case ADD: {
                 scriptManager.add(player, eventType,
-                    block, ((RequestWithScript) request).getScript());
+                    position, ((RequestWithScript) request).getScript());
                 break;
             }
             case REMOVE: {
-                scriptManager.remove(player, eventType, block);
+                scriptManager.remove(player, eventType, position);
                 break;
             }
             default: {
