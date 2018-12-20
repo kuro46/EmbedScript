@@ -3,8 +3,8 @@ package com.github.kuro46.embedscript.listener;
 import com.github.kuro46.embedscript.CommandPerformer;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
-import com.github.kuro46.embedscript.script.ScriptBlock;
 import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptPosition;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -22,7 +22,7 @@ import java.util.UUID;
  * @author shirokuro
  */
 public class MoveListener extends AbstractListener {
-    private final Map<UUID, ScriptBlock> beforeWalked = new HashMap<>();
+    private final Map<UUID, ScriptPosition> beforeWalked = new HashMap<>();
     private final ScriptManager scriptManager;
     private final CommandPerformer performer;
 
@@ -36,23 +36,23 @@ public class MoveListener extends AbstractListener {
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
         Location to = event.getTo();
-        ScriptBlock scriptBlock = new ScriptBlock(to.getWorld().getName(),
+        ScriptPosition scriptPosition = new ScriptPosition(to.getWorld().getName(),
             to.getBlockX(), to.getBlockY() - 1, to.getBlockZ());
 
         Player player = event.getPlayer();
 
-        ScriptBlock before = beforeWalked.get(player.getUniqueId());
-        if (before != null && before.equals(scriptBlock))
+        ScriptPosition before = beforeWalked.get(player.getUniqueId());
+        if (before != null && before.equals(scriptPosition))
             return;
-        beforeWalked.put(player.getUniqueId(), scriptBlock);
+        beforeWalked.put(player.getUniqueId(), scriptPosition);
 
-        Script script = scriptManager.getScript(EventType.WALK, scriptBlock);
+        Script script = scriptManager.getScript(EventType.WALK, scriptPosition);
         if (script == null)
             return;
         Block blockAt = to.getWorld().getBlockAt(
-            scriptBlock.getX(),
-            scriptBlock.getY(),
-            scriptBlock.getZ());
+            scriptPosition.getX(),
+            scriptPosition.getY(),
+            scriptPosition.getZ());
         double y = to.getY();
         if (blockAt.getType() != Material.AIR && y != (int) y)
             return;
