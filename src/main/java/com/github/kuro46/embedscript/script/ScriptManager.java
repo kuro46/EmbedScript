@@ -1,13 +1,10 @@
 package com.github.kuro46.embedscript.script;
 
-import com.github.kuro46.embedscript.GsonHolder;
 import com.github.kuro46.embedscript.Prefix;
 import com.github.kuro46.embedscript.script.command.Command;
 import com.github.kuro46.embedscript.script.command.data.BypassPermCommandData;
 import com.github.kuro46.embedscript.script.command.data.CommandData;
-import com.github.kuro46.embedscript.script.holders.ScriptHolder;
 import com.github.kuro46.embedscript.util.MojangUtil;
-import com.google.gson.reflect.TypeToken;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -18,10 +15,7 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,10 +32,9 @@ import java.util.stream.Collectors;
  * @author shirokuro
  */
 public class ScriptManager {
-    private final Map<EventType, ScriptHolder> scripts = new EnumMap<>(EventType.class);
+    private final Map<EventType, Map<ScriptPosition, Script>> scripts = new EnumMap<>(EventType.class);
     private final Map<EventType, Path> paths = new EnumMap<>(EventType.class);
     private final Plugin plugin;
-    private BukkitTask writeTask;
 
     public ScriptManager(Plugin plugin) throws IOException {
         this.plugin = plugin;
@@ -51,7 +44,7 @@ public class ScriptManager {
         for (EventType eventType : EventType.values()) {
             Path path = Paths.get(dataFolder.toString(), eventType.getFileName());
             paths.put(eventType, path);
-            scripts.put(eventType, readScripts(path));
+            scripts.put(eventType, ScriptSerializer.deserialize(path));
         }
     }
 
@@ -59,12 +52,12 @@ public class ScriptManager {
                       EventType type,
                       ScriptPosition position,
                       Script script) {
-        ScriptHolder scripts = getScripts(type);
+        Map<ScriptPosition, Script> scripts = getScripts(type);
         if (scripts.putIfAbsent(position, script) != null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.");
             return;
         }
-        writeScriptsAsync(getPath(type), scripts);
+        ScriptSerializer.serializeLaterAsync(getPath(type), scripts);
 
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully embedded.");
     }
@@ -73,25 +66,25 @@ public class ScriptManager {
                     EventType type,
                     ScriptPosition position,
                     Script script) {
-        ScriptHolder scripts = getScripts(type);
+        Map<ScriptPosition, Script> scripts = getScripts(type);
         Script baseScript = getScript(type, position);
         if (baseScript == null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
         }
         baseScript.getCommands().addAll(script.getCommands());
-        writeScriptsAsync(getPath(type), scripts);
+        ScriptSerializer.serializeLaterAsync(getPath(type), scripts);
 
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully added.");
     }
 
     public void remove(CommandSender sender, EventType type, ScriptPosition position) {
-        ScriptHolder scripts = getScripts(type);
+        Map<ScriptPosition, Script> scripts = getScripts(type);
         if (scripts.remove(position) == null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
         }
-        writeScriptsAsync(getPath(type), scripts);
+        ScriptSerializer.serializeLaterAsync(getPath(type), scripts);
 
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully removed.");
     }
@@ -184,43 +177,11 @@ public class ScriptManager {
         return getScripts(eventType).get(position);
     }
 
-    private ScriptHolder getScripts(EventType eventType) {
+    private Map<ScriptPosition, Script> getScripts(EventType eventType) {
         return scripts.get(eventType);
     }
 
     private Path getPath(EventType eventType) {
         return paths.get(eventType);
-    }
-
-    private synchronized ScriptHolder readScripts(Path path) throws IOException {
-        if (Files.notExists(path)) {
-            return new ScriptHolder();
-        }
-        try (BufferedReader reader = Files.newBufferedReader(path)) {
-            return GsonHolder.get().fromJson(reader, new TypeToken<ScriptHolder>() {
-            }.getType());
-        }
-    }
-
-    private synchronized void writeScripts(Path path, ScriptHolder scripts) throws IOException {
-        if (Files.notExists(path)) {
-            Files.createFile(path);
-        }
-        try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-            GsonHolder.get().toJson(scripts, writer);
-        }
-    }
-
-    private void writeScriptsAsync(Path path, ScriptHolder scripts) {
-        if (writeTask != null) {
-            writeTask.cancel();
-        }
-        writeTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-            try {
-                writeScripts(path, scripts);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }, 20);
     }
 }
