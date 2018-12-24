@@ -53,7 +53,7 @@ public class ScriptSerializer {
             throw new UnsupportedOperationException("Unsupported version: " + version);
         }
 
-        if (createFileIfNotExists(path)) {
+        if (Files.notExists(path)) {
             return new HashMap<>();
         } else {
             try (BufferedReader reader = Files.newBufferedReader(path)) {
