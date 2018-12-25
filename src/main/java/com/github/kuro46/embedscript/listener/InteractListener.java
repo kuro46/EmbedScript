@@ -1,11 +1,11 @@
 package com.github.kuro46.embedscript.listener;
 
-import com.github.kuro46.embedscript.CommandPerformer;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
+import com.github.kuro46.embedscript.script.command.CommandPerformer;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.bukkit.entity.Player;

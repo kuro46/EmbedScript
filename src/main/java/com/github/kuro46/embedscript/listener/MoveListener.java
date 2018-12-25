@@ -1,10 +1,10 @@
 package com.github.kuro46.embedscript.listener;
 
-import com.github.kuro46.embedscript.CommandPerformer;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
+import com.github.kuro46.embedscript.script.command.CommandPerformer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;

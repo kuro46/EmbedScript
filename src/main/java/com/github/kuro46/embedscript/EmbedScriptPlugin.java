@@ -7,6 +7,7 @@ import com.github.kuro46.embedscript.listener.MoveListener;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.command.CommandPerformer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.event.EventHandler;

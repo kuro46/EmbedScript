@@ -1,6 +1,5 @@
-package com.github.kuro46.embedscript;
+package com.github.kuro46.embedscript.script.command;
 
-import com.github.kuro46.embedscript.script.command.Command;
 import com.github.kuro46.embedscript.script.command.data.BypassPermCommandData;
 import com.github.kuro46.embedscript.script.command.data.CommandData;
 import org.bukkit.Bukkit;
