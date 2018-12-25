@@ -5,6 +5,7 @@ import com.github.kuro46.embedscript.script.command.Command;
 import com.github.kuro46.embedscript.script.command.data.BypassPermCommandData;
 import com.github.kuro46.embedscript.script.command.data.CommandData;
 import com.github.kuro46.embedscript.util.MojangUtil;
+import com.github.kuro46.embedscript.util.Scheduler;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -34,11 +35,8 @@ import java.util.stream.Collectors;
 public class ScriptManager {
     private final Map<EventType, Map<ScriptPosition, Script>> scripts = new EnumMap<>(EventType.class);
     private final Map<EventType, Path> paths = new EnumMap<>(EventType.class);
-    private final Plugin plugin;
 
     public ScriptManager(Plugin plugin) throws IOException {
-        this.plugin = plugin;
-
         Path dataFolder = plugin.getDataFolder().toPath();
         Files.createDirectories(dataFolder);
         for (EventType eventType : EventType.values()) {
@@ -96,7 +94,7 @@ public class ScriptManager {
             return;
         }
         ArrayList<Command> commands = new ArrayList<>(script.getCommands());
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        Scheduler.execute(() -> {
             sender.sendMessage("Script information: ------------------------------");
             for (Command command : commands) {
                 sender.sendMessage("===============================================");
