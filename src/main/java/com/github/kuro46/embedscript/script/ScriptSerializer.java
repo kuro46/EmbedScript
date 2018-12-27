@@ -47,30 +47,28 @@ public class ScriptSerializer {
     }
 
     public static Map<ScriptPosition, Script> deserialize(Path path) throws IOException {
-        String version = readVersion(path);
-        FormatterCreator formatterCreator = CREATORS.get(version);
-        if (formatterCreator == null) {
-            throw new UnsupportedOperationException("Unsupported version: " + version);
-        }
-
         if (Files.notExists(path)) {
             return new HashMap<>();
         } else {
             try (BufferedReader reader = Files.newBufferedReader(path)) {
-                return formatterCreator.create().fromJson(reader);
+                String version = readVersion(path);
+                Formatter formatter = createFormatter(version);
+                if (formatter == null) {
+                    throw new UnsupportedOperationException("Unsupported version: " + version);
+                }
+                return formatter.fromJson(reader);
             }
         }
     }
 
     public static void serialize(Path path, Map<ScriptPosition, Script> scripts) throws IOException {
-        FormatterCreator formatterCreator = CREATORS.get(LATEST_VERSION);
-        if (formatterCreator == null) {
-            throw new IllegalStateException();
-        }
-
         createFileIfNotExists(path);
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-            formatterCreator.create().toJson(writer, scripts);
+            Formatter formatter = createFormatter(LATEST_VERSION);
+            if (formatter == null) {
+                throw new IllegalStateException();
+            }
+            formatter.toJson(writer, scripts);
         }
     }
 
@@ -90,6 +88,14 @@ public class ScriptSerializer {
                 executing = null;
             }
         }, 1, TimeUnit.SECONDS);
+    }
+
+    private static Formatter createFormatter(String version) {
+        FormatterCreator formatterCreator = CREATORS.get(version);
+        if (formatterCreator == null) {
+            return null;
+        }
+        return formatterCreator.create();
     }
 
     /**
@@ -135,14 +141,14 @@ public class ScriptSerializer {
     }
 
     private interface FormatterCreator {
-        VersionedTypeAdapter create();
+        Formatter create();
     }
 
-    private static abstract class VersionedTypeAdapter extends TypeAdapter<Map<ScriptPosition, Script>> {
+    private static abstract class Formatter extends TypeAdapter<Map<ScriptPosition, Script>> {
         public abstract String version();
     }
 
-    private static class Formatter10 extends VersionedTypeAdapter {
+    private static class Formatter10 extends Formatter {
         @Override
         public String version() {
             return "1.0";
