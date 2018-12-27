@@ -62,7 +62,10 @@ public class ScriptSerializer {
     }
 
     public static synchronized void serialize(Path path, Map<ScriptPosition, Script> scripts) throws IOException {
-        createFileIfNotExists(path);
+        if (Files.notExists(path)) {
+            Files.createFile(path);
+        }
+
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             Formatter formatter = createFormatter(LATEST_VERSION);
             if (formatter == null) {
@@ -96,21 +99,6 @@ public class ScriptSerializer {
             return null;
         }
         return formatterCreator.create();
-    }
-
-    /**
-     * Create file if not exists.
-     *
-     * @param path path
-     * @return true if created
-     * @throws IOException IO exception
-     */
-    private static boolean createFileIfNotExists(Path path) throws IOException {
-        if (Files.notExists(path)) {
-            Files.createFile(path);
-            return true;
-        }
-        return false;
     }
 
     private static String readVersion(Path path) throws IOException {
