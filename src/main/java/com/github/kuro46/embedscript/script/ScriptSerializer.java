@@ -74,7 +74,7 @@ public class ScriptSerializer {
         }
     }
 
-    public static void serializeLaterAsync(Path path, Map<ScriptPosition, Script> scripts) {
+    public static synchronized void serializeLaterAsync(Path path, Map<ScriptPosition, Script> scripts) {
         if (executing != null) {
             executing.cancel(false);
         }
@@ -86,7 +86,9 @@ public class ScriptSerializer {
                 e.printStackTrace();
             }
 
-            executing = null;
+            synchronized (ScriptSerializer.class) {
+                executing = null;
+            }
         }, 1, TimeUnit.SECONDS);
     }
 
