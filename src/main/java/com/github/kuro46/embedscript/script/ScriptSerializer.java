@@ -46,7 +46,7 @@ public class ScriptSerializer {
         CREATORS = Collections.unmodifiableMap(creators);
     }
 
-    public static Map<ScriptPosition, Script> deserialize(Path path) throws IOException {
+    public static synchronized Map<ScriptPosition, Script> deserialize(Path path) throws IOException {
         if (Files.notExists(path)) {
             return new HashMap<>();
         } else {
@@ -61,7 +61,7 @@ public class ScriptSerializer {
         }
     }
 
-    public static void serialize(Path path, Map<ScriptPosition, Script> scripts) throws IOException {
+    public static synchronized void serialize(Path path, Map<ScriptPosition, Script> scripts) throws IOException {
         createFileIfNotExists(path);
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             Formatter formatter = createFormatter(LATEST_VERSION);
