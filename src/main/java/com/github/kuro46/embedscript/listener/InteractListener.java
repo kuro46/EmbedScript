@@ -50,5 +50,6 @@ public class InteractListener extends AbstractListener {
             return;
 
         performer.perform(player, script.getCommands());
+        event.setCancelled(true);
     }
 }
