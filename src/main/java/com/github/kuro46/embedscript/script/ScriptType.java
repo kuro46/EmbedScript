@@ -5,6 +5,7 @@ import com.github.kuro46.embedscript.script.command.data.CommandCommandData;
 import com.github.kuro46.embedscript.script.command.data.CommandData;
 import com.github.kuro46.embedscript.script.command.data.ConsoleCommandData;
 import com.github.kuro46.embedscript.script.command.data.PlayerCommandData;
+import com.github.kuro46.embedscript.script.command.data.PluginCommandData;
 
 import java.util.regex.Pattern;
 
@@ -47,6 +48,12 @@ public enum ScriptType {
         @Override
         public CommandData newDataFromString(String string) {
             return new PlayerCommandData();
+        }
+    },
+    PLUGIN("@plugin") {
+        @Override
+        public CommandData newDataFromString(String string) {
+            return new PluginCommandData();
         }
     };
 

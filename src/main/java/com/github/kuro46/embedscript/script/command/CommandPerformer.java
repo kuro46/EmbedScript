@@ -1,5 +1,7 @@
 package com.github.kuro46.embedscript.script.command;
 
+import com.github.kuro46.embedscript.api.EmbedScriptAPI;
+import com.github.kuro46.embedscript.api.PerformListener;
 import com.github.kuro46.embedscript.script.command.data.BypassPermCommandData;
 import com.github.kuro46.embedscript.script.command.data.CommandData;
 import org.bukkit.Bukkit;
@@ -47,6 +49,12 @@ public class CommandPerformer {
                 break;
             case CONSOLE:
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandLine);
+                break;
+            case PLUGIN:
+                PerformListener listener = EmbedScriptAPI.getListener(commandLine);
+                if (listener != null) {
+                    listener.onPerformed(trigger);
+                }
                 break;
             default:
                 throw new UnsupportedOperationException();
