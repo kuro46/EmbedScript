@@ -2,6 +2,7 @@ name: ${project.name}
 version: ${project.version}
 author: shirokuro
 description: Script embedder
+load: STARTUP
 depend:
   - LuckPerms
 loadbefore:
