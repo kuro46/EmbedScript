@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -19,84 +20,117 @@ import java.util.UUID;
  * @author shirokuro
  */
 class Migrator {
-    private final ScriptManager scriptManager;
-    private final CommandSender commandSender;
-
-    private Migrator(CommandSender commandSender, ScriptManager scriptManager, Plugin scriptBlock) throws ReflectiveOperationException {
-        this.commandSender = commandSender;
-        this.scriptManager = scriptManager;
-
-        List<Object> scriptManagerList = getField(scriptBlock, "scriptManagerList");
-        for (Object sbScriptManagerExtended : scriptManagerList) {
-            Class<?> sbScriptManagerExtendedClass = sbScriptManagerExtended.getClass();
-            Class<?> sbScriptManagerClass = sbScriptManagerExtendedClass.getSuperclass();
-            Object mapManager = getField(sbScriptManagerClass, sbScriptManagerExtended, "mapManager");
-            Map<String, List<String>> blocksMap = getField(mapManager, "blocksMap");
-
-            EventType type;
-            String simpleName = sbScriptManagerExtendedClass.getSimpleName();
-            switch (simpleName) {
-                case "PlayerInteractBlock": {
-                    type = EventType.INTERACT;
-                    break;
-                }
-                case "PlayerWalkBlock": {
-                    type = EventType.WALK;
-                    break;
-                }
-                default: {
-                    throw new IllegalArgumentException(simpleName);
-                }
-            }
-            migrate(type, blocksMap);
-        }
-    }
-
     static void migrate(CommandSender commandSender,
                         ScriptManager scriptManager,
                         Plugin scriptBlock) throws Exception {
-        new Migrator(commandSender, scriptManager, scriptBlock);
+        for (Pair<EventType, Map<String, List<String>>> pair : getBlockList(scriptBlock)) {
+            EventType eventType = pair.getKey();
+            for (Map.Entry<String, List<String>> entry : pair.getValue().entrySet()) {
+                List<String> data = entry.getValue();
+                UUID author = getAuthorFromData(data);
+                String commands = getCommandsFromData(data);
+
+                Script script = ScriptGenerator.generateFromString(commandSender, author, commands);
+                if (script == null) {
+                    commandSender.sendMessage(Prefix.ERROR_PREFIX + "Failed to generate script!");
+                    throw new RuntimeException("Failed to generate script!");
+                }
+
+                String rawLocation = entry.getKey();
+                ScriptPosition position = createPositionFromRawLocation(rawLocation);
+
+                if (scriptManager.hasScript(eventType, position)) {
+                    scriptManager.add(commandSender, eventType, position, script);
+                } else {
+                    scriptManager.embed(commandSender, eventType, position, script);
+                }
+            }
+        }
     }
 
-    private <T> T getField(Object object, String name) throws ReflectiveOperationException {
+    private static ScriptPosition createPositionFromRawLocation(String rawLocation) {
+        //index0: world, 1: x, 2: y, 3: z
+        String[] coordinates = rawLocation.split(",");
+        return new ScriptPosition(coordinates[0],
+            Integer.parseInt(coordinates[1]),
+            Integer.parseInt(coordinates[2]),
+            Integer.parseInt(coordinates[3]));
+    }
+
+    private static UUID getAuthorFromData(List<String> data) {
+        //Author:MCID/Group → MCID/Group → MCID
+        String authorName = data.get(0).split(":")[1].split("/")[0];
+        return MojangUtil.getUUID(authorName);
+    }
+
+    private static String getCommandsFromData(List<String> data) {
+        StringJoiner commandsJoiner = new StringJoiner("][", "[", "]");
+        for (int i = 1; i < data.size(); i++)
+            commandsJoiner.add(data.get(i));
+        return commandsJoiner.toString();
+    }
+
+    private static List<Pair<EventType, Map<String, List<String>>>> getBlockList(Object scriptBlockInstance) throws Exception {
+
+        Class<?> scriptManagerSuperClass = null;
+        List<Object> scriptManagers = getField(scriptBlockInstance, "scriptManagerList");
+        List<Pair<EventType, Map<String, List<String>>>> list = new ArrayList<>();
+
+        for (int index = 0; index < scriptManagers.size(); index++) {
+            Object scriptManager = scriptManagers.get(index);
+            Class<?> scriptManagerClass = scriptManager.getClass();
+            if (index == 0) {
+                scriptManagerSuperClass = scriptManagerClass.getSuperclass();
+            }
+
+            Object mapManager = getField(scriptManagerSuperClass, scriptManager, "mapManager");
+            Map<String, List<String>> blocksMap = getField(mapManager, "blocksMap");
+            EventType eventType = getEventTypeByClass(scriptManagerClass);
+
+            list.add(new Pair<>(eventType, blocksMap));
+        }
+
+        return list;
+    }
+
+    private static EventType getEventTypeByClass(Class clazz) throws Exception {
+        switch (clazz.getSimpleName()) {
+            case "PlayerInteractBlock":
+                return EventType.INTERACT;
+            case "PlayerWalkBlock":
+                return EventType.WALK;
+            default:
+                throw new Exception(
+                    String.format("Cannot get EventType from \"%s\" (Unknown class)", clazz.getSimpleName()));
+        }
+    }
+
+    private static <T> T getField(Object object, String name) throws ReflectiveOperationException {
         return getField(object.getClass(), object, name);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T getField(Class clazz, Object object, String name) throws ReflectiveOperationException {
+    private static <T> T getField(Class clazz, Object object, String name) throws ReflectiveOperationException {
         Field declaredField = clazz.getDeclaredField(name);
         declaredField.setAccessible(true);
         return (T) declaredField.get(object);
     }
 
-    private void migrate(EventType type, Map<String, List<String>> blocksMap) {
-        blocksMap.forEach((locationSource, data) -> {
-            String[] location = locationSource.split(",");
-            //Author:MCID/Group → MCID/Group → MCID
-            String authorName = data.get(0).split(":")[1].split("/")[0];
-            UUID author = MojangUtil.getUUID(authorName);
-            StringJoiner commandsJoiner = new StringJoiner("][", "[", "]");
-            for (int i = 1; i < data.size(); i++)
-                commandsJoiner.add(data.get(i));
-            String commands = commandsJoiner.toString();
+    private static class Pair<K, V> {
+        private final K key;
+        private final V value;
 
-            Script script = ScriptGenerator.generateFromString(commandSender, author, commands);
+        Pair(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
 
-            if (script == null) {
-                commandSender.sendMessage(Prefix.ERROR_PREFIX + "Failed to generate script!");
-                throw new RuntimeException("Failed to generate script!");
-            }
+        K getKey() {
+            return key;
+        }
 
-            ScriptPosition position = new ScriptPosition(location[0],
-                Integer.parseInt(location[1]),
-                Integer.parseInt(location[2]),
-                Integer.parseInt(location[3]));
-
-            if (scriptManager.hasScript(type, position)) {
-                scriptManager.add(commandSender, type, position, script);
-            } else {
-                scriptManager.embed(commandSender, type, position, script);
-            }
-        });
+        V getValue() {
+            return value;
+        }
     }
 }
