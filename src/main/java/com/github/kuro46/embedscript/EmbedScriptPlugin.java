@@ -32,14 +32,11 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        Requests requests = new Requests(this, scriptManager);
-        for (EventType eventType : EventType.values()) {
-            getCommand(eventType.getCommandName())
-                .setExecutor(new EventCommandExecutor(eventType, requests, scriptManager));
-        }
-        getCommand("embedscript").setExecutor(new MainCommandExecutor());
-        CommandPerformer commandPerformer = new CommandPerformer(this);
 
+        Requests requests = new Requests(this, scriptManager);
+        registerCommands(requests);
+
+        CommandPerformer commandPerformer = new CommandPerformer(this);
         registerListeners(commandPerformer, requests);
     }
 
@@ -48,6 +45,14 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         pluginManager.registerEvents(new InteractListener(scriptManager, requests, commandPerformer), this);
         pluginManager.registerEvents(new MoveListener(scriptManager, commandPerformer), this);
         pluginManager.registerEvents(this, this);
+    }
+
+    private void registerCommands(Requests requests) {
+        for (EventType eventType : EventType.values()) {
+            getCommand(eventType.getCommandName())
+                .setExecutor(new EventCommandExecutor(eventType, requests, scriptManager));
+        }
+        getCommand("embedscript").setExecutor(new MainCommandExecutor());
     }
 
     @SuppressWarnings("unused")
