@@ -10,8 +10,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.plugin.Plugin;
 
 import java.util.concurrent.TimeUnit;
 
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * @author shirokuro
  */
 @SuppressWarnings("unused")
-public class InteractListener extends AbstractListener {
+public class InteractListener implements Listener {
     private final Cache<Player, Boolean> interval = CacheBuilder.newBuilder()
         .weakKeys()
         .expireAfterWrite(300, TimeUnit.MILLISECONDS)
@@ -28,8 +28,7 @@ public class InteractListener extends AbstractListener {
     private final Requests requests;
     private final CommandPerformer performer;
 
-    public InteractListener(Plugin plugin, ScriptManager scriptManager, Requests requests, CommandPerformer performer) {
-        super(plugin);
+    public InteractListener(ScriptManager scriptManager, Requests requests, CommandPerformer performer) {
         this.scriptManager = scriptManager;
         this.requests = requests;
         this.performer = performer;

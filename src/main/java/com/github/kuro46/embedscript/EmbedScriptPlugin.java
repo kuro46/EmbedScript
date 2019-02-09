@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -38,9 +39,11 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         }
         getCommand("embedscript").setExecutor(new MainCommandExecutor());
         CommandPerformer commandPerformer = new CommandPerformer(this);
-        new InteractListener(this, scriptManager, requests, commandPerformer);
-        new MoveListener(this, scriptManager, commandPerformer);
-        Bukkit.getPluginManager().registerEvents(this, this);
+
+        PluginManager pluginManager = Bukkit.getPluginManager();
+        pluginManager.registerEvents(new InteractListener(scriptManager, requests, commandPerformer), this);
+        pluginManager.registerEvents(new MoveListener(scriptManager, commandPerformer), this);
+        pluginManager.registerEvents(this, this);
     }
 
     @SuppressWarnings("unused")

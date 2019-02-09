@@ -11,9 +11,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.plugin.Plugin;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -21,13 +21,12 @@ import java.util.WeakHashMap;
 /**
  * @author shirokuro
  */
-public class MoveListener extends AbstractListener {
+public class MoveListener implements Listener {
     private final Map<Player, ScriptPosition> beforeWalked = new WeakHashMap<>();
     private final ScriptManager scriptManager;
     private final CommandPerformer performer;
 
-    public MoveListener(Plugin plugin, ScriptManager scriptManager, CommandPerformer performer) {
-        super(plugin);
+    public MoveListener(ScriptManager scriptManager, CommandPerformer performer) {
         this.scriptManager = scriptManager;
         this.performer = performer;
     }
