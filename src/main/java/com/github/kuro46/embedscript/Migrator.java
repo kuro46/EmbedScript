@@ -18,11 +18,11 @@ import java.util.UUID;
 /**
  * @author shirokuro
  */
-public class Migrator {
+class Migrator {
     private final ScriptManager scriptManager;
     private final CommandSender commandSender;
 
-    public Migrator(CommandSender commandSender, ScriptManager scriptManager, Plugin scriptBlock) throws ReflectiveOperationException {
+    private Migrator(CommandSender commandSender, ScriptManager scriptManager, Plugin scriptBlock) throws ReflectiveOperationException {
         this.commandSender = commandSender;
         this.scriptManager = scriptManager;
 
@@ -50,6 +50,12 @@ public class Migrator {
             }
             migrate(type, blocksMap);
         }
+    }
+
+    static void migrate(CommandSender commandSender,
+                        ScriptManager scriptManager,
+                        Plugin scriptBlock) throws Exception {
+        new Migrator(commandSender, scriptManager, scriptBlock);
     }
 
     private <T> T getField(Object object, String name) throws ReflectiveOperationException {
