@@ -40,6 +40,10 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         getCommand("embedscript").setExecutor(new MainCommandExecutor());
         CommandPerformer commandPerformer = new CommandPerformer(this);
 
+        registerListeners(commandPerformer, requests);
+    }
+
+    private void registerListeners(CommandPerformer commandPerformer, Requests requests) {
         PluginManager pluginManager = Bukkit.getPluginManager();
         pluginManager.registerEvents(new InteractListener(scriptManager, requests, commandPerformer), this);
         pluginManager.registerEvents(new MoveListener(scriptManager, commandPerformer), this);
