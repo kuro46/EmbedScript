@@ -50,8 +50,9 @@ public class ScriptBlockAdapter extends TypeAdapter<ScriptPosition> {
         }
         in.endObject();
 
-        if (world == null || x == null || y == null || z == null)
+        if (world == null || x == null || y == null || z == null) {
             throw new JsonSyntaxException("Illegal syntax");
+        }
         return new ScriptPosition(world, x, y, z);
     }
 }

@@ -47,12 +47,14 @@ public final class ScriptGenerator {
 
     private static Command generateCommandFromString(UUID author, String string) {
         String[] strings = string.split(" ");
-        if (strings.length < 2)
+        if (strings.length < 2) {
             return null;
+        }
         String stringScriptType = strings[0];
         ScriptType scriptType = ScriptType.getByString(stringScriptType);
-        if (scriptType == null)
+        if (scriptType == null) {
             return null;
+        }
         String command = Util.joinStringSpaceDelimiter(1, strings);
         command = ChatColor.translateAlternateColorCodes('&', command);
         if (scriptType != ScriptType.PLAYER && command.startsWith("/")) {

@@ -53,8 +53,9 @@ public class CommandAdapter extends TypeAdapter<Command> {
         }
         in.endObject();
 
-        if (author == null || command == null || data == null)
+        if (author == null || command == null || data == null) {
             throw new JsonSyntaxException("Illegal syntax");
+        }
         return new Command(author, data, command);
     }
 }

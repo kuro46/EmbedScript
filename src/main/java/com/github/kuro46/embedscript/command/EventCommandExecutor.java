@@ -65,8 +65,9 @@ public class EventCommandExecutor implements CommandExecutor {
                 }
                 String stringScript = Util.joinStringSpaceDelimiter(1, args);
                 Script script = ScriptGenerator.generateFromString(sender, player.getUniqueId(), stringScript);
-                if (script == null)
+                if (script == null) {
                     return true;
+                }
                 player.sendMessage(Prefix.PREFIX + "Click the block to add a script.");
                 requests.putRequest(player, new RequestWithScript(RequestType.ADD, eventType, script));
 

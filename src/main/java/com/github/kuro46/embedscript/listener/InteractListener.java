@@ -37,16 +37,20 @@ public class InteractListener implements Listener {
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        if (!event.hasBlock() || isInCoolTime(player))
+        if (!event.hasBlock() || isInCoolTime(player)) {
             return;
+        }
         updateCoolTime(player);
 
         ScriptPosition position = new ScriptPosition(event.getClickedBlock());
-        if (requests.executeRequest(player, position))
+        if (requests.executeRequest(player, position)) {
             return;
+        }
+
         Script script = scriptManager.getScript(EventType.INTERACT, position);
-        if (script == null)
+        if (script == null) {
             return;
+        }
 
         performer.perform(player, script.getCommands());
         event.setCancelled(true);

@@ -26,8 +26,9 @@ public enum ScriptType {
 
         @Override
         public CommandData newDataFromString(String string) {
-            if (!match(string))
+            if (!match(string)) {
                 return null;
+            }
             String permission = string.split(":")[1];
             return new BypassPermCommandData(permission);
         }
@@ -65,8 +66,9 @@ public enum ScriptType {
 
     public static ScriptType getByString(String string) {
         for (ScriptType scriptType : values()) {
-            if (scriptType.match(string))
+            if (scriptType.match(string)) {
                 return scriptType;
+            }
         }
         return null;
     }
