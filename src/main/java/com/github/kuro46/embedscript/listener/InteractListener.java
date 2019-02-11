@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,8 +21,7 @@ import java.util.concurrent.TimeUnit;
  */
 @SuppressWarnings("unused")
 public class InteractListener implements Listener {
-    private final Cache<Player, Boolean> interval = CacheBuilder.newBuilder()
-        .weakKeys()
+    private final Cache<UUID, Boolean> coolTime = CacheBuilder.newBuilder()
         .expireAfterWrite(300, TimeUnit.MILLISECONDS)
         .build();
     private final ScriptManager scriptManager;
@@ -38,9 +38,11 @@ public class InteractListener implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (!event.hasBlock() || interval.getIfPresent(player) != null)
+
+        if (!event.hasBlock() || isInCoolTime(player))
             return;
-        interval.put(player, Boolean.TRUE);
+        updateCoolTime(player);
+
         ScriptPosition position = new ScriptPosition(event.getClickedBlock());
         if (requests.executeRequest(player, position))
             return;
@@ -50,5 +52,13 @@ public class InteractListener implements Listener {
 
         performer.perform(player, script.getCommands());
         event.setCancelled(true);
+    }
+
+    private boolean isInCoolTime(Player player) {
+        return coolTime.getIfPresent(player.getUniqueId()) != null;
+    }
+
+    private void updateCoolTime(Player player) {
+        coolTime.put(player.getUniqueId(), Boolean.TRUE);
     }
 }
