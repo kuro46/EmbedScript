@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author shirokuro
  */
-@SuppressWarnings("unused")
 public class InteractListener implements Listener {
     private final Cache<UUID, Boolean> coolTime = CacheBuilder.newBuilder()
         .expireAfterWrite(300, TimeUnit.MILLISECONDS)
@@ -34,7 +33,6 @@ public class InteractListener implements Listener {
         this.performer = performer;
     }
 
-    @SuppressWarnings("unused")
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
