@@ -3,26 +3,21 @@ package com.github.kuro46.embedscript.request;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.Plugin;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * @author shirokuro
  */
 public class Requests implements Listener {
-    private final Map<Player, Request> requests = new HashMap<>(2);
+    private final Map<Player, Request> requests = new WeakHashMap<>(2);
     private final ScriptManager scriptManager;
 
-    public Requests(Plugin plugin, ScriptManager scriptManager) {
+    public Requests(ScriptManager scriptManager) {
         this.scriptManager = scriptManager;
-        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     public Request putRequest(Player player, Request request) {
@@ -67,11 +62,5 @@ public class Requests implements Listener {
             }
         }
         return true;
-    }
-
-    @SuppressWarnings("unused")
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
-        requests.remove(event.getPlayer());
     }
 }

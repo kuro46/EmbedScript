@@ -33,7 +33,7 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
             throw new RuntimeException(e);
         }
 
-        Requests requests = new Requests(this, scriptManager);
+        Requests requests = new Requests(scriptManager);
         registerCommands(requests);
 
         CommandPerformer commandPerformer = new CommandPerformer(this);
