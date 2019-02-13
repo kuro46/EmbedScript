@@ -1,7 +1,7 @@
 package com.github.kuro46.embedscript.request;
 
 import com.github.kuro46.embedscript.script.EventType;
-import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.script.ScriptPosition;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -14,10 +14,10 @@ import java.util.WeakHashMap;
  */
 public class Requests implements Listener {
     private final Map<Player, Request> requests = new WeakHashMap<>(2);
-    private final ScriptManager scriptManager;
+    private final ScriptUI scriptUI;
 
-    public Requests(ScriptManager scriptManager) {
-        this.scriptManager = scriptManager;
+    public Requests(ScriptUI scriptUI) {
+        this.scriptUI = scriptUI;
     }
 
     public Request putRequest(Player player, Request request) {
@@ -40,21 +40,21 @@ public class Requests implements Listener {
         EventType eventType = request.getEventType();
         switch (request.getRequestType()) {
             case VIEW: {
-                scriptManager.view(player, eventType, position);
+                scriptUI.view(player, eventType, position);
                 break;
             }
             case EMBED: {
-                scriptManager.embed(player, eventType,
+                scriptUI.embed(player, eventType,
                     position, ((RequestWithScript) request).getScript());
                 break;
             }
             case ADD: {
-                scriptManager.add(player, eventType,
+                scriptUI.add(player, eventType,
                     position, ((RequestWithScript) request).getScript());
                 break;
             }
             case REMOVE: {
-                scriptManager.remove(player, eventType, position);
+                scriptUI.remove(player, eventType, position);
                 break;
             }
             default: {

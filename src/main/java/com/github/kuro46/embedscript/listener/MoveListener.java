@@ -1,6 +1,5 @@
 package com.github.kuro46.embedscript.listener;
 
-import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
@@ -58,7 +57,7 @@ public class MoveListener implements Listener {
         }
         beforeWalked.put(player, position);
 
-        Script script = scriptManager.getScript(EventType.WALK, position);
+        Script script = scriptManager.get(position);
         if (script == null) {
             return;
         }

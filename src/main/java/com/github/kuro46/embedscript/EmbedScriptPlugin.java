@@ -6,6 +6,7 @@ import com.github.kuro46.embedscript.listener.InteractListener;
 import com.github.kuro46.embedscript.listener.MoveListener;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
+import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.command.CommandPerformer;
 import org.bukkit.Bukkit;
@@ -23,17 +24,17 @@ import java.io.IOException;
  * @author shirokuro
  */
 public class EmbedScriptPlugin extends JavaPlugin implements Listener {
-    private ScriptManager scriptManager;
+    private ScriptUI scriptUI = new ScriptUI();
 
     @Override
     public void onEnable() {
         try {
-            scriptManager = new ScriptManager(this);
+            ScriptManager.load(getDataFolder().toPath());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        Requests requests = new Requests(scriptManager);
+        Requests requests = new Requests(scriptUI);
         registerCommands(requests);
 
         CommandPerformer commandPerformer = new CommandPerformer(this);
@@ -41,16 +42,18 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
     }
 
     private void registerListeners(CommandPerformer commandPerformer, Requests requests) {
-        PluginManager pluginManager = Bukkit.getPluginManager();
-        pluginManager.registerEvents(new InteractListener(scriptManager, requests, commandPerformer), this);
-        pluginManager.registerEvents(new MoveListener(scriptManager, commandPerformer), this);
+    PluginManager pluginManager = Bukkit.getPluginManager();
+        pluginManager.registerEvents(
+            new InteractListener(ScriptManager.get(EventType.INTERACT), requests, commandPerformer), this);
+        pluginManager.registerEvents(
+            new MoveListener(ScriptManager.get(EventType.WALK), commandPerformer), this);
         pluginManager.registerEvents(this, this);
     }
 
     private void registerCommands(Requests requests) {
         for (EventType eventType : EventType.values()) {
             getCommand(eventType.getCommandName())
-                .setExecutor(new EventCommandExecutor(eventType, requests, scriptManager));
+                .setExecutor(new EventCommandExecutor(eventType, requests, scriptUI));
         }
         getCommand("embedscript").setExecutor(new MainCommandExecutor());
     }
@@ -63,7 +66,7 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
             ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
             consoleSender.sendMessage(Prefix.PREFIX + "ScriptBlock found! Migrating scripts.");
             try {
-                Migrator.migrate(consoleSender, scriptManager, plugin);
+                Migrator.migrate(consoleSender, scriptUI, plugin);
             } catch (Exception e) {
                 Bukkit.getPluginManager().disablePlugin(this);
                 throw new RuntimeException("Failed to migration! Disabling EmbedScript.", e);

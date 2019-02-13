@@ -1,7 +1,6 @@
 package com.github.kuro46.embedscript.listener;
 
 import com.github.kuro46.embedscript.request.Requests;
-import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
@@ -47,7 +46,7 @@ public class InteractListener implements Listener {
             return;
         }
 
-        Script script = scriptManager.getScript(EventType.INTERACT, position);
+        Script script = scriptManager.get(position);
         if (script == null) {
             return;
         }

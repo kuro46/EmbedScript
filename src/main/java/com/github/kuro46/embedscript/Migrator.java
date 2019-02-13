@@ -3,7 +3,7 @@ package com.github.kuro46.embedscript;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptGenerator;
-import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.github.kuro46.embedscript.util.MojangUtil;
 import org.bukkit.command.CommandSender;
@@ -21,7 +21,7 @@ import java.util.UUID;
  */
 class Migrator {
     static void migrate(CommandSender commandSender,
-                        ScriptManager scriptManager,
+                        ScriptUI scriptUI,
                         Plugin scriptBlock) throws Exception {
         for (Pair<EventType, Map<String, List<String>>> pair : getBlockList(scriptBlock)) {
             EventType eventType = pair.getKey();
@@ -39,10 +39,10 @@ class Migrator {
                 String rawLocation = entry.getKey();
                 ScriptPosition position = createPositionFromRawLocation(rawLocation);
 
-                if (scriptManager.hasScript(eventType, position)) {
-                    scriptManager.add(commandSender, eventType, position, script);
+                if (scriptUI.hasScript(eventType, position)) {
+                    scriptUI.add(commandSender, eventType, position, script);
                 } else {
-                    scriptManager.embed(commandSender, eventType, position, script);
+                    scriptUI.embed(commandSender, eventType, position, script);
                 }
             }
         }

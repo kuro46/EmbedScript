@@ -8,7 +8,7 @@ import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptGenerator;
-import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.util.Util;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -21,12 +21,12 @@ import java.util.Locale;
  * @author shirokuro
  */
 public class EventCommandExecutor implements CommandExecutor {
-    private final ScriptManager scriptManager;
+    private final ScriptUI scriptUI;
     private final EventType eventType;
     private final Requests requests;
 
-    public EventCommandExecutor(EventType eventType, Requests requests, ScriptManager scriptManager) {
-        this.scriptManager = scriptManager;
+    public EventCommandExecutor(EventType eventType, Requests requests, ScriptUI scriptUI) {
+        this.scriptUI = scriptUI;
         this.eventType = eventType;
         this.requests = requests;
     }
@@ -81,7 +81,7 @@ public class EventCommandExecutor implements CommandExecutor {
                 String world = args.length < 2
                     ? null
                     : args[1];
-                scriptManager.list(player, eventType, world);
+                scriptUI.list(player, eventType, world);
                 return true;
             case "help":
                 player.sendMessage(new String[]{
