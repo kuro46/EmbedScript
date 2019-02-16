@@ -6,7 +6,10 @@ import com.github.kuro46.embedscript.listener.InteractListener;
 import com.github.kuro46.embedscript.listener.MoveListener;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
+import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptPosition;
+import com.github.kuro46.embedscript.script.ScriptSerializer;
 import com.github.kuro46.embedscript.script.ScriptUI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -18,19 +21,63 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author shirokuro
  */
 public class EmbedScriptPlugin extends JavaPlugin implements Listener {
-    private ScriptUI scriptUI = new ScriptUI();
+    private ScriptManager scriptManager;
+    private ScriptUI scriptUI;
 
     @Override
     public void onEnable() {
         try {
-            ScriptManager.load(getDataFolder().toPath());
+            Path dataFolder = getDataFolder().toPath();
+            if (Files.notExists(dataFolder)){
+                Files.createDirectory(dataFolder);
+            }
+
+            Path filePath = dataFolder.resolve("scripts.json");
+
+            if (Files.notExists(filePath)){
+                Files.createFile(filePath);
+
+                boolean needMigrate = false;
+                for (EventType eventType : EventType.values()) {
+                    Path eventFilePath = dataFolder.resolve(eventType.getFileName());
+                    if (Files.exists(eventFilePath)){
+                        Files.delete(eventFilePath);
+                        needMigrate = true;
+                    }
+                }
+
+                if (needMigrate){
+                    Map<ScriptPosition, List<Script>> merged = new HashMap<>();
+                    ScriptManager.loadFiles(dataFolder);
+                    for (EventType eventType : EventType.values()) {
+                        ScriptManager scriptManager = ScriptManager.get(eventType);
+                        for (Map.Entry<ScriptPosition, List<Script>> entry : scriptManager.entrySet()) {
+                            ScriptPosition position = entry.getKey();
+                            List<Script> scripts = entry.getValue();
+                            List<Script> mergeTo = merged.computeIfAbsent(position,ignore -> new ArrayList<>());
+
+                            mergeTo.addAll(scripts);
+                        }
+                    }
+                    ScriptSerializer.serialize(filePath,merged);
+                }
+            }
+
+            scriptManager = ScriptManager.load(filePath);
+            scriptUI = new ScriptUI(scriptManager);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -42,11 +89,9 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
     }
 
     private void registerListeners(Requests requests) {
-    PluginManager pluginManager = Bukkit.getPluginManager();
-        pluginManager.registerEvents(
-            new InteractListener(this,ScriptManager.get(EventType.INTERACT), requests), this);
-        pluginManager.registerEvents(
-            new MoveListener(this,ScriptManager.get(EventType.WALK)), this);
+        PluginManager pluginManager = Bukkit.getPluginManager();
+        pluginManager.registerEvents(new InteractListener(this,scriptManager, requests), this);
+        pluginManager.registerEvents(new MoveListener(this,scriptManager), this);
         pluginManager.registerEvents(this, this);
     }
 

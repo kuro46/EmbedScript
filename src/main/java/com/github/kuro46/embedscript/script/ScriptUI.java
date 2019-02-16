@@ -24,6 +24,12 @@ import java.util.stream.Collectors;
  * @author shirokuro
  */
 public class ScriptUI {
+    private final ScriptManager scriptManager;
+
+    public ScriptUI(ScriptManager scriptManager) {
+        this.scriptManager = scriptManager;
+    }
+
     public void embed(CommandSender sender,
                       EventType type,
                       ScriptPosition position,
@@ -160,7 +166,7 @@ public class ScriptUI {
         return getScripts(eventType).contains(position);
     }
 
-    private ScriptManager getScripts(EventType eventType) {
-        return ScriptManager.get(eventType);
+    private ScriptManager getScripts(@SuppressWarnings("unused") EventType eventType) {
+        return scriptManager;
     }
 }

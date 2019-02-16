@@ -22,13 +22,17 @@ public class ScriptManager {
         this.path = path;
     }
 
-    public static void load(Path dataFolder) throws IOException{
+    public static void loadFiles(Path dataFolder) throws IOException{
         Files.createDirectories(dataFolder);
 
         for (EventType eventType : EventType.values()) {
             Path filePath = dataFolder.resolve(eventType.getFileName());
-            MANAGERS.put(eventType,new ScriptManager(ScriptSerializer.deserialize(filePath),filePath));
+            MANAGERS.put(eventType,load(filePath));
         }
+    }
+
+    public static ScriptManager load(Path filePath) throws IOException{
+        return new ScriptManager(ScriptSerializer.deserialize(filePath),filePath);
     }
 
     public static ScriptManager get(EventType eventType){
@@ -74,6 +78,10 @@ public class ScriptManager {
 
     public Set<ScriptPosition> keySet(){
         return scripts.keySet();
+    }
+
+    public Set<Map.Entry<ScriptPosition,List<Script>>> entrySet(){
+        return scripts.entrySet();
     }
 
     public void save() throws IOException {
