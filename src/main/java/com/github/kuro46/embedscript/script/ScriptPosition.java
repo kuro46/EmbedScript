@@ -1,13 +1,20 @@
 package com.github.kuro46.embedscript.script;
 
+import com.google.gson.JsonParseException;
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
+import java.io.IOException;
 import java.util.Objects;
 
 /**
  * @author shirokuro
  */
+@JsonAdapter(ScriptPosition.Adapter.class)
 public class ScriptPosition implements Comparable<ScriptPosition> {
     private final String world;
     private final int x, y, z;
@@ -88,5 +95,52 @@ public class ScriptPosition implements Comparable<ScriptPosition> {
             ", y=" + y +
             ", z=" + z +
             '}';
+    }
+
+    public static class Adapter extends TypeAdapter<ScriptPosition> {
+        @Override
+        public void write(JsonWriter out, ScriptPosition value) throws IOException {
+            out.beginObject();
+            out.name("world").value(value.world);
+            out.name("x").value(value.x);
+            out.name("y").value(value.y);
+            out.name("z").value(value.z);
+            out.endObject();
+        }
+
+        @Override
+        public ScriptPosition read(JsonReader in) throws IOException {
+            String world = null;
+            Integer x = null;
+            Integer y = null;
+            Integer z = null;
+
+            in.beginObject();
+            while (in.hasNext()){
+                String nextName = in.nextName();
+                switch (nextName){
+                    case "world":
+                        world = in.nextString();
+                        break;
+                    case "x":
+                        x = in.nextInt();
+                        break;
+                    case "y":
+                        y = in.nextInt();
+                        break;
+                    case "z":
+                        z = in.nextInt();
+                        break;
+                    default:
+                        throw new JsonParseException(String.format("'%s' is unknown value!",nextName));
+                }
+            }
+            in.endObject();
+
+            if (world == null || x == null || y == null || z == null){
+                throw new JsonParseException("'world' or 'x' or 'z' not exists!");
+            }
+            return new ScriptPosition(world,x,y,z);
+        }
     }
 }

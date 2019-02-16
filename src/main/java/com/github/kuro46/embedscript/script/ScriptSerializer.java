@@ -9,7 +9,6 @@ import com.google.gson.stream.JsonWriter;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,9 +85,10 @@ public class ScriptSerializer {
         }
 
         executing = EXECUTOR.schedule(() -> {
+            // "schedule" method do not notifies exception to UncaughtExceptionHandler
             try {
                 serialize(path, scripts);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -160,7 +160,7 @@ public class ScriptSerializer {
         @Override
         public void write(JsonWriter out, Map<ScriptPosition, List<Script>> value) throws IOException {
             out.beginObject();
-            out.name("formatVersion").name(version());
+            out.name("formatVersion").value(version());
             out.name("coordinates");
             writeCoordinates(out,value);
             out.endObject();

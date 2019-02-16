@@ -1,7 +1,15 @@
 package com.github.kuro46.embedscript.script;
 
+import com.github.kuro46.embedscript.GsonHolder;
 import com.github.kuro46.embedscript.api.EmbedScriptAPI;
 import com.github.kuro46.embedscript.api.PerformListener;
+import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -10,16 +18,16 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.Plugin;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /*
@@ -44,6 +52,7 @@ import java.util.regex.Pattern;
 /**
  * unmodifiable class
  */
+@JsonAdapter(Script.Adapter.class)
 public class Script {
     private static final Pattern PLAYER_PATTERN = Pattern.compile("<player>", Pattern.LITERAL);
     private static final String PATTERN_AT = "[^\\\\]??@";
@@ -365,5 +374,103 @@ public class Script {
     @FunctionalInterface
     private interface ValueConsumer<V> {
         void accept(V value) throws ParseException;
+    }
+
+    public static class Adapter extends TypeAdapter<Script> {
+        @Override
+        public void write(JsonWriter out, Script value) throws IOException {
+            out.beginObject();
+            Gson gson = GsonHolder.get();
+            out.name("author").jsonValue(gson.toJson(value.author));
+            out.name("moveTypes").jsonValue(gson.toJson(value.moveTypes));
+            out.name("clickTypes").jsonValue(gson.toJson(value.clickTypes));
+            out.name("pushTypes").jsonValue(gson.toJson(value.pushTypes));
+            out.name("permissionsToGive").jsonValue(gson.toJson(value.permissionsToGive));
+            out.name("permissionsToNeeded").jsonValue(gson.toJson(value.permissionsToNeeded));
+            out.name("permissionsToNotNeeded").jsonValue(gson.toJson(value.permissionsToNotNeeded));
+            out.name("actionTypes").jsonValue(gson.toJson(value.actionTypes));
+            out.name("actions").jsonValue(gson.toJson(value.actions));
+            out.endObject();
+        }
+
+        @Override
+        public Script read(JsonReader in) throws IOException {
+            UUID author = null;
+            MoveType[] moveTypes = null;
+            ClickType[] clickTypes = null;
+            PushType[] pushTypes = null;
+            String[] permissionsToGive = null;
+            String[] permissionsToNeeded = null;
+            String[] permissionsToNotNeeded = null;
+            ActionType[] actionTypes = null;
+            String[] actions = null;
+
+            in.beginObject();
+            Gson gson = GsonHolder.get();
+            Type stringArrayType = new TypeToken<String[]>() {
+            }.getType();
+            while (in.hasNext()){
+                String nextName = in.nextName();
+                switch (nextName){
+                    case "author":
+                        author = gson.fromJson(in,TypeToken.get(UUID.class).getType());
+                        break;
+                    case "moveTypes":
+                        moveTypes = gson.fromJson(in,new TypeToken<MoveType[]>(){}.getType());
+                        break;
+                    case "clickTypes":
+                        clickTypes = gson.fromJson(in,new TypeToken<ClickType[]>(){}.getType());
+                        break;
+                    case "pushTypes":
+                        pushTypes = gson.fromJson(in,new TypeToken<PushType[]>(){}.getType());
+                        break;
+                    case "permissionsToGive":
+                        permissionsToGive = gson.fromJson(in, stringArrayType);
+                        break;
+                    case "permissionsToNeeded":
+                        permissionsToNeeded = gson.fromJson(in,stringArrayType);
+                        break;
+                    case "permissionsToNotNeeded":
+                        permissionsToNotNeeded = gson.fromJson(in,stringArrayType);
+                        break;
+                    case "actionTypes":
+                        actionTypes = gson.fromJson(in,new TypeToken<ActionType[]>(){}.getType());
+                        break;
+                    case "actions":
+                        actions = gson.fromJson(in,stringArrayType);
+                        break;
+                    default:
+                        throw new JsonParseException(String.format("'%s' is unknown value!",nextName));
+                }
+            }
+            in.endObject();
+
+            if (moveTypes == null
+                || clickTypes == null
+                || pushTypes == null
+                || permissionsToGive == null
+                || permissionsToNeeded == null
+                || permissionsToNotNeeded == null
+                || actionTypes == null
+                || actions == null){
+                throw new JsonParseException("'moveTypes' or" +
+                    " 'clickTypes' or" +
+                    " 'pushTypes' or" +
+                    " 'permissionsToGive' or" +
+                    " 'permissionsToNeeded' or" +
+                    " 'permissionsToNotNeeded' or" +
+                    " 'actionTypes' or" +
+                    " 'actions' not exists!");
+            }
+            return new Script(author,
+                moveTypes,
+                clickTypes,
+                pushTypes,
+                permissionsToGive,
+                permissionsToNeeded,
+                permissionsToNotNeeded,
+                actionTypes,
+                actions);
+        }
     }
 }
