@@ -356,7 +356,7 @@ public class ScriptSerializer {
                                 switch (in.nextName()){
                                     case "type":
                                         switch (in.nextString()){
-                                            case "BYPASSPERM":
+                                            case "BYPASS_PERMISSION":
                                             case "COMMAND":
                                                 actionType = Script.ActionType.COMMAND;
                                                 break;
