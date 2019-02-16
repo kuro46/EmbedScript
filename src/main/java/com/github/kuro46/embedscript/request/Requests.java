@@ -42,13 +42,11 @@ public class Requests implements Listener {
                 break;
             }
             case EMBED: {
-                scriptUI.embed(player,
-                    position, ((RequestWithScript) request).getScript());
+                scriptUI.embed(player, position, request.getScript());
                 break;
             }
             case ADD: {
-                scriptUI.add(player,
-                    position, ((RequestWithScript) request).getScript());
+                scriptUI.add(player, position, request.getScript());
                 break;
             }
             case REMOVE: {

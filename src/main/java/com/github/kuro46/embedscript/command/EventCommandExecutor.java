@@ -3,7 +3,6 @@ package com.github.kuro46.embedscript.command;
 import com.github.kuro46.embedscript.Prefix;
 import com.github.kuro46.embedscript.request.Request;
 import com.github.kuro46.embedscript.request.RequestType;
-import com.github.kuro46.embedscript.request.RequestWithScript;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.ParseException;
@@ -44,7 +43,7 @@ public class EventCommandExecutor implements CommandExecutor {
         switch (args[0].toLowerCase(Locale.ENGLISH)) {
             case "view":
                 player.sendMessage(Prefix.PREFIX + "Click the block to view the script.");
-                requests.putRequest(player, new Request(RequestType.VIEW, eventType));
+                requests.putRequest(player, new Request(RequestType.VIEW));
                 return true;
             case "embed": {
                 if (args.length < 2) {
@@ -60,7 +59,7 @@ public class EventCommandExecutor implements CommandExecutor {
                     return true;
                 }
                 player.sendMessage(Prefix.PREFIX + "Click the block to embed a script.");
-                requests.putRequest(player, new RequestWithScript(RequestType.EMBED, eventType, script));
+                requests.putRequest(player, new Request(RequestType.EMBED, script));
                 return true;
             }
             case "add": {
@@ -77,13 +76,13 @@ public class EventCommandExecutor implements CommandExecutor {
                     return true;
                 }
                 player.sendMessage(Prefix.PREFIX + "Click the block to add a script.");
-                requests.putRequest(player, new RequestWithScript(RequestType.ADD, eventType, script));
+                requests.putRequest(player, new Request(RequestType.ADD, script));
 
                 return true;
             }
             case "remove":
                 player.sendMessage(Prefix.PREFIX + "Click the block to remove the script.");
-                requests.putRequest(player, new Request(RequestType.REMOVE, eventType));
+                requests.putRequest(player, new Request(RequestType.REMOVE));
                 return true;
             case "list":
                 String world = args.length < 2

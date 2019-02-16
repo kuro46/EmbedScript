@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -33,6 +34,8 @@ public class ScriptUI {
     public void embed(CommandSender sender,
                       ScriptPosition position,
                       Script script) {
+        Objects.requireNonNull(script);
+
         ScriptManager scripts = getScripts();
         if (!scripts.get(position).isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.");
@@ -47,6 +50,8 @@ public class ScriptUI {
     public void add(CommandSender sender,
                     ScriptPosition position,
                     Script script) {
+        Objects.requireNonNull(script);
+
         ScriptManager scriptManager = getScripts();
         if (scriptManager.get(position).isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
