@@ -3,7 +3,6 @@ package com.github.kuro46.embedscript.listener;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
-import com.github.kuro46.embedscript.script.command.CommandPerformer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -13,8 +12,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.plugin.Plugin;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 /**
@@ -23,11 +25,11 @@ import java.util.WeakHashMap;
 public class MoveListener implements Listener {
     private final Map<Player, ScriptPosition> beforeWalked = new WeakHashMap<>();
     private final ScriptManager scriptManager;
-    private final CommandPerformer performer;
+    private final Plugin plugin;
 
-    public MoveListener(ScriptManager scriptManager, CommandPerformer performer) {
+    public MoveListener(Plugin plugin, ScriptManager scriptManager) {
+        this.plugin = plugin;
         this.scriptManager = scriptManager;
-        this.performer = performer;
     }
 
     @EventHandler
@@ -38,34 +40,51 @@ public class MoveListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
+        ScriptPosition to = new ScriptPosition(event.getTo());
+        ScriptPosition from = new ScriptPosition(event.getFrom());
+
+        if (to.equals(from)) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        List<Script> scripts = scriptManager.get(new ScriptPosition(player.getLocation()));
+        if (scripts.isEmpty()) {
+            return;
+        }
+
+        scripts.forEach(script -> {
+            if (validateMoveType(script,event)) {
+                script.perform(plugin, player);
+            }
+        });
+    }
+
+    private boolean validateMoveType(Script script, PlayerMoveEvent event) {
+        Set<Script.MoveType> moveTypes = script.getMoveTypes();
+        if (moveTypes.isEmpty()) {
+            return false;
+        }
+
+        for (Script.MoveType moveType : moveTypes) {
+            if (moveType == Script.MoveType.ALL) {
+                return true;
+            }else if (moveType == Script.MoveType.GROUND && validateGroundMoveType(event)){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean validateGroundMoveType(PlayerMoveEvent event) {
         Location to = event.getTo();
         //Expects air
         Block upperSurface = to.getBlock();
         //Expects non-air
         Block downerSurface = upperSurface.getRelative(BlockFace.DOWN);
 
-        if (!(upperSurface.getType() == Material.AIR && downerSurface.getType() != Material.AIR)
-            || to.getY() - upperSurface.getY() > 0.2) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        ScriptPosition position = new ScriptPosition(downerSurface);
-        ScriptPosition beforePos = beforeWalked.get(player);
-        if (equal2D(position, beforePos)) {
-            return;
-        }
-        beforeWalked.put(player, position);
-
-        Script script = scriptManager.get(position);
-        if (script == null) {
-            return;
-        }
-        performer.perform(player, script.getCommands());
-    }
-
-    private boolean equal2D(ScriptPosition position, ScriptPosition position1) {
-        return position.getX() == position1.getX()
-            && position.getZ() == position1.getZ();
+        return (upperSurface.getType() == Material.AIR && downerSurface.getType() != Material.AIR)
+            && !(to.getY() - upperSurface.getY() > 0.2);
     }
 }

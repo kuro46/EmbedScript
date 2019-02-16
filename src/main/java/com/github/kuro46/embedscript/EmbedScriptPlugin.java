@@ -6,9 +6,8 @@ import com.github.kuro46.embedscript.listener.InteractListener;
 import com.github.kuro46.embedscript.listener.MoveListener;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
-import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.script.ScriptManager;
-import com.github.kuro46.embedscript.script.command.CommandPerformer;
+import com.github.kuro46.embedscript.script.ScriptUI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.event.EventHandler;
@@ -19,6 +18,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Collections;
 
 /**
  * @author shirokuro
@@ -37,16 +38,15 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         Requests requests = new Requests(scriptUI);
         registerCommands(requests);
 
-        CommandPerformer commandPerformer = new CommandPerformer(this);
-        registerListeners(commandPerformer, requests);
+        registerListeners(requests);
     }
 
-    private void registerListeners(CommandPerformer commandPerformer, Requests requests) {
+    private void registerListeners(Requests requests) {
     PluginManager pluginManager = Bukkit.getPluginManager();
         pluginManager.registerEvents(
-            new InteractListener(ScriptManager.get(EventType.INTERACT), requests, commandPerformer), this);
+            new InteractListener(this,ScriptManager.get(EventType.INTERACT), requests), this);
         pluginManager.registerEvents(
-            new MoveListener(ScriptManager.get(EventType.WALK), commandPerformer), this);
+            new MoveListener(this,ScriptManager.get(EventType.WALK)), this);
         pluginManager.registerEvents(this, this);
     }
 

@@ -1,9 +1,6 @@
 package com.github.kuro46.embedscript.script;
 
 import com.github.kuro46.embedscript.Prefix;
-import com.github.kuro46.embedscript.script.command.Command;
-import com.github.kuro46.embedscript.script.command.data.BypassPermCommandData;
-import com.github.kuro46.embedscript.script.command.data.CommandData;
 import com.github.kuro46.embedscript.util.MojangUtil;
 import com.github.kuro46.embedscript.util.Scheduler;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -16,8 +13,8 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -32,10 +29,12 @@ public class ScriptUI {
                       ScriptPosition position,
                       Script script) {
         ScriptManager scripts = getScripts(type);
-        if (scripts.putIfAbsent(position, script) != null) {
+        if (!scripts.get(position).isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.");
             return;
         }
+
+        scripts.put(position, script);
 
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully embedded.");
     }
@@ -44,12 +43,12 @@ public class ScriptUI {
                     EventType type,
                     ScriptPosition position,
                     Script script) {
-        Script baseScript = getScript(type, position);
-        if (baseScript == null) {
+        ScriptManager scriptManager = getScripts(type);
+        if (scriptManager.get(position).isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
         }
-        baseScript.getCommands().addAll(script.getCommands());
+        scriptManager.put(position, script);
 
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully added.");
     }
@@ -65,32 +64,37 @@ public class ScriptUI {
     }
 
     public void view(CommandSender sender, EventType type, ScriptPosition position) {
-        Script script = getScript(type, position);
-        if (script == null) {
+        List<Script> scripts = getScripts(type).get(position);
+        if (scripts.isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
         }
-        ArrayList<Command> commands = new ArrayList<>(script.getCommands());
         Scheduler.execute(() -> {
             sender.sendMessage("Script information: ------------------------------");
-            for (Command command : commands) {
+            for (Script script : scripts) {
                 sender.sendMessage("===============================================");
-                UUID author = command.getAuthor();
+                UUID author = script.getAuthor();
                 Player player = Bukkit.getPlayer(author);
                 String stringAuthor = player == null
                     ? MojangUtil.getName(author)
                     : player.getName();
-                sender.sendMessage("author: " + stringAuthor);
-                sender.sendMessage("command: " + command.getCommand());
-                CommandData data = command.getData();
-                sender.sendMessage("type: " + data.getType().name());
-                if (data.getType() == ScriptType.BYPASS_PERMISSION) {
-                    sender.sendMessage("permission: " + ((BypassPermCommandData) data).getPermission());
-                }
+                sender.sendMessage("author:" + stringAuthor);
+                sender.sendMessage("@listen-move:" + collectionToString(script.getMoveTypes()));
+                sender.sendMessage("@listen-click:" + collectionToString(script.getClickTypes()));
+                sender.sendMessage("@listen-push:" + collectionToString(script.getClickTypes()));
+                sender.sendMessage("@give-permission:" + collectionToString(script.getPermissionsToGive()));
+                sender.sendMessage("@enough-permission:" + collectionToString(script.getPermissionsToNeeded()));
+                sender.sendMessage("@not-enough-permission:" +collectionToString(script.getPermissionsToNotNeeded()));
+                sender.sendMessage("@action-type:" + collectionToString(script.getActionTypes()));
+                sender.sendMessage("@action:" + collectionToString(script.getActions()));
                 sender.sendMessage("===============================================");
             }
             sender.sendMessage("Script information: ------------------------------");
         });
+    }
+
+    private String collectionToString(Collection<?> collection){
+        return collection.isEmpty() ? "NONE" : collection.toString();
     }
 
     /**
@@ -148,15 +152,7 @@ public class ScriptUI {
         return getScripts(eventType).contains(position);
     }
 
-    public Script getScript(EventType eventType, ScriptPosition position) {
-        return ScriptManager.get(eventType).get(position);
-    }
-
     private ScriptManager getScripts(EventType eventType) {
         return ScriptManager.get(eventType);
-    }
-
-    private Path getPath(EventType eventType) {
-        return ScriptManager.get(eventType).getPath() ;
     }
 }

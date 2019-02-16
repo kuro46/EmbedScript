@@ -6,8 +6,8 @@ import com.github.kuro46.embedscript.request.RequestType;
 import com.github.kuro46.embedscript.request.RequestWithScript;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
+import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
-import com.github.kuro46.embedscript.script.ScriptGenerator;
 import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.util.Util;
 import org.bukkit.command.Command;
@@ -51,8 +51,12 @@ public class EventCommandExecutor implements CommandExecutor {
                     return false;
                 }
                 String stringScript = Util.joinStringSpaceDelimiter(1, args);
-                Script script = ScriptGenerator.generateFromString(sender, player.getUniqueId(), stringScript);
-                if (script == null) {
+                Script script;
+                try {
+                    script = Script.parse(player.getUniqueId(),stringScript);
+                } catch (ParseException e) {
+                    player.sendMessage(Prefix.ERROR_PREFIX +
+                        String.format("Failed to parse script. (error: %s)",e.getMessage()));
                     return true;
                 }
                 player.sendMessage(Prefix.PREFIX + "Click the block to embed a script.");
@@ -64,8 +68,12 @@ public class EventCommandExecutor implements CommandExecutor {
                     return false;
                 }
                 String stringScript = Util.joinStringSpaceDelimiter(1, args);
-                Script script = ScriptGenerator.generateFromString(sender, player.getUniqueId(), stringScript);
-                if (script == null) {
+                Script script;
+                try {
+                    script = Script.parse(player.getUniqueId(),stringScript);
+                } catch (ParseException e) {
+                    player.sendMessage(Prefix.ERROR_PREFIX +
+                        String.format("Failed to parse script. (error: %s)",e.getMessage()));
                     return true;
                 }
                 player.sendMessage(Prefix.PREFIX + "Click the block to add a script.");

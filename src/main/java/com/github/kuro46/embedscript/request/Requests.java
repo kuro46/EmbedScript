@@ -1,8 +1,8 @@
 package com.github.kuro46.embedscript.request;
 
 import com.github.kuro46.embedscript.script.EventType;
-import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.script.ScriptPosition;
+import com.github.kuro46.embedscript.script.ScriptUI;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 

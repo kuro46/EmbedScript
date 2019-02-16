@@ -1,7 +1,5 @@
 package com.github.kuro46.embedscript.script;
 
-import com.github.kuro46.embedscript.script.adapters.ScriptBlockAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
@@ -10,7 +8,6 @@ import java.util.Objects;
 /**
  * @author shirokuro
  */
-@JsonAdapter(ScriptBlockAdapter.class)
 public class ScriptPosition implements Comparable<ScriptPosition> {
     private final String world;
     private final int x, y, z;
