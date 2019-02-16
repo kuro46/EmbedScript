@@ -49,13 +49,8 @@ public class EventCommandExecutor implements CommandExecutor {
                 if (args.length < 2) {
                     return false;
                 }
-                String stringScript = eventType.getPreset() + Util.joinStringSpaceDelimiter(1, args);
-                Script script;
-                try {
-                    script = Script.parse(player.getUniqueId(),stringScript);
-                } catch (ParseException e) {
-                    player.sendMessage(Prefix.ERROR_PREFIX +
-                        String.format("Failed to parse script. (error: %s)",e.getMessage()));
+                Script script = parseScript(player, args);
+                if (script == null) {
                     return true;
                 }
                 player.sendMessage(Prefix.PREFIX + "Click the block to embed a script.");
@@ -66,13 +61,8 @@ public class EventCommandExecutor implements CommandExecutor {
                 if (args.length < 2) {
                     return false;
                 }
-                String stringScript = eventType.getPreset() + Util.joinStringSpaceDelimiter(1, args);
-                Script script;
-                try {
-                    script = Script.parse(player.getUniqueId(),stringScript);
-                } catch (ParseException e) {
-                    player.sendMessage(Prefix.ERROR_PREFIX +
-                        String.format("Failed to parse script. (error: %s)",e.getMessage()));
+                Script script = parseScript(player, args);
+                if (script == null) {
                     return true;
                 }
                 player.sendMessage(Prefix.PREFIX + "Click the block to add a script.");
@@ -101,6 +91,17 @@ public class EventCommandExecutor implements CommandExecutor {
                 return true;
             default:
                 return false;
+        }
+    }
+
+    private Script parseScript(Player player, String[] args) {
+        String stringScript = eventType.getPreset() + Util.joinStringSpaceDelimiter(1, args);
+        try {
+            return Script.parse(player.getUniqueId(), stringScript);
+        } catch (ParseException e) {
+            player.sendMessage(Prefix.ERROR_PREFIX +
+                String.format("Failed to parse script. (error: %s)", e.getMessage()));
+            return null;
         }
     }
 }
