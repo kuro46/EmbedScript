@@ -49,7 +49,7 @@ public class EventCommandExecutor implements CommandExecutor {
                 if (args.length < 2) {
                     return false;
                 }
-                String stringScript = Util.joinStringSpaceDelimiter(1, args);
+                String stringScript = eventType.getPreset() + Util.joinStringSpaceDelimiter(1, args);
                 Script script;
                 try {
                     script = Script.parse(player.getUniqueId(),stringScript);
@@ -66,7 +66,7 @@ public class EventCommandExecutor implements CommandExecutor {
                 if (args.length < 2) {
                     return false;
                 }
-                String stringScript = Util.joinStringSpaceDelimiter(1, args);
+                String stringScript = eventType.getPreset() + Util.joinStringSpaceDelimiter(1, args);
                 Script script;
                 try {
                     script = Script.parse(player.getUniqueId(),stringScript);
