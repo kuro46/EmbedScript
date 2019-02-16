@@ -330,7 +330,11 @@ public class ScriptSerializer {
         private List<Script> readScript(JsonReader in) throws IOException{
             EventType eventType = null;
             for (EventType type : EventType.values()) {
-                if (type.getFileName().equals(filePath.getFileName().toString())){
+                Path fileName = filePath.getFileName();
+                if (fileName == null) {
+                    continue;
+                }
+                if (type.getFileName().equals(fileName.toString())) {
                     eventType = type;
                 }
             }
