@@ -1,6 +1,7 @@
 package com.github.kuro46.embedscript.script;
 
 import com.github.kuro46.embedscript.GsonHolder;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
@@ -360,7 +361,8 @@ public class ScriptSerializer {
                             while (in.hasNext()){
                                 switch (in.nextName()){
                                     case "type":
-                                        switch (in.nextString()){
+                                        String nextString = in.nextString();
+                                        switch (nextString) {
                                             case "BYPASS_PERMISSION":
                                             case "COMMAND":
                                                 actionType = Script.ActionType.COMMAND;
@@ -374,6 +376,9 @@ public class ScriptSerializer {
                                             case "PLUGIN":
                                                 actionType = Script.ActionType.PLUGIN;
                                                 break;
+                                            default:
+                                                throw new JsonParseException(
+                                                    String.format("'%s' is unknown type!", nextString));
                                         }
                                         break;
                                     case "permission":
