@@ -60,7 +60,12 @@ public class ScriptSerializer {
                 if (formatter == null) {
                     throw new UnsupportedOperationException("Unsupported version: " + version);
                 }
-                return formatter.fromJson(reader);
+
+                Map<ScriptPosition, List<Script>> result = formatter.fromJson(reader);
+                if (!version.equals(LATEST_VERSION)){
+                    serialize(path,result);
+                }
+                return result;
             }
         }
     }
