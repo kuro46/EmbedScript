@@ -78,15 +78,15 @@ public class ScriptUI {
                 String stringAuthor = player == null
                     ? MojangUtil.getName(author)
                     : player.getName();
-                sender.sendMessage("author:" + stringAuthor);
-                sender.sendMessage("@listen-move:" + collectionToString(script.getMoveTypes()));
-                sender.sendMessage("@listen-click:" + collectionToString(script.getClickTypes()));
-                sender.sendMessage("@listen-push:" + collectionToString(script.getPushTypes()));
-                sender.sendMessage("@give-permission:" + collectionToString(script.getPermissionsToGive()));
-                sender.sendMessage("@enough-permission:" + collectionToString(script.getPermissionsToNeeded()));
-                sender.sendMessage("@not-enough-permission:" +collectionToString(script.getPermissionsToNotNeeded()));
-                sender.sendMessage("@action-type:" + collectionToString(script.getActionTypes()));
-                sender.sendMessage("@action:" + collectionToString(script.getActions()));
+                sender.sendMessage("author " + stringAuthor);
+                sender.sendMessage("@listen-move " + collectionToString(script.getMoveTypes()));
+                sender.sendMessage("@listen-click " + collectionToString(script.getClickTypes()));
+                sender.sendMessage("@listen-push " + collectionToString(script.getPushTypes()));
+                sender.sendMessage("@give-permission " + collectionToString(script.getPermissionsToGive()));
+                sender.sendMessage("@enough-permission " + collectionToString(script.getPermissionsToNeeded()));
+                sender.sendMessage("@not-enough-permission " +collectionToString(script.getPermissionsToNotNeeded()));
+                sender.sendMessage("@action-type " + collectionToString(script.getActionTypes()));
+                sender.sendMessage("@action " + collectionToString(script.getActions()));
                 sender.sendMessage("===============================================");
             }
             sender.sendMessage("Script information: ------------------------------");
@@ -94,7 +94,15 @@ public class ScriptUI {
     }
 
     private String collectionToString(Collection<?> collection){
-        return collection.isEmpty() ? "NONE" : collection.toString();
+        if (collection.isEmpty()){
+            return "NONE";
+        }else if (collection.size() == 1){
+            return collection.iterator().next().toString();
+        }else {
+            return collection.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(",","[","]"));
+        }
     }
 
     /**
