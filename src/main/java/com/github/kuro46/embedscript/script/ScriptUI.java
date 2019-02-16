@@ -81,7 +81,7 @@ public class ScriptUI {
                 sender.sendMessage("author:" + stringAuthor);
                 sender.sendMessage("@listen-move:" + collectionToString(script.getMoveTypes()));
                 sender.sendMessage("@listen-click:" + collectionToString(script.getClickTypes()));
-                sender.sendMessage("@listen-push:" + collectionToString(script.getClickTypes()));
+                sender.sendMessage("@listen-push:" + collectionToString(script.getPushTypes()));
                 sender.sendMessage("@give-permission:" + collectionToString(script.getPermissionsToGive()));
                 sender.sendMessage("@enough-permission:" + collectionToString(script.getPermissionsToNeeded()));
                 sender.sendMessage("@not-enough-permission:" +collectionToString(script.getPermissionsToNotNeeded()));
