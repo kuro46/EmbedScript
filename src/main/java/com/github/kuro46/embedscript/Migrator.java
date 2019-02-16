@@ -13,7 +13,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.UUID;
 
 /**
@@ -34,10 +33,10 @@ class Migrator {
                 ScriptPosition position = createPositionFromRawLocation(rawLocation);
 
                 for (Script script : scripts) {
-                    if (scriptUI.hasScript(eventType, position)) {
-                        scriptUI.add(commandSender, eventType, position, script);
+                    if (scriptUI.hasScript(position)) {
+                        scriptUI.add(commandSender, position, script);
                     } else {
-                        scriptUI.embed(commandSender, eventType, position, script);
+                        scriptUI.embed(commandSender, position, script);
                     }
                 }
             }

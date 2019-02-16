@@ -1,6 +1,5 @@
 package com.github.kuro46.embedscript.request;
 
-import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.github.kuro46.embedscript.script.ScriptUI;
 import org.bukkit.entity.Player;
@@ -37,24 +36,23 @@ public class Requests implements Listener {
         if (request == null)
             return false;
 
-        EventType eventType = request.getEventType();
         switch (request.getRequestType()) {
             case VIEW: {
-                scriptUI.view(player, eventType, position);
+                scriptUI.view(player, position);
                 break;
             }
             case EMBED: {
-                scriptUI.embed(player, eventType,
+                scriptUI.embed(player,
                     position, ((RequestWithScript) request).getScript());
                 break;
             }
             case ADD: {
-                scriptUI.add(player, eventType,
+                scriptUI.add(player,
                     position, ((RequestWithScript) request).getScript());
                 break;
             }
             case REMOVE: {
-                scriptUI.remove(player, eventType, position);
+                scriptUI.remove(player, position);
                 break;
             }
             default: {

@@ -31,10 +31,9 @@ public class ScriptUI {
     }
 
     public void embed(CommandSender sender,
-                      EventType type,
                       ScriptPosition position,
                       Script script) {
-        ScriptManager scripts = getScripts(type);
+        ScriptManager scripts = getScripts();
         if (!scripts.get(position).isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.");
             return;
@@ -46,10 +45,9 @@ public class ScriptUI {
     }
 
     public void add(CommandSender sender,
-                    EventType type,
                     ScriptPosition position,
                     Script script) {
-        ScriptManager scriptManager = getScripts(type);
+        ScriptManager scriptManager = getScripts();
         if (scriptManager.get(position).isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
@@ -59,8 +57,8 @@ public class ScriptUI {
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully added.");
     }
 
-    public void remove(CommandSender sender, EventType type, ScriptPosition position) {
-        ScriptManager scripts = getScripts(type);
+    public void remove(CommandSender sender, ScriptPosition position) {
+        ScriptManager scripts = getScripts();
         if (scripts.remove(position) == null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
@@ -69,8 +67,8 @@ public class ScriptUI {
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully removed.");
     }
 
-    public void view(CommandSender sender, EventType type, ScriptPosition position) {
-        List<Script> scripts = getScripts(type).get(position);
+    public void view(CommandSender sender, ScriptPosition position) {
+        List<Script> scripts = getScripts().get(position);
         if (scripts.isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
@@ -115,10 +113,9 @@ public class ScriptUI {
      * Send list of scripts to player
      *
      * @param player Player
-     * @param type   Event type
      * @param world  World (Nullable)
      */
-    public void list(Player player, EventType type, String world) {
+    public void list(Player player, String world) {
         Predicate<ScriptPosition> predicate;
         if (world == null) {
             predicate = location -> true;
@@ -126,7 +123,7 @@ public class ScriptUI {
             predicate = location -> world.equals(location.getWorld());
         }
         BaseComponent[] prefixComponent = TextComponent.fromLegacyText(Prefix.PREFIX);
-        Set<ScriptPosition> positions = getScripts(type).keySet().stream()
+        Set<ScriptPosition> positions = getScripts().keySet().stream()
             .filter(predicate)
             .collect(Collectors.toSet());
         int i = 0;
@@ -162,11 +159,11 @@ public class ScriptUI {
         player.spigot().sendMessage(baseComponents);
     }
 
-    public boolean hasScript(EventType eventType, ScriptPosition position) {
-        return getScripts(eventType).contains(position);
+    public boolean hasScript(ScriptPosition position) {
+        return getScripts().contains(position);
     }
 
-    private ScriptManager getScripts(@SuppressWarnings("unused") EventType eventType) {
+    private ScriptManager getScripts() {
         return scriptManager;
     }
 }

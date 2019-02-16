@@ -89,7 +89,7 @@ public class EventCommandExecutor implements CommandExecutor {
                 String world = args.length < 2
                     ? null
                     : args[1];
-                scriptUI.list(player, eventType, world);
+                scriptUI.list(player, world);
                 return true;
             case "help":
                 player.sendMessage(new String[]{
