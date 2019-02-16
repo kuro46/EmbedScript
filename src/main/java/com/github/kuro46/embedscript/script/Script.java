@@ -19,20 +19,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /*
  * /es
- * @listen-move(lm):all|ground
- * @listen-click(lc):all|right|left
- * @listen-push(lp):all|button|plate
- * @give-permission(gp):permission
- * @enough-permission(ep):permission|op
- * @not-enough-permission(nep):permission|op
- * @action-type(at):command|say|plugin|console
- * @action(a):string
+ * @listen-move(lm) all|ground
+ * @listen-click(lc) all|right|left
+ * @listen-push(lp) all|button|plate
+ * @give-permission(gp) permission
+ * @enough-permission(ep) permission|op
+ * @not-enough-permission(nep) permission|op
+ * @action-type(at) command|say|plugin|console
+ * @action(a) string
  *
- * able to set multiple value: "@key:[value,value1]"
+ * able to set multiple value: "@key [value,value1]"
  *
  * "\@" is replace to "@"
  * "\[" is replace to "["
@@ -96,7 +97,7 @@ public class Script {
         Pattern leftSquareBracketStartsWithPattern = Pattern.compile('^' + PATTERN_LEFT_SQUARE_BRACKET);
         Pattern rightSquareBracketEndsWithPattern = Pattern.compile(PATTERN_RIGHT_SQUARE_BRACKET + '$');
         Pattern atPattern = Pattern.compile(PATTERN_AT);
-        Pattern colonPattern = Pattern.compile(":");
+        Pattern spacePattern = Pattern.compile(" ");
 
         List<MoveType> moveTypes = new ArrayList<>(1);
         List<ClickType> clickTypes = new ArrayList<>(1);
@@ -109,7 +110,10 @@ public class Script {
 
         String[] split = atPattern.split(string);
         for (String s : split) {
-            s = colonPattern.matcher(s).replaceFirst("@");
+            if (s.isEmpty()){
+                continue;
+            }
+            s = spacePattern.matcher(s).replaceFirst(" @");
             String[] keyValue = atPattern.split(s);
             String key = keyValue[0];
             String v = keyValue[1];
