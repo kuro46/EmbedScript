@@ -57,9 +57,9 @@ public class InteractListener implements Listener {
         for (Script script : scripts) {
             if (validateClickType(script, event.getAction()) || validatePushType(script, event)) {
                 script.perform(plugin, player);
+                event.setCancelled(true);
             }
         }
-        event.setCancelled(true);
     }
 
     private boolean validateClickType(Script script,Action action){
