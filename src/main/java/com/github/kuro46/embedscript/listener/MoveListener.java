@@ -10,32 +10,22 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 /**
  * @author shirokuro
  */
 public class MoveListener implements Listener {
-    private final Map<Player, ScriptPosition> beforeWalked = new WeakHashMap<>();
     private final ScriptManager scriptManager;
     private final Plugin plugin;
 
     public MoveListener(Plugin plugin, ScriptManager scriptManager) {
         this.plugin = plugin;
         this.scriptManager = scriptManager;
-    }
-
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        beforeWalked.put(player, new ScriptPosition(player.getLocation()));
     }
 
     @EventHandler
