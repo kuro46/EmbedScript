@@ -30,19 +30,17 @@ public class MoveListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
-        ScriptPosition to = new ScriptPosition(event.getTo());
-        ScriptPosition from = new ScriptPosition(event.getFrom());
-
-        if (to.equals(from)) {
+        Location to = event.getTo();
+        if (equalsBlock(event.getFrom(), to)) {
             return;
         }
 
         Player player = event.getPlayer();
         List<Script> scripts = scriptManager.get(
-            new ScriptPosition(to.getWorld(),
-                to.getX(),
-                to.getY() - 1,
-                to.getZ()));
+            new ScriptPosition(to.getWorld().getName(),
+                to.getBlockX(),
+                to.getBlockY() - 1,
+                to.getBlockZ()));
         if (scripts.isEmpty()) {
             return;
         }
@@ -80,5 +78,11 @@ public class MoveListener implements Listener {
 
         return (upperSurface.getType() == Material.AIR && downerSurface.getType() != Material.AIR)
             && !(to.getY() - upperSurface.getY() > 0.2);
+    }
+
+    private boolean equalsBlock(Location location, Location location1) {
+        return location.getBlockX() == location1.getBlockX() &&
+            location.getBlockY() == location1.getBlockY() &&
+            location.getBlockZ() == location1.getBlockZ();
     }
 }
