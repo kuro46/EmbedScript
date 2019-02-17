@@ -25,6 +25,8 @@ commands:
     description: Main command.
     usage: "Usage: /<command> help"
     permission: embedscript.admin
+    aliases:
+      - es
 permissions:
   embedscript.*:
     default: op
