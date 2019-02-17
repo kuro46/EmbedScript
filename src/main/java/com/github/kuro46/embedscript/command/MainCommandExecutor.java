@@ -42,37 +42,9 @@ public class MainCommandExecutor implements CommandExecutor {
         Player player = (Player) sender;
         switch (args[0].toLowerCase(Locale.ENGLISH)) {
             case "teleport":
-                if (args.length < 5) {
-                    return false;
-                }
-                World world = Bukkit.getWorld(args[1]);
-                if (world == null) {
-                    player.sendMessage(Prefix.ERROR_PREFIX + "World: " + args[1] + " not exist.");
-                    return true;
-                }
-                try {
-                    Location playerLocation = player.getLocation();
-                    player.teleport(new Location(world,
-                        Integer.parseInt(args[2]) + 0.5,
-                        Integer.parseInt(args[3]),
-                        Integer.parseInt(args[4]) + 0.5,
-                        playerLocation.getYaw(),
-                        playerLocation.getPitch()));
-                } catch (NumberFormatException e) {
-                    player.sendMessage("X or Y or Z is not valid number.");
-                }
-                player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.");
-                return true;
+                return teleport(player, args);
             case "help":
-                player.sendMessage(new String[]{
-                    "/embedscript teleport <world> <x> <y> <z> - Teleport to specific location.",
-                    "/embedscript list [world] - Displays list of scripts in specific world or the server.",
-                    "/embedscript view - Displays list of scripts in the clicked block.",
-                    "/embedscript remove - Removes scripts in the clicked block.",
-                    "/embedscript embed - Embeds scripts to the clicked block.",
-                    "/",
-                    "/embedscript help - Display this message."
-                });
+                help(player);
                 return true;
             //Script operations
             case "list":
@@ -91,6 +63,42 @@ public class MainCommandExecutor implements CommandExecutor {
             default:
                 return false;
         }
+    }
+
+    private boolean teleport(Player player, String[] args) {
+        if (args.length < 5) {
+            return false;
+        }
+        World world = Bukkit.getWorld(args[1]);
+        if (world == null) {
+            player.sendMessage(Prefix.ERROR_PREFIX + "World: " + args[1] + " not exist.");
+            return true;
+        }
+        try {
+            Location playerLocation = player.getLocation();
+            player.teleport(new Location(world,
+                Integer.parseInt(args[2]) + 0.5,
+                Integer.parseInt(args[3]),
+                Integer.parseInt(args[4]) + 0.5,
+                playerLocation.getYaw(),
+                playerLocation.getPitch()));
+        } catch (NumberFormatException e) {
+            player.sendMessage("X or Y or Z is not valid number.");
+        }
+        player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.");
+        return true;
+    }
+
+    private void help(Player player) {
+        player.sendMessage(new String[]{
+            "/embedscript teleport <world> <x> <y> <z> - Teleport to specific location.",
+            "/embedscript list [world] - Displays list of scripts in specific world or the server.",
+            "/embedscript view - Displays list of scripts in the clicked block.",
+            "/embedscript remove - Removes scripts in the clicked block.",
+            "/embedscript embed - Embeds scripts to the clicked block.",
+            "/",
+            "/embedscript help - Display this message."
+        });
     }
 
     private void list(Player player, String[] args) {
