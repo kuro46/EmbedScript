@@ -48,7 +48,11 @@ public class MoveListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        List<Script> scripts = scriptManager.get(new ScriptPosition(player.getLocation()));
+        List<Script> scripts = scriptManager.get(
+            new ScriptPosition(to.getWorld(),
+                to.getX(),
+                to.getY() - 1,
+                to.getZ()));
         if (scripts.isEmpty()) {
             return;
         }
