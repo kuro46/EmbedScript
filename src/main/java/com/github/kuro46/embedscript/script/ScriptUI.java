@@ -15,10 +15,10 @@ import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 /**
@@ -120,27 +120,29 @@ public class ScriptUI {
      * @param player Player
      * @param world  World (Nullable)
      */
-    public void list(Player player, String world) {
-        Predicate<ScriptPosition> predicate;
-        if (world == null) {
-            predicate = location -> true;
-        } else {
-            predicate = location -> world.equals(location.getWorld());
-        }
+    public void list(Player player, String world, Script filter) {
         BaseComponent[] prefixComponent = TextComponent.fromLegacyText(Prefix.PREFIX);
-        Set<ScriptPosition> positions = getScripts().keySet().stream()
-            .filter(predicate)
-            .collect(Collectors.toSet());
-        int i = 0;
-        for (ScriptPosition position : positions) {
-            ++i;
-            BaseComponent[] baseComponents = new ComponentBuilder("")
-                .append(prefixComponent)
-                .append("[" + i + "] ")
-                .create();
-            sendScriptInfo(player, baseComponents, position);
+        int printCount = 0;
+        for (Map.Entry<ScriptPosition, List<Script>> entry : getScripts().entrySet()) {
+            ScriptPosition position = entry.getKey();
+            List<Script> scripts = entry.getValue();
+
+            for (Script script : scripts) {
+                if ((filter != null && isFilterable(script, filter)) ||
+                    (world != null && !world.equalsIgnoreCase(position.getWorld()))) {
+                    continue;
+                }
+
+
+                ++printCount;
+                BaseComponent[] baseComponents = new ComponentBuilder("")
+                    .append(prefixComponent)
+                    .append("[" + printCount + "] ")
+                    .create();
+                sendScriptInfo(player, baseComponents, position);
+            }
         }
-        if (i == 0) {
+        if (printCount == 0) {
             player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists.");
         }
     }
@@ -170,5 +172,51 @@ public class ScriptUI {
 
     private ScriptManager getScripts() {
         return scriptManager;
+    }
+
+    private boolean isFilterable(Script script, Script filter) {
+        if (isFilterable(script.getMoveTypes(), filter.getMoveTypes())) {
+            return true;
+        }
+        if (isFilterable(script.getClickTypes(), filter.getClickTypes())) {
+            return true;
+        }
+        if (isFilterable(script.getPushTypes(), filter.getPushTypes())) {
+            return true;
+        }
+        if (isFilterable(script.getActionTypes(), filter.getActionTypes())) {
+            return true;
+        }
+
+        BiPredicate<String, String> stringPredicate = String::equalsIgnoreCase;
+        if (isFilterable(script.getActions(), filter.getActions(), stringPredicate)) {
+            return true;
+        }
+        if (isFilterable(script.getPermissionsToGive(), filter.getPermissionsToGive(), stringPredicate)) {
+            return true;
+        }
+        if (isFilterable(script.getPermissionsToNeeded(), filter.getPermissionsToNeeded(), stringPredicate)) {
+            return true;
+        }
+
+        return isFilterable(script.getPermissionsToNotNeeded(), filter.getPermissionsToNotNeeded(), stringPredicate);
+    }
+
+    private <E> boolean isFilterable(Collection<E> target, Collection<E> filter, BiPredicate<E, E> equals) {
+        for (E f : filter) {
+            if (target.isEmpty()) {
+                return true;
+            }
+            for (E t : target) {
+                if (!equals.test(f, t)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private <E> boolean isFilterable(Collection<E> target, Collection<E> filter) {
+        return isFilterable(target, filter, Object::equals);
     }
 }

@@ -78,7 +78,14 @@ public class EventCommandExecutor implements CommandExecutor {
                 String world = args.length < 2
                     ? null
                     : args[1];
-                scriptUI.list(player, world);
+                Script filter;
+                try {
+                    filter = Script.parse(null, eventType.getPreset().trim());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    return true;
+                }
+                scriptUI.list(player, world, filter);
                 return true;
             case "help":
                 player.sendMessage(new String[]{
