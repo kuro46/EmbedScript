@@ -23,9 +23,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +37,8 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        long begin = System.currentTimeMillis();
+
         try {
             Path dataFolder = getDataFolder().toPath();
             if (Files.notExists(dataFolder)){
@@ -86,6 +86,9 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         registerCommands(requests);
 
         registerListeners(requests);
+
+        long end = System.currentTimeMillis();
+        getLogger().info(String.format("Enabled! (%sms)", end - begin));
     }
 
     private void registerListeners(Requests requests) {
