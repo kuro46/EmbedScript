@@ -103,7 +103,7 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
             getCommand(eventType.getCommandName())
                 .setExecutor(new EventCommandExecutor(eventType, requests, scriptUI));
         }
-        getCommand("embedscript").setExecutor(new MainCommandExecutor());
+        getCommand("embedscript").setExecutor(new MainCommandExecutor(scriptUI, requests));
     }
 
     @SuppressWarnings("unused")
