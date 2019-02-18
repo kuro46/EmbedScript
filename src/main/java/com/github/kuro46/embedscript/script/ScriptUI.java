@@ -36,13 +36,12 @@ public class ScriptUI {
                       Script script) {
         Objects.requireNonNull(script);
 
-        ScriptManager scripts = getScripts();
-        if (!scripts.get(position).isEmpty()) {
+        if (!scriptManager.get(position).isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.");
             return;
         }
 
-        scripts.put(position, script);
+        scriptManager.put(position, script);
 
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully embedded.");
     }
@@ -52,7 +51,6 @@ public class ScriptUI {
                     Script script) {
         Objects.requireNonNull(script);
 
-        ScriptManager scriptManager = getScripts();
         if (scriptManager.get(position).isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
@@ -63,8 +61,7 @@ public class ScriptUI {
     }
 
     public void remove(CommandSender sender, ScriptPosition position) {
-        ScriptManager scripts = getScripts();
-        if (scripts.remove(position) == null) {
+        if (scriptManager.remove(position) == null) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
         }
@@ -73,7 +70,7 @@ public class ScriptUI {
     }
 
     public void view(CommandSender sender, ScriptPosition position) {
-        List<Script> scripts = getScripts().get(position);
+        List<Script> scripts = scriptManager.get(position);
         if (scripts.isEmpty()) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.");
             return;
@@ -121,30 +118,32 @@ public class ScriptUI {
      * @param world  World (Nullable)
      */
     public void list(Player player, String world, Script filter) {
-        BaseComponent[] prefixComponent = TextComponent.fromLegacyText(Prefix.PREFIX);
-        int printCount = 0;
-        for (Map.Entry<ScriptPosition, List<Script>> entry : getScripts().entrySet()) {
-            ScriptPosition position = entry.getKey();
-            List<Script> scripts = entry.getValue();
+        Map<ScriptPosition, List<Script>> snapshot = scriptManager.snapshot();
+        Scheduler.execute(() -> {
+            BaseComponent[] prefixComponent = TextComponent.fromLegacyText(Prefix.PREFIX);
+            int printCount = 0;
+            for (Map.Entry<ScriptPosition, List<Script>> entry : snapshot.entrySet()) {
+                ScriptPosition position = entry.getKey();
+                List<Script> scripts = entry.getValue();
 
-            for (Script script : scripts) {
-                if ((filter != null && isFilterable(script, filter)) ||
-                    (world != null && !world.equalsIgnoreCase(position.getWorld()))) {
-                    continue;
+                for (Script script : scripts) {
+                    if ((filter != null && isFilterable(script, filter)) ||
+                        (world != null && !world.equalsIgnoreCase(position.getWorld()))) {
+                        continue;
+                    }
+
+                    ++printCount;
+                    BaseComponent[] baseComponents = new ComponentBuilder("")
+                        .append(prefixComponent)
+                        .append("[" + printCount + "] ")
+                        .create();
+                    sendScriptInfo(player, baseComponents, position);
                 }
-
-
-                ++printCount;
-                BaseComponent[] baseComponents = new ComponentBuilder("")
-                    .append(prefixComponent)
-                    .append("[" + printCount + "] ")
-                    .create();
-                sendScriptInfo(player, baseComponents, position);
             }
-        }
-        if (printCount == 0) {
-            player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists.");
-        }
+            if (printCount == 0) {
+                player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists.");
+            }
+        });
     }
 
     //TODO: EDIT OPERATION
@@ -167,11 +166,7 @@ public class ScriptUI {
     }
 
     public boolean hasScript(ScriptPosition position) {
-        return getScripts().contains(position);
-    }
-
-    private ScriptManager getScripts() {
-        return scriptManager;
+        return scriptManager.contains(position);
     }
 
     private boolean isFilterable(Script script, Script filter) {
