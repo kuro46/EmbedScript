@@ -1,6 +1,7 @@
 package com.github.kuro46.embedscript.script;
 
 import com.github.kuro46.embedscript.GsonHolder;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
@@ -12,10 +13,13 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -36,38 +40,44 @@ public class ScriptSerializer {
 
         return thread;
     });
-    private static final String LATEST_VERSION = "1.0";
+    private static final String LATEST_VERSION = "0.2.0";
     private static final Map<String, FormatterCreator> CREATORS;
     private static ScheduledFuture executing;
 
     static {
         Map<String, FormatterCreator> creators = new HashMap<>();
         creators.put("1.0", Formatter10::new);
+        creators.put("0.2.0",Formatter020::new);
         CREATORS = Collections.unmodifiableMap(creators);
     }
 
-    public static synchronized Map<ScriptPosition, Script> deserialize(Path path) throws IOException {
+    public static synchronized Map<ScriptPosition, List<Script>> deserialize(Path path) throws IOException {
         if (Files.notExists(path)) {
             return new HashMap<>();
         } else {
             try (BufferedReader reader = Files.newBufferedReader(path)) {
                 String version = readVersion(path);
-                Formatter formatter = createFormatter(version);
+                Formatter formatter = createFormatter(version,path);
                 if (formatter == null) {
                     throw new UnsupportedOperationException("Unsupported version: " + version);
                 }
-                return formatter.fromJson(reader);
+
+                Map<ScriptPosition, List<Script>> result = formatter.fromJson(reader);
+                if (!version.equals(LATEST_VERSION)){
+                    serialize(path,result);
+                }
+                return result;
             }
         }
     }
 
-    public static synchronized void serialize(Path path, Map<ScriptPosition, Script> scripts) throws IOException {
+    public static synchronized void serialize(Path path, Map<ScriptPosition, List<Script>> scripts) throws IOException {
         if (Files.notExists(path)) {
             Files.createFile(path);
         }
 
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-            Formatter formatter = createFormatter(LATEST_VERSION);
+            Formatter formatter = createFormatter(LATEST_VERSION,path);
             if (formatter == null) {
                 throw new IllegalStateException();
             }
@@ -75,15 +85,16 @@ public class ScriptSerializer {
         }
     }
 
-    public static synchronized void serializeLaterAsync(Path path, Map<ScriptPosition, Script> scripts) {
+    public static synchronized void serializeLaterAsync(Path path, Map<ScriptPosition, List<Script>> scripts) {
         if (executing != null) {
             executing.cancel(false);
         }
 
         executing = EXECUTOR.schedule(() -> {
+            // "schedule" method do not notifies exception to UncaughtExceptionHandler
             try {
                 serialize(path, scripts);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -93,12 +104,12 @@ public class ScriptSerializer {
         }, 1, TimeUnit.SECONDS);
     }
 
-    private static Formatter createFormatter(String version) {
+    private static Formatter createFormatter(String version,Path path) {
         FormatterCreator formatterCreator = CREATORS.get(version);
         if (formatterCreator == null) {
             return null;
         }
-        return formatterCreator.create();
+        return formatterCreator.create(path);
     }
 
     private static String readVersion(Path path) throws IOException {
@@ -129,46 +140,136 @@ public class ScriptSerializer {
     }
 
     private interface FormatterCreator {
-        Formatter create();
+        Formatter create(Path path);
     }
 
-    private static abstract class Formatter extends TypeAdapter<Map<ScriptPosition, Script>> {
+    private static abstract class Formatter extends TypeAdapter<Map<ScriptPosition, List<Script>>> {
+        protected final Path filePath;
+
+        public Formatter(Path filePath) {
+            this.filePath = filePath;
+        }
+
         public abstract String version();
     }
 
+    private static class Formatter020 extends Formatter{
+        public Formatter020(Path filePath) {
+            super(filePath);
+        }
+
+        @Override
+        public String version() {
+            return "0.2.0";
+        }
+
+        @Override
+        public void write(JsonWriter out, Map<ScriptPosition, List<Script>> value) throws IOException {
+            out.beginObject();
+            out.name("formatVersion").value(version());
+            out.name("coordinates");
+            writeCoordinates(out,value);
+            out.endObject();
+        }
+
+        private void writeCoordinates(JsonWriter out, Map<ScriptPosition, List<Script>> value) throws IOException{
+            out.beginArray();
+            for (Map.Entry<ScriptPosition, List<Script>> entry : value.entrySet()) {
+                ScriptPosition position = entry.getKey();
+                List<Script> scripts = entry.getValue();
+
+                out.beginObject();
+                out.name("coordinate").jsonValue(GsonHolder.get().toJson(position));
+                out.name("scripts");
+                writeScripts(out,scripts);
+                out.endObject();
+            }
+            out.endArray();
+        }
+
+        private void writeScripts(JsonWriter out,List<Script> scripts) throws IOException{
+            out.beginArray();
+            for (Script script : scripts) {
+                out.jsonValue(GsonHolder.get().toJson(script));
+            }
+            out.endArray();
+        }
+
+        @Override
+        public Map<ScriptPosition, List<Script>> read(JsonReader in) throws IOException {
+            Map<ScriptPosition, List<Script>> scripts = null;
+
+            in.beginObject();
+            while (in.hasNext()) {
+                if (in.nextName().equals("coordinates")) {
+                    scripts = readCoordinates(in);
+                } else {
+                    in.skipValue();
+                }
+            }
+            in.endObject();
+
+            if (scripts == null)
+                throw new JsonSyntaxException("Illegal syntax");
+            return scripts;
+        }
+
+        private Map<ScriptPosition, List<Script>> readCoordinates(JsonReader in) throws IOException {
+            Map<ScriptPosition, List<Script>> coordinates = new HashMap<>();
+
+            in.beginArray();
+            while (in.hasNext()) {
+                ScriptPosition position = null;
+                List<Script> scripts = null;
+
+                in.beginObject();
+                while (in.hasNext()){
+                    switch (in.nextName()){
+                        case "coordinate":
+                            position = GsonHolder.get().fromJson(in,new TypeToken<ScriptPosition>() {
+                            }.getType());
+                            break;
+                        case "scripts":
+                            scripts = new ArrayList<>();
+                            in.beginArray();
+                            while (in.hasNext()){
+                                scripts.add(GsonHolder.get().fromJson(in, new TypeToken<Script>() {
+                                }.getType()));
+                            }
+                            in.endArray();
+                            break;
+                        default:
+                            in.skipValue();
+                    }
+                }
+                in.endObject();
+
+                coordinates.put(position,scripts);
+            }
+            in.endArray();
+
+            return coordinates;
+        }
+    }
+
     private static class Formatter10 extends Formatter {
+        public Formatter10(Path filePath) {
+            super(filePath);
+        }
+
         @Override
         public String version() {
             return "1.0";
         }
 
         @Override
-        public void write(JsonWriter out, Map<ScriptPosition, Script> value) throws IOException {
-            out.beginObject();
-            out.name("formatVersion").value(version());
-            out.name("scripts");
-            writeScripts(out, value);
-            out.endObject();
-        }
-
-        private void writeScripts(JsonWriter out, Map<ScriptPosition, Script> scripts) throws IOException {
-            out.beginArray();
-            for (Map.Entry<ScriptPosition, Script> entry : scripts.entrySet()) {
-                writePair(out, entry.getKey(), entry.getValue());
-            }
-            out.endArray();
-        }
-
-        private void writePair(JsonWriter out, ScriptPosition position, Script script) throws IOException {
-            out.beginObject();
-            out.name("coordinate").jsonValue(GsonHolder.get().toJson(position));
-            out.name("script").jsonValue(GsonHolder.get().toJson(script));
-            out.endObject();
+        public void write(JsonWriter out, Map<ScriptPosition, List<Script>> value) throws IOException {
+            throw new UnsupportedOperationException("Outdated formatter.");
         }
 
         @Override
-        public Map<ScriptPosition, Script> read(JsonReader in) throws IOException {
-            Map<ScriptPosition, Script> scripts = null;
+        public Map<ScriptPosition, List<Script>> read(JsonReader in) throws IOException {
+            Map<ScriptPosition, List<Script>> scripts = null;
 
             in.beginObject();
             while (in.hasNext()) {
@@ -185,13 +286,13 @@ public class ScriptSerializer {
             return scripts;
         }
 
-        private Map<ScriptPosition, Script> readScripts(JsonReader in) throws IOException {
-            Map<ScriptPosition, Script> scripts = new HashMap<>();
+        private Map<ScriptPosition, List<Script>> readScripts(JsonReader in) throws IOException {
+            Map<ScriptPosition, List<Script>> scripts = new HashMap<>();
 
             in.beginArray();
             while (in.hasNext()) {
                 ScriptBlockScriptPair pair = readPair(in);
-                scripts.put(pair.position, pair.script);
+                scripts.put(pair.position, pair.scripts);
             }
             in.endArray();
 
@@ -200,7 +301,7 @@ public class ScriptSerializer {
 
         private ScriptBlockScriptPair readPair(JsonReader in) throws IOException {
             ScriptPosition position = null;
-            Script script = null;
+            List<Script> scripts = null;
 
             in.beginObject();
             while (in.hasNext()) {
@@ -211,8 +312,7 @@ public class ScriptSerializer {
                         break;
                     }
                     case "script": {
-                        script = GsonHolder.get().fromJson(in, new TypeToken<Script>() {
-                        }.getType());
+                        scripts = readScript(in);
                         break;
                     }
                     default: {
@@ -222,18 +322,106 @@ public class ScriptSerializer {
             }
             in.endObject();
 
-            if (position == null || script == null)
+            if (position == null || scripts == null)
                 throw new JsonSyntaxException("Illegal syntax.");
-            return new ScriptBlockScriptPair(position, script);
+            return new ScriptBlockScriptPair(position, scripts);
+        }
+
+        private List<Script> readScript(JsonReader in) throws IOException{
+            EventType eventType = null;
+            for (EventType type : EventType.values()) {
+                Path fileName = filePath.getFileName();
+                if (fileName == null) {
+                    continue;
+                }
+                if (type.getFileName().equals(fileName.toString())) {
+                    eventType = type;
+                }
+            }
+            if (eventType == null){
+                throw new NullPointerException("Unknown path");
+            }
+
+            List<Script> scripts = new ArrayList<>();
+            in.beginArray();
+            while (in.hasNext()){
+                UUID author = null;
+                String command = null;
+                Script.ActionType actionType = null;
+                String permission = null;
+
+                in.beginObject();
+                while (in.hasNext()) {
+                    switch (in.nextName()) {
+                        case "author":
+                            author = UUID.fromString(in.nextString());
+                            break;
+                        case "command":
+                            command = in.nextString();
+                            break;
+                        case "data":
+
+                            in.beginObject();
+                            while (in.hasNext()){
+                                switch (in.nextName()){
+                                    case "type":
+                                        String nextString = in.nextString();
+                                        switch (nextString) {
+                                            case "BYPASS_PERMISSION":
+                                            case "COMMAND":
+                                                actionType = Script.ActionType.COMMAND;
+                                                break;
+                                            case "CONSOLE":
+                                                actionType = Script.ActionType.CONSOLE;
+                                                break;
+                                            case "PLAYER":
+                                                actionType = Script.ActionType.SAY;
+                                                break;
+                                            case "PLUGIN":
+                                                actionType = Script.ActionType.PLUGIN;
+                                                break;
+                                            default:
+                                                throw new JsonParseException(
+                                                    String.format("'%s' is unknown type!", nextString));
+                                        }
+                                        break;
+                                    case "permission":
+                                        permission = in.nextString();
+                                        break;
+                                    default:
+                                        in.skipValue();
+                                }
+                            }
+                            in.endObject();
+                            break;
+                        default:
+                            in.skipValue();
+                    }
+                }
+                in.endObject();
+
+                scripts.add(new Script(author,
+                    eventType == EventType.WALK ? new Script.MoveType[]{Script.MoveType.GROUND} : new Script.MoveType[0],
+                    eventType == EventType.INTERACT ? new Script.ClickType[]{Script.ClickType.ALL} : new Script.ClickType[0],
+                    eventType == EventType.INTERACT ? new Script.PushType[]{Script.PushType.ALL} : new Script.PushType[0],
+                    permission == null ? new String[0] : new String[]{permission},
+                    new String[0],
+                    new String[0],
+                    new Script.ActionType[]{actionType},
+                    new String[]{command}));
+            }
+            in.endArray();
+
+            return scripts;
         }
 
         private static class ScriptBlockScriptPair {
             private final ScriptPosition position;
-            private final Script script;
+            private final List<Script> scripts;
 
-            ScriptBlockScriptPair(ScriptPosition position, Script script) {
+            ScriptBlockScriptPair(ScriptPosition position, List<Script> scripts) {
                 this.position = position;
-                this.script = script;
+                this.scripts = scripts;
             }
 
             @Override
@@ -242,12 +430,12 @@ public class ScriptSerializer {
                 if (o == null || getClass() != o.getClass()) return false;
                 ScriptBlockScriptPair that = (ScriptBlockScriptPair) o;
                 return Objects.equals(position, that.position) &&
-                    Objects.equals(script, that.script);
+                    Objects.equals(scripts, that.scripts);
             }
 
             @Override
             public int hashCode() {
-                return Objects.hash(position, script);
+                return Objects.hash(position, scripts);
             }
         }
     }

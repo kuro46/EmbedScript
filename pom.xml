@@ -6,7 +6,7 @@
 
     <groupId>com.github.kuro46</groupId>
     <artifactId>embedscript</artifactId>
-    <version>0.6.0</version>
+    <version>0.7.0-SNAPSHOT</version>
 
     <name>EmbedScript</name>
 
@@ -31,6 +31,7 @@
     </dependencies>
 
     <build>
+        <finalName>${project.name}</finalName>
         <defaultGoal>clean install</defaultGoal>
         <plugins>
             <!--Maven-Compiler-Plugin-->
@@ -43,28 +44,11 @@
                     <source>1.8</source>
                 </configuration>
             </plugin>
-            <!--Maven-Shade-Plugin-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <finalName>${project.name}</finalName>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!--SpotBugs-Maven-Plugin-->
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>3.1.9</version>
+                <version>3.1.10</version>
                 <configuration>
                     <effort>max</effort>
                 </configuration>
@@ -73,7 +57,7 @@
                     <dependency>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs</artifactId>
-                        <version>3.1.10</version>
+                        <version>3.1.11</version>
                     </dependency>
                 </dependencies>
             </plugin>

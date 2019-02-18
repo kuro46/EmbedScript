@@ -1,24 +1,28 @@
 package com.github.kuro46.embedscript.request;
 
-import com.github.kuro46.embedscript.script.EventType;
+import com.github.kuro46.embedscript.script.Script;
 
 /**
  * @author shirokuro
  */
 public class Request {
     private final RequestType requestType;
-    private final EventType eventType;
+    private final Script script;
 
-    public Request(RequestType requestType, EventType eventType) {
+    public Request(RequestType requestType) {
+        this(requestType, null);
+    }
+
+    public Request(RequestType requestType, Script script) {
         this.requestType = requestType;
-        this.eventType = eventType;
+        this.script = script;
     }
 
     public RequestType getRequestType() {
         return requestType;
     }
 
-    public EventType getEventType() {
-        return eventType;
+    public Script getScript() {
+        return script;
     }
 }
