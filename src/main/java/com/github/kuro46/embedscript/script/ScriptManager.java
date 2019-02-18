@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Script manager<br>
+ * This class is not thread-safe
+ */
 public class ScriptManager {
     private static final Map<EventType, ScriptManager> MANAGERS = new EnumMap<>(EventType.class);
 
@@ -90,5 +94,24 @@ public class ScriptManager {
 
     public void saveAsync(){
         ScriptSerializer.serializeLaterAsync(path,new HashMap<>(scripts));
+    }
+
+    /**
+     * Returns snapshot of this instance. Return value is unmodifiable and thread-safe.
+     * @return Snapshot of this instance
+     */
+    public Map<ScriptPosition,List<Script>> snapshot(){
+        long begin = System.nanoTime();
+        Map<ScriptPosition,List<Script>> scripts = new HashMap<>();
+        for (Map.Entry<ScriptPosition, List<Script>> entry : this.scripts.entrySet()) {
+            ScriptPosition position = entry.getKey();
+            List<Script> scriptList = entry.getValue();
+
+            scripts.put(position,Collections.unmodifiableList(scriptList));
+        }
+        Map<ScriptPosition, List<Script>> scriptPositionListMap = Collections.unmodifiableMap(scripts);
+        long end = System.nanoTime();
+        System.out.println("Snapshot: " + (end - begin));
+        return scriptPositionListMap;
     }
 }
