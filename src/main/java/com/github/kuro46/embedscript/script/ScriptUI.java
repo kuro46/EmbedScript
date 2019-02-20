@@ -3,29 +3,41 @@ package com.github.kuro46.embedscript.script;
 import com.github.kuro46.embedscript.Prefix;
 import com.github.kuro46.embedscript.util.MojangUtil;
 import com.github.kuro46.embedscript.util.Scheduler;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
+import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
 /**
  * @author shirokuro
  */
 public class ScriptUI {
+    private static final int UNFOCUSED_CHAT_HEIGHT = 10;
+    private static final int CHAT_WIDTH = 50;
     private final ScriptManager scriptManager;
+    private final Cache<Player, IntConsumer> pageManager = CacheBuilder.newBuilder()
+        .expireAfterAccess(5, TimeUnit.MINUTES)
+        .weakKeys()
+        .build();
 
     public ScriptUI(ScriptManager scriptManager) {
         this.scriptManager = scriptManager;
@@ -90,7 +102,7 @@ public class ScriptUI {
                 sender.sendMessage("@listen-push " + collectionToString(script.getPushTypes()));
                 sender.sendMessage("@give-permission " + collectionToString(script.getPermissionsToGive()));
                 sender.sendMessage("@enough-permission " + collectionToString(script.getPermissionsToNeeded()));
-                sender.sendMessage("@not-enough-permission " +collectionToString(script.getPermissionsToNotNeeded()));
+                sender.sendMessage("@not-enough-permission " + collectionToString(script.getPermissionsToNotNeeded()));
                 sender.sendMessage("@action-type " + collectionToString(script.getActionTypes()));
                 sender.sendMessage("@action " + collectionToString(script.getActions()));
                 sender.sendMessage("===============================================");
@@ -99,71 +111,19 @@ public class ScriptUI {
         });
     }
 
-    private String collectionToString(Collection<?> collection){
-        if (collection.isEmpty()){
+    private String collectionToString(Collection<?> collection) {
+        if (collection.isEmpty()) {
             return "NONE";
-        }else if (collection.size() == 1){
+        } else if (collection.size() == 1) {
             return collection.iterator().next().toString();
-        }else {
+        } else {
             return collection.stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(",","[","]"));
+                .collect(Collectors.joining(",", "[", "]"));
         }
     }
 
-    /**
-     * Send list of scripts to player
-     *
-     * @param player Player
-     * @param world  World (Nullable)
-     */
-    public void list(Player player, String world, Script filter) {
-        Map<ScriptPosition, List<Script>> snapshot = scriptManager.snapshot();
-        Scheduler.execute(() -> {
-            BaseComponent[] prefixComponent = TextComponent.fromLegacyText(Prefix.PREFIX);
-            int printCount = 0;
-            for (Map.Entry<ScriptPosition, List<Script>> entry : snapshot.entrySet()) {
-                ScriptPosition position = entry.getKey();
-                List<Script> scripts = entry.getValue();
-
-                for (Script script : scripts) {
-                    if ((filter != null && isFilterable(script, filter)) ||
-                        (world != null && !world.equalsIgnoreCase(position.getWorld()))) {
-                        continue;
-                    }
-
-                    ++printCount;
-                    BaseComponent[] baseComponents = new ComponentBuilder("")
-                        .append(prefixComponent)
-                        .append("[" + printCount + "] ")
-                        .create();
-                    sendScriptInfo(player, baseComponents, position);
-                }
-            }
-            if (printCount == 0) {
-                player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists.");
-            }
-        });
-    }
-
     //TODO: EDIT OPERATION
-
-    private void sendScriptInfo(Player player, BaseComponent[] prefix, ScriptPosition position) {
-        World world = Bukkit.getWorld(position.getWorld());
-        String worldName = world != null
-            ? world.getName()
-            : position.getWorld();
-        String tpCommand = "/embedscript teleport " + position.getWorld() + " " + position.getX() + " "
-            + position.getY() + " " + position.getZ();
-        BaseComponent[] baseComponents = new ComponentBuilder("")
-            .append(prefix)
-            .append("World: " + worldName + " X: " + position.getX()
-                + " Y: " + position.getY() + " Z: " + position.getZ() + " (click to teleport)")
-            .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
-            .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
-            .create();
-        player.spigot().sendMessage(baseComponents);
-    }
 
     public boolean hasScript(ScriptPosition position) {
         return scriptManager.contains(position);
@@ -213,5 +173,146 @@ public class ScriptUI {
 
     private <E> boolean isFilterable(Collection<E> target, Collection<E> filter) {
         return isFilterable(target, filter, Object::equals);
+    }
+
+    public void changePage(Player player, int pageIndex) {
+        IntConsumer consumer = pageManager.getIfPresent(player);
+        if (consumer == null) {
+            player.sendMessage(Prefix.ERROR_PREFIX + "Cannot get your page.");
+            return;
+        }
+        consumer.accept(pageIndex);
+    }
+
+    /**
+     * Send list of scripts to player
+     *
+     * @param player    Player
+     * @param world     World (Nullable)
+     * @param pageIndex page index
+     */
+    public void list(Player player, String world, Script filter, int pageIndex) {
+        Map<ScriptPosition, List<Script>> snapshot = scriptManager.snapshot();
+        Scheduler.execute(() -> {
+            Map<ScriptPosition, List<Script>> sorted = new TreeMap<>((position, position1) -> {
+                int worldCompareTo = position.getWorld().compareTo(position1.getWorld());
+                if (worldCompareTo != 0) {
+                    return worldCompareTo;
+                }
+                int yCompareTo = Integer.compare(position.getY(), position1.getY());
+                if (yCompareTo != 0) {
+                    return yCompareTo;
+                }
+                int xCompareTo = Integer.compare(position.getX(), position1.getX());
+                if (xCompareTo != 0) {
+                    return xCompareTo;
+                }
+
+                return Integer.compare(position.getZ(), position1.getZ());
+            });
+            sorted.putAll(snapshot);
+
+            List<BaseComponent[]> messages = new ArrayList<>();
+            for (Map.Entry<ScriptPosition, List<Script>> entry : sorted.entrySet()) {
+                ScriptPosition position = entry.getKey();
+                List<Script> scripts = entry.getValue();
+
+                for (Script script : scripts) {
+                    if ((filter != null && isFilterable(script, filter)) ||
+                        (world != null && !world.equals("all") && !world.equalsIgnoreCase(position.getWorld()))) {
+                        continue;
+                    }
+
+                    String tpCommand = "/embedscript teleport " + position.getWorld() + " " + position.getX() + " "
+                        + position.getY() + " " + position.getZ();
+                    BaseComponent[] message = new ComponentBuilder("")
+                        .append("[" + (messages.size() + 1) + "] ")
+                        .append("World: " + position.getWorld() + " X: " + position.getX()
+                            + " Y: " + position.getY() + " Z: " + position.getZ() + " (click here)")
+                        .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
+                        .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
+                        .create();
+                    messages.add(message);
+                }
+            }
+            if (messages.isEmpty()) {
+                player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists.");
+            } else {
+                String target = world == null || world.equals("all")
+                    ? "this server"
+                    : world;
+                sendPage("List of scripts in " + target,
+                    player,
+                    messages,
+                    pageIndex);
+            }
+        });
+    }
+
+    private void sendPage(String title,
+                          Player player,
+                          List<BaseComponent[]> messages,
+                          int pageIndex) {
+        sendPage(title, player, messages, pageIndex, UNFOCUSED_CHAT_HEIGHT);
+    }
+
+    private void sendPage(String title,
+                          Player player,
+                          List<BaseComponent[]> messages,
+                          int pageIndex,
+                          int chatHeight) {
+        List<List<BaseComponent[]>> pages = new ArrayList<>();
+        List<BaseComponent[]> buffer = new ArrayList<>();
+        for (BaseComponent[] message : messages) {
+            buffer.add(message);
+            if (buffer.size() >= chatHeight - 3) {
+                pages.add(new ArrayList<>(buffer));
+                buffer.clear();
+            }
+        }
+        List<BaseComponent[]> lastPage = new ArrayList<>(buffer);
+        //last page pad with space
+        int padLines = chatHeight - 3 - lastPage.size();
+        for (int i = 0; i < padLines; i++) {
+            lastPage.add(TextComponent.fromLegacyText(""));
+        }
+        pages.add(lastPage);
+
+        if (pageIndex >= pages.size() || pageIndex < 0) {
+            player.sendMessage("Out of bounds");
+            return;
+        }
+        List<BaseComponent[]> page = pages.get(pageIndex);
+
+        String separator = "---< " + title + " >---";
+        int separatorStringLength = (CHAT_WIDTH - separator.length()) / 2;
+        String separatorString = StringUtils.repeat("-", separatorStringLength);
+        separator = separatorString + separator + separatorString;
+
+        player.sendMessage(separator);
+        page.forEach(baseComponents -> player.spigot().sendMessage(baseComponents));
+
+        int previousPageIndex = pageIndex - 1 < 0
+            ? pages.size() - 1
+            : pageIndex - 1;
+        int nextPageIndex = pageIndex + 1 >= pages.size()
+            ? 0
+            : pageIndex + 1;
+        player.spigot().sendMessage(new ComponentBuilder("")
+            .append(new ComponentBuilder("<<Previous>>")
+                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/embedscript page " + previousPageIndex))
+                .create())
+            .append("   ")
+            .append(new ComponentBuilder("<<Next>>")
+                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/embedscript page " + nextPageIndex))
+                .create())
+            .append("   ")
+            .append(new ComponentBuilder(String.format("<<Page %d of %d>>", pageIndex + 1, pages.size()))
+                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, ""))
+                .create())
+            .create());
+        player.sendMessage(separator);
+
+        pageManager.put(player, value -> sendPage(title, player, messages, value, chatHeight));
     }
 }

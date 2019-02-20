@@ -8,6 +8,7 @@ import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.util.Util;
+import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -46,6 +47,8 @@ public class MainCommandExecutor implements CommandExecutor {
             case "help":
                 help(player);
                 return true;
+            case "page":
+                return page(player, args);
             //Script operations
             case "list":
                 list(player, args);
@@ -101,11 +104,31 @@ public class MainCommandExecutor implements CommandExecutor {
         });
     }
 
+    private boolean page(Player player, String[] args) {
+        if (args.length < 2) {
+            return false;
+        }
+
+        int parsed;
+        try {
+            parsed = Integer.parseInt(args[1]);
+        } catch (NumberFormatException e) {
+            player.sendMessage(Prefix.ERROR_PREFIX + args[1] + " is not a valid number!");
+            return true;
+        }
+
+        scriptUI.changePage(player, parsed);
+        return true;
+    }
+
     private void list(Player player, String[] args) {
         String world = args.length < 2
             ? null
             : args[1];
-        scriptUI.list(player, world, null);
+        int pageIndex = !(args.length < 3) && NumberUtils.isNumber(args[2])
+            ? Integer.parseInt(args[2]) - 1
+            : 0;
+        scriptUI.list(player, world, null, pageIndex);
     }
 
     private void view(Player player) {
