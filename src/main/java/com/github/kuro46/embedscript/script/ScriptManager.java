@@ -101,7 +101,6 @@ public class ScriptManager {
      * @return Snapshot of this instance
      */
     public Map<ScriptPosition,List<Script>> snapshot(){
-        long begin = System.nanoTime();
         Map<ScriptPosition,List<Script>> scripts = new HashMap<>();
         for (Map.Entry<ScriptPosition, List<Script>> entry : this.scripts.entrySet()) {
             ScriptPosition position = entry.getKey();
@@ -109,9 +108,6 @@ public class ScriptManager {
 
             scripts.put(position,Collections.unmodifiableList(scriptList));
         }
-        Map<ScriptPosition, List<Script>> scriptPositionListMap = Collections.unmodifiableMap(scripts);
-        long end = System.nanoTime();
-        System.out.println("Snapshot: " + (end - begin));
-        return scriptPositionListMap;
+        return Collections.unmodifiableMap(scripts);
     }
 }
