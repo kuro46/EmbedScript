@@ -17,14 +17,21 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.IntConsumer;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -129,52 +136,6 @@ public class ScriptUI {
         return scriptManager.contains(position);
     }
 
-    private boolean isFilterable(Script script, Script filter) {
-        if (isFilterable(script.getMoveTypes(), filter.getMoveTypes())) {
-            return true;
-        }
-        if (isFilterable(script.getClickTypes(), filter.getClickTypes())) {
-            return true;
-        }
-        if (isFilterable(script.getPushTypes(), filter.getPushTypes())) {
-            return true;
-        }
-        if (isFilterable(script.getActionTypes(), filter.getActionTypes())) {
-            return true;
-        }
-
-        BiPredicate<String, String> stringPredicate = String::equalsIgnoreCase;
-        if (isFilterable(script.getActions(), filter.getActions(), stringPredicate)) {
-            return true;
-        }
-        if (isFilterable(script.getPermissionsToGive(), filter.getPermissionsToGive(), stringPredicate)) {
-            return true;
-        }
-        if (isFilterable(script.getPermissionsToNeeded(), filter.getPermissionsToNeeded(), stringPredicate)) {
-            return true;
-        }
-
-        return isFilterable(script.getPermissionsToNotNeeded(), filter.getPermissionsToNotNeeded(), stringPredicate);
-    }
-
-    private <E> boolean isFilterable(Collection<E> target, Collection<E> filter, BiPredicate<E, E> equals) {
-        for (E f : filter) {
-            if (target.isEmpty()) {
-                return true;
-            }
-            for (E t : target) {
-                if (!equals.test(f, t)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private <E> boolean isFilterable(Collection<E> target, Collection<E> filter) {
-        return isFilterable(target, filter, Object::equals);
-    }
-
     /**
      * Send list of scripts to player
      *
@@ -185,47 +146,12 @@ public class ScriptUI {
     public void list(Player player, String world, Script filter, int pageIndex) {
         Map<ScriptPosition, List<Script>> snapshot = scriptManager.snapshot();
         Scheduler.execute(() -> {
-            Map<ScriptPosition, List<Script>> sorted = new TreeMap<>((position, position1) -> {
-                int worldCompareTo = position.getWorld().compareTo(position1.getWorld());
-                if (worldCompareTo != 0) {
-                    return worldCompareTo;
-                }
-                int yCompareTo = Integer.compare(position.getY(), position1.getY());
-                if (yCompareTo != 0) {
-                    return yCompareTo;
-                }
-                int xCompareTo = Integer.compare(position.getX(), position1.getX());
-                if (xCompareTo != 0) {
-                    return xCompareTo;
-                }
-
-                return Integer.compare(position.getZ(), position1.getZ());
-            });
-            sorted.putAll(snapshot);
-
-            List<BaseComponent[]> messages = new ArrayList<>();
-            for (Map.Entry<ScriptPosition, List<Script>> entry : sorted.entrySet()) {
-                ScriptPosition position = entry.getKey();
-                List<Script> scripts = entry.getValue();
-
-                for (Script script : scripts) {
-                    if ((filter != null && isFilterable(script, filter)) ||
-                        (world != null && !world.equals("all") && !world.equalsIgnoreCase(position.getWorld()))) {
-                        continue;
-                    }
-
-                    String tpCommand = "/embedscript teleport " + position.getWorld() + " " + position.getX() + " "
-                        + position.getY() + " " + position.getZ();
-                    BaseComponent[] message = new ComponentBuilder("")
-                        .append("[" + (messages.size() + 1) + "] ")
-                        .append("World: " + position.getWorld() + " X: " + position.getX()
-                            + " Y: " + position.getY() + " Z: " + position.getZ() + " (click here)")
-                        .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
-                        .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
-                        .create();
-                    messages.add(message);
-                }
-            }
+            List<BaseComponent[]> messages = snapshot.entrySet().stream()
+                .filter(entry -> world == null ||
+                    world.equals("all") ||
+                    world.equalsIgnoreCase(entry.getKey().getWorld()))
+                .sorted(new ScriptPositionComparator())
+                .collect(new ScriptCollector(filter));
             if (messages.isEmpty()) {
                 player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists.");
             } else {
@@ -322,5 +248,133 @@ public class ScriptUI {
         }
         pages.add(lastPage);
         return pages;
+    }
+
+    private static class ScriptPositionComparator implements Comparator<Map.Entry<ScriptPosition, List<Script>>> {
+        @Override
+        public int compare(Map.Entry<ScriptPosition, List<Script>> entry,
+                           Map.Entry<ScriptPosition, List<Script>> entry1) {
+            ScriptPosition position = entry.getKey();
+            ScriptPosition position1 = entry1.getKey();
+
+            int worldCompareTo = position.getWorld().compareTo(position1.getWorld());
+            if (worldCompareTo != 0) {
+                return worldCompareTo;
+            }
+            int yCompareTo = Integer.compare(position.getY(), position1.getY());
+            if (yCompareTo != 0) {
+                return yCompareTo;
+            }
+            int xCompareTo = Integer.compare(position.getX(), position1.getX());
+            if (xCompareTo != 0) {
+                return xCompareTo;
+            }
+
+            return Integer.compare(position.getZ(), position1.getZ());
+        }
+    }
+
+    private static class ScriptCollector implements Collector<Map.Entry<ScriptPosition, List<Script>>, List<BaseComponent[]>, List<BaseComponent[]>> {
+        private final Script filter;
+
+        public ScriptCollector(Script filter) {
+            this.filter = filter;
+        }
+
+        @Override
+        public Supplier<List<BaseComponent[]>> supplier() {
+            return ArrayList::new;
+        }
+
+        @Override
+        public BiConsumer<List<BaseComponent[]>, Map.Entry<ScriptPosition, List<Script>>> accumulator() {
+            return (messages, entry) -> {
+                ScriptPosition position = entry.getKey();
+                List<Script> scripts = entry.getValue();
+
+                for (Script script : scripts) {
+                    if (filter != null && isFilterable(script, filter)) {
+                        continue;
+                    }
+
+                    String tpCommand = "/embedscript teleport " + position.getWorld() + " " + position.getX() + " "
+                        + position.getY() + " " + position.getZ();
+                    BaseComponent[] message = new ComponentBuilder("")
+                        .append("[" + (messages.size() + 1) + "] ")
+                        .append("World: " + position.getWorld() + " X: " + position.getX()
+                            + " Y: " + position.getY() + " Z: " + position.getZ() + " (click here)")
+                        .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
+                        .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
+                        .create();
+                    messages.add(message);
+                }
+            };
+        }
+
+        @Override
+        public BinaryOperator<List<BaseComponent[]>> combiner() {
+            return (messages, messages1) -> {
+                List<BaseComponent[]> result = new ArrayList<>();
+                result.addAll(messages);
+                result.addAll(messages1);
+                return result;
+            };
+        }
+
+        @Override
+        public Function<List<BaseComponent[]>, List<BaseComponent[]>> finisher() {
+            return message -> message;
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return Collections.emptySet();
+        }
+
+        private boolean isFilterable(Script script, Script filter) {
+            if (isFilterable(script.getMoveTypes(), filter.getMoveTypes())) {
+                return true;
+            }
+            if (isFilterable(script.getClickTypes(), filter.getClickTypes())) {
+                return true;
+            }
+            if (isFilterable(script.getPushTypes(), filter.getPushTypes())) {
+                return true;
+            }
+            if (isFilterable(script.getActionTypes(), filter.getActionTypes())) {
+                return true;
+            }
+
+            BiPredicate<String, String> stringPredicate = String::equalsIgnoreCase;
+            if (isFilterable(script.getActions(), filter.getActions(), stringPredicate)) {
+                return true;
+            }
+            if (isFilterable(script.getPermissionsToGive(), filter.getPermissionsToGive(), stringPredicate)) {
+                return true;
+            }
+            if (isFilterable(script.getPermissionsToNeeded(), filter.getPermissionsToNeeded(), stringPredicate)) {
+                return true;
+            }
+
+            return isFilterable(script.getPermissionsToNotNeeded(), filter.getPermissionsToNotNeeded(), stringPredicate);
+        }
+
+        private <E> boolean isFilterable(Collection<E> target, Collection<E> filter, BiPredicate<E, E> equals) {
+            for (E f : filter) {
+                if (target.isEmpty()) {
+                    return true;
+                }
+                for (E t : target) {
+                    if (!equals.test(f, t)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private <E> boolean isFilterable(Collection<E> target, Collection<E> filter) {
+            return isFilterable(target, filter, Object::equals);
+        }
     }
 }
