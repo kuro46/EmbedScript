@@ -261,18 +261,19 @@ public class ScriptUI {
                           List<BaseComponent[]> messages,
                           int pageIndex,
                           int chatHeight) {
+        int availableMessageHeight = chatHeight - 3;
         List<List<BaseComponent[]>> pages = new ArrayList<>();
         List<BaseComponent[]> buffer = new ArrayList<>();
         for (BaseComponent[] message : messages) {
             buffer.add(message);
-            if (buffer.size() >= chatHeight - 3) {
+            if (buffer.size() >= availableMessageHeight) {
                 pages.add(new ArrayList<>(buffer));
                 buffer.clear();
             }
         }
         List<BaseComponent[]> lastPage = new ArrayList<>(buffer);
         //last page pad with space
-        int padLines = chatHeight - 3 - lastPage.size();
+        int padLines = availableMessageHeight - lastPage.size();
         for (int i = 0; i < padLines; i++) {
             lastPage.add(TextComponent.fromLegacyText(""));
         }
