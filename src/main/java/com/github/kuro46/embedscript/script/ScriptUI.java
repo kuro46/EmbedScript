@@ -238,13 +238,15 @@ public class ScriptUI {
                 buffer.clear();
             }
         }
-        List<BaseComponent[]> lastPage = new ArrayList<>(buffer);
-        //last page pad with space
-        int padLines = maximumLines - lastPage.size();
-        for (int i = 0; i < padLines; i++) {
-            lastPage.add(TextComponent.fromLegacyText(""));
+        if (!buffer.isEmpty()) {
+            List<BaseComponent[]> lastPage = new ArrayList<>(buffer);
+            //last page pad with space
+            int padLines = maximumLines - lastPage.size();
+            for (int i = 0; i < padLines; i++) {
+                lastPage.add(TextComponent.fromLegacyText(""));
+            }
+            pages.add(lastPage);
         }
-        pages.add(lastPage);
         return pages;
     }
 
