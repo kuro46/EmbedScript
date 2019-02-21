@@ -262,22 +262,7 @@ public class ScriptUI {
                           int pageIndex,
                           int chatHeight) {
         int availableMessageHeight = chatHeight - 3;
-        List<List<BaseComponent[]>> pages = new ArrayList<>();
-        List<BaseComponent[]> buffer = new ArrayList<>();
-        for (BaseComponent[] message : messages) {
-            buffer.add(message);
-            if (buffer.size() >= availableMessageHeight) {
-                pages.add(new ArrayList<>(buffer));
-                buffer.clear();
-            }
-        }
-        List<BaseComponent[]> lastPage = new ArrayList<>(buffer);
-        //last page pad with space
-        int padLines = availableMessageHeight - lastPage.size();
-        for (int i = 0; i < padLines; i++) {
-            lastPage.add(TextComponent.fromLegacyText(""));
-        }
-        pages.add(lastPage);
+        List<List<BaseComponent[]>> pages = splitMessages(messages, availableMessageHeight);
 
         if (pageIndex >= pages.size() || pageIndex < 0) {
             player.sendMessage("Out of bounds");
@@ -312,10 +297,30 @@ public class ScriptUI {
 
         pageManager.put(player, value -> sendPage(title, player, messages, value, chatHeight));
     }
-    
-    private String titleToSeparator(String title){
+
+    private String titleToSeparator(String title) {
         title = "---< " + title + " >---";
         String separatorString = StringUtils.repeat("-", (CHAT_WIDTH - title.length()) / 2);
         return separatorString + title + separatorString;
+    }
+
+    private List<List<BaseComponent[]>> splitMessages(List<BaseComponent[]> messages, int maximumLines) {
+        List<List<BaseComponent[]>> pages = new ArrayList<>();
+        List<BaseComponent[]> buffer = new ArrayList<>();
+        for (BaseComponent[] message : messages) {
+            buffer.add(message);
+            if (buffer.size() >= maximumLines) {
+                pages.add(new ArrayList<>(buffer));
+                buffer.clear();
+            }
+        }
+        List<BaseComponent[]> lastPage = new ArrayList<>(buffer);
+        //last page pad with space
+        int padLines = maximumLines - lastPage.size();
+        for (int i = 0; i < padLines; i++) {
+            lastPage.add(TextComponent.fromLegacyText(""));
+        }
+        pages.add(lastPage);
+        return pages;
     }
 }
