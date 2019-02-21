@@ -250,7 +250,7 @@ public class ScriptUI {
         return pages;
     }
 
-    private static class ScriptPositionComparator implements Comparator<Map.Entry<ScriptPosition,List<Script>>>{
+    private static class ScriptPositionComparator implements Comparator<Map.Entry<ScriptPosition, List<Script>>> {
         @Override
         public int compare(Map.Entry<ScriptPosition, List<Script>> entry,
                            Map.Entry<ScriptPosition, List<Script>> entry1) {
@@ -274,7 +274,7 @@ public class ScriptUI {
         }
     }
 
-    private static class ScriptCollector implements Collector<Map.Entry<ScriptPosition, List<Script>>, List<BaseComponent[]>, List<BaseComponent[]>>{
+    private static class ScriptCollector implements Collector<Map.Entry<ScriptPosition, List<Script>>, List<BaseComponent[]>, List<BaseComponent[]>> {
         private final Script filter;
 
         public ScriptCollector(Script filter) {
