@@ -175,15 +175,6 @@ public class ScriptUI {
         return isFilterable(target, filter, Object::equals);
     }
 
-    public void changePage(Player player, int pageIndex) {
-        IntConsumer consumer = pageManager.getIfPresent(player);
-        if (consumer == null) {
-            player.sendMessage(Prefix.ERROR_PREFIX + "Cannot get your page.");
-            return;
-        }
-        consumer.accept(pageIndex);
-    }
-
     /**
      * Send list of scripts to player
      *
@@ -247,6 +238,15 @@ public class ScriptUI {
                     pageIndex);
             }
         });
+    }
+
+    public void changePage(Player player, int pageIndex) {
+        IntConsumer consumer = pageManager.getIfPresent(player);
+        if (consumer == null) {
+            player.sendMessage(Prefix.ERROR_PREFIX + "Cannot get your page.");
+            return;
+        }
+        consumer.accept(pageIndex);
     }
 
     private void sendPage(String title,
