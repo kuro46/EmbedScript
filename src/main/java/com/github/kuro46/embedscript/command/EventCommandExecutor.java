@@ -9,6 +9,7 @@ import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.util.Util;
+import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -78,6 +79,9 @@ public class EventCommandExecutor implements CommandExecutor {
                 String world = args.length < 2
                     ? null
                     : args[1];
+                int pageIndex = !(args.length < 3) && NumberUtils.isNumber(args[2])
+                    ? Integer.parseInt(args[2]) - 1
+                    : 0;
                 Script filter;
                 try {
                     filter = Script.parse(null, eventType.getPreset().trim());
@@ -85,7 +89,7 @@ public class EventCommandExecutor implements CommandExecutor {
                     e.printStackTrace();
                     return true;
                 }
-                scriptUI.list(player, world, filter);
+                scriptUI.list(player, world, filter, pageIndex);
                 return true;
             case "help":
                 player.sendMessage(new String[]{
