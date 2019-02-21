@@ -41,7 +41,7 @@ public class ScriptUI {
     private static final int UNFOCUSED_CHAT_HEIGHT = 10;
     private static final int CHAT_WIDTH = 50;
     private final ScriptManager scriptManager;
-    private final Cache<Player, IntConsumer> pageManager = CacheBuilder.newBuilder()
+    private final Cache<CommandSender, IntConsumer> pageManager = CacheBuilder.newBuilder()
         .expireAfterAccess(5, TimeUnit.MINUTES)
         .weakKeys()
         .build();
@@ -95,26 +95,24 @@ public class ScriptUI {
             return;
         }
         Scheduler.execute(() -> {
-            sender.sendMessage("Script information: ------------------------------");
+            List<BaseComponent[]> messages = new ArrayList<>();
             for (Script script : scripts) {
-                sender.sendMessage("===============================================");
                 UUID author = script.getAuthor();
                 Player player = Bukkit.getPlayer(author);
                 String stringAuthor = player == null
                     ? MojangUtil.getName(author)
                     : player.getName();
-                sender.sendMessage("author " + stringAuthor);
-                sender.sendMessage("@listen-move " + collectionToString(script.getMoveTypes()));
-                sender.sendMessage("@listen-click " + collectionToString(script.getClickTypes()));
-                sender.sendMessage("@listen-push " + collectionToString(script.getPushTypes()));
-                sender.sendMessage("@give-permission " + collectionToString(script.getPermissionsToGive()));
-                sender.sendMessage("@enough-permission " + collectionToString(script.getPermissionsToNeeded()));
-                sender.sendMessage("@not-enough-permission " + collectionToString(script.getPermissionsToNotNeeded()));
-                sender.sendMessage("@action-type " + collectionToString(script.getActionTypes()));
-                sender.sendMessage("@action " + collectionToString(script.getActions()));
-                sender.sendMessage("===============================================");
+                messages.add(TextComponent.fromLegacyText("author " + stringAuthor));
+                messages.add(TextComponent.fromLegacyText("@listen-move " + collectionToString(script.getMoveTypes())));
+                messages.add(TextComponent.fromLegacyText("@listen-click " + collectionToString(script.getClickTypes())));
+                messages.add(TextComponent.fromLegacyText("@listen-push " + collectionToString(script.getPushTypes())));
+                messages.add(TextComponent.fromLegacyText("@give-permission " + collectionToString(script.getPermissionsToGive())));
+                messages.add(TextComponent.fromLegacyText("@enough-permission " + collectionToString(script.getPermissionsToNeeded())));
+                messages.add(TextComponent.fromLegacyText("@not-enough-permission " + collectionToString(script.getPermissionsToNotNeeded())));
+                messages.add(TextComponent.fromLegacyText("@action-type " + collectionToString(script.getActionTypes())));
+                messages.add(TextComponent.fromLegacyText("@action " + collectionToString(script.getActions())));
             }
-            sender.sendMessage("Script information: ------------------------------");
+            sendPage("Script information",sender,messages,0,12);
         });
     }
 
@@ -176,14 +174,14 @@ public class ScriptUI {
     }
 
     private void sendPage(String title,
-                          Player player,
+                          CommandSender sender,
                           List<BaseComponent[]> messages,
                           int pageIndex) {
-        sendPage(title, player, messages, pageIndex, UNFOCUSED_CHAT_HEIGHT);
+        sendPage(title, sender, messages, pageIndex, UNFOCUSED_CHAT_HEIGHT);
     }
 
     private void sendPage(String title,
-                          Player player,
+                          CommandSender sender,
                           List<BaseComponent[]> messages,
                           int pageIndex,
                           int chatHeight) {
@@ -191,14 +189,14 @@ public class ScriptUI {
         List<List<BaseComponent[]>> pages = splitMessages(messages, availableMessageHeight);
 
         if (pageIndex >= pages.size() || pageIndex < 0) {
-            player.sendMessage("Out of bounds");
+            sender.sendMessage("Out of bounds");
             return;
         }
         List<BaseComponent[]> page = pages.get(pageIndex);
 
         String separator = titleToSeparator(title);
-        player.sendMessage(separator);
-        page.forEach(baseComponents -> player.spigot().sendMessage(baseComponents));
+        sender.sendMessage(separator);
+        page.forEach(baseComponents -> sender.spigot().sendMessage(baseComponents));
 
         int previousPageIndex = pageIndex - 1 < 0
             ? pages.size() - 1
@@ -206,7 +204,7 @@ public class ScriptUI {
         int nextPageIndex = pageIndex + 1 >= pages.size()
             ? 0
             : pageIndex + 1;
-        player.spigot().sendMessage(new ComponentBuilder("")
+        sender.spigot().sendMessage(new ComponentBuilder("")
             .append(new ComponentBuilder("<<Previous>>")
                 .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/embedscript page " + previousPageIndex))
                 .create())
@@ -219,9 +217,9 @@ public class ScriptUI {
                 .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, ""))
                 .create())
             .create());
-        player.sendMessage(separator);
+        sender.sendMessage(separator);
 
-        pageManager.put(player, value -> sendPage(title, player, messages, value, chatHeight));
+        pageManager.put(sender, value -> sendPage(title, sender, messages, value, chatHeight));
     }
 
     private String titleToSeparator(String title) {
