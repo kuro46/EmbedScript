@@ -285,11 +285,7 @@ public class ScriptUI {
         }
         List<BaseComponent[]> page = pages.get(pageIndex);
 
-        String separator = "---< " + title + " >---";
-        int separatorStringLength = (CHAT_WIDTH - separator.length()) / 2;
-        String separatorString = StringUtils.repeat("-", separatorStringLength);
-        separator = separatorString + separator + separatorString;
-
+        String separator = titleToSeparator(title);
         player.sendMessage(separator);
         page.forEach(baseComponents -> player.spigot().sendMessage(baseComponents));
 
@@ -315,5 +311,11 @@ public class ScriptUI {
         player.sendMessage(separator);
 
         pageManager.put(player, value -> sendPage(title, player, messages, value, chatHeight));
+    }
+    
+    private String titleToSeparator(String title){
+        title = "---< " + title + " >---";
+        String separatorString = StringUtils.repeat("-", (CHAT_WIDTH - title.length()) / 2);
+        return separatorString + title + separatorString;
     }
 }
