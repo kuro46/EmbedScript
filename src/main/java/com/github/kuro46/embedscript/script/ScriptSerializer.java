@@ -47,7 +47,7 @@ public class ScriptSerializer {
     static {
         Map<String, FormatterCreator> creators = new HashMap<>();
         creators.put("1.0", Formatter10::new);
-        creators.put("0.2.0",Formatter020::new);
+        creators.put("0.2.0", Formatter020::new);
         CREATORS = Collections.unmodifiableMap(creators);
     }
 
@@ -57,14 +57,14 @@ public class ScriptSerializer {
         } else {
             try (BufferedReader reader = Files.newBufferedReader(path)) {
                 String version = readVersion(path);
-                Formatter formatter = createFormatter(version,path);
+                Formatter formatter = createFormatter(version, path);
                 if (formatter == null) {
                     throw new UnsupportedOperationException("Unsupported version: " + version);
                 }
 
                 Map<ScriptPosition, List<Script>> result = formatter.fromJson(reader);
-                if (!version.equals(LATEST_VERSION)){
-                    serialize(path,result);
+                if (!version.equals(LATEST_VERSION)) {
+                    serialize(path, result);
                 }
                 return result;
             }
@@ -77,7 +77,7 @@ public class ScriptSerializer {
         }
 
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-            Formatter formatter = createFormatter(LATEST_VERSION,path);
+            Formatter formatter = createFormatter(LATEST_VERSION, path);
             if (formatter == null) {
                 throw new IllegalStateException();
             }
@@ -104,7 +104,7 @@ public class ScriptSerializer {
         }, 1, TimeUnit.SECONDS);
     }
 
-    private static Formatter createFormatter(String version,Path path) {
+    private static Formatter createFormatter(String version, Path path) {
         FormatterCreator formatterCreator = CREATORS.get(version);
         if (formatterCreator == null) {
             return null;
@@ -153,7 +153,7 @@ public class ScriptSerializer {
         public abstract String version();
     }
 
-    private static class Formatter020 extends Formatter{
+    private static class Formatter020 extends Formatter {
         public Formatter020(Path filePath) {
             super(filePath);
         }
@@ -168,11 +168,11 @@ public class ScriptSerializer {
             out.beginObject();
             out.name("formatVersion").value(version());
             out.name("coordinates");
-            writeCoordinates(out,value);
+            writeCoordinates(out, value);
             out.endObject();
         }
 
-        private void writeCoordinates(JsonWriter out, Map<ScriptPosition, List<Script>> value) throws IOException{
+        private void writeCoordinates(JsonWriter out, Map<ScriptPosition, List<Script>> value) throws IOException {
             out.beginArray();
             for (Map.Entry<ScriptPosition, List<Script>> entry : value.entrySet()) {
                 ScriptPosition position = entry.getKey();
@@ -181,13 +181,13 @@ public class ScriptSerializer {
                 out.beginObject();
                 out.name("coordinate").jsonValue(GsonHolder.get().toJson(position));
                 out.name("scripts");
-                writeScripts(out,scripts);
+                writeScripts(out, scripts);
                 out.endObject();
             }
             out.endArray();
         }
 
-        private void writeScripts(JsonWriter out,List<Script> scripts) throws IOException{
+        private void writeScripts(JsonWriter out, List<Script> scripts) throws IOException {
             out.beginArray();
             for (Script script : scripts) {
                 out.jsonValue(GsonHolder.get().toJson(script));
@@ -223,16 +223,16 @@ public class ScriptSerializer {
                 List<Script> scripts = null;
 
                 in.beginObject();
-                while (in.hasNext()){
-                    switch (in.nextName()){
+                while (in.hasNext()) {
+                    switch (in.nextName()) {
                         case "coordinate":
-                            position = GsonHolder.get().fromJson(in,new TypeToken<ScriptPosition>() {
+                            position = GsonHolder.get().fromJson(in, new TypeToken<ScriptPosition>() {
                             }.getType());
                             break;
                         case "scripts":
                             scripts = new ArrayList<>();
                             in.beginArray();
-                            while (in.hasNext()){
+                            while (in.hasNext()) {
                                 scripts.add(GsonHolder.get().fromJson(in, new TypeToken<Script>() {
                                 }.getType()));
                             }
@@ -244,7 +244,7 @@ public class ScriptSerializer {
                 }
                 in.endObject();
 
-                coordinates.put(position,scripts);
+                coordinates.put(position, scripts);
             }
             in.endArray();
 
@@ -327,7 +327,7 @@ public class ScriptSerializer {
             return new ScriptBlockScriptPair(position, scripts);
         }
 
-        private List<Script> readScript(JsonReader in) throws IOException{
+        private List<Script> readScript(JsonReader in) throws IOException {
             EventType eventType = null;
             for (EventType type : EventType.values()) {
                 Path fileName = filePath.getFileName();
@@ -338,13 +338,13 @@ public class ScriptSerializer {
                     eventType = type;
                 }
             }
-            if (eventType == null){
+            if (eventType == null) {
                 throw new NullPointerException("Unknown path");
             }
 
             List<Script> scripts = new ArrayList<>();
             in.beginArray();
-            while (in.hasNext()){
+            while (in.hasNext()) {
                 UUID author = null;
                 String command = null;
                 Script.ActionType actionType = null;
@@ -362,8 +362,8 @@ public class ScriptSerializer {
                         case "data":
 
                             in.beginObject();
-                            while (in.hasNext()){
-                                switch (in.nextName()){
+                            while (in.hasNext()) {
+                                switch (in.nextName()) {
                                     case "type":
                                         String nextString = in.nextString();
                                         switch (nextString) {

@@ -62,20 +62,20 @@ public class InteractListener implements Listener {
         }
     }
 
-    private boolean validateClickType(Script script,Action action){
+    private boolean validateClickType(Script script, Action action) {
         Set<Script.ClickType> clickTypes = script.getClickTypes();
-        if (clickTypes.isEmpty()){
+        if (clickTypes.isEmpty()) {
             return false;
         }
 
         Script.ClickType clickTypeOfEvent = Script.ClickType.getByAction(action);
         // PHYSICAL action
-        if (clickTypeOfEvent == null){
+        if (clickTypeOfEvent == null) {
             return false;
         }
 
         for (Script.ClickType clickType : clickTypes) {
-            if (clickType == Script.ClickType.ALL || clickType == clickTypeOfEvent){
+            if (clickType == Script.ClickType.ALL || clickType == clickTypeOfEvent) {
                 return true;
             }
         }
@@ -83,20 +83,20 @@ public class InteractListener implements Listener {
         return false;
     }
 
-    private boolean validatePushType(Script script,PlayerInteractEvent event){
+    private boolean validatePushType(Script script, PlayerInteractEvent event) {
         Set<Script.PushType> pushTypes = script.getPushTypes();
-        if (pushTypes.isEmpty()){
+        if (pushTypes.isEmpty()) {
             return false;
         }
 
         Script.PushType pushTypeOfEvent = Script.PushType.getByEvent(event);
         //Not PHYSICAL or Unknown material
-        if (pushTypeOfEvent == null){
+        if (pushTypeOfEvent == null) {
             return false;
         }
 
         for (Script.PushType pushType : pushTypes) {
-            if (pushType == Script.PushType.ALL || pushType == pushTypeOfEvent){
+            if (pushType == Script.PushType.ALL || pushType == pushTypeOfEvent) {
                 return true;
             }
         }

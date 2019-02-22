@@ -27,7 +27,7 @@ class Migrator {
             for (Map.Entry<String, List<String>> entry : pair.getValue().entrySet()) {
                 List<String> data = entry.getValue();
                 UUID author = getAuthorFromData(data);
-                List<Script> scripts = createScriptsFromData(author,eventType,data);
+                List<Script> scripts = createScriptsFromData(author, eventType, data);
 
                 String rawLocation = entry.getKey();
                 ScriptPosition position = createPositionFromRawLocation(rawLocation);
@@ -43,10 +43,10 @@ class Migrator {
         }
     }
 
-    private static List<Script> createScriptsFromData(UUID author,EventType eventType,List<String> data) throws ParseException{
+    private static List<Script> createScriptsFromData(UUID author, EventType eventType, List<String> data) throws ParseException {
         List<Script> scripts = new ArrayList<>(data.size());
         for (int i = 1; i < data.size(); i++) {
-            scripts.add(createScriptFromLegacyFormat(author,eventType,data.get(i)));
+            scripts.add(createScriptFromLegacyFormat(author, eventType, data.get(i)));
         }
         return scripts;
     }
@@ -76,7 +76,7 @@ class Migrator {
         String permission = null;
         Script.ActionType actionType;
 
-        switch (actionTypeString){
+        switch (actionTypeString) {
             case "@command":
                 actionType = Script.ActionType.COMMAND;
                 break;
@@ -84,19 +84,19 @@ class Migrator {
                 actionType = Script.ActionType.SAY;
                 break;
             default:
-                if (actionTypeString.startsWith("@bypassperm")){
+                if (actionTypeString.startsWith("@bypassperm")) {
                     permission = actionTypeString.split(":")[1];
                     actionType = Script.ActionType.COMMAND;
                     break;
                 }
-                throw new ParseException(String.format("'%s' is unsupported action type!",actionTypeString));
+                throw new ParseException(String.format("'%s' is unsupported action type!", actionTypeString));
         }
 
         Script.MoveType[] moveTypes = null;
         Script.ClickType[] clickTypes = null;
         Script.PushType[] pushTypes;
 
-        switch (eventType){
+        switch (eventType) {
             case INTERACT:
                 clickTypes = new Script.ClickType[]{Script.ClickType.ALL};
                 pushTypes = new Script.PushType[]{Script.PushType.ALL};
@@ -106,7 +106,7 @@ class Migrator {
                 pushTypes = new Script.PushType[0];
                 break;
             default:
-                throw new ParseException(String.format("'%s' is unsupported event type!",eventType));
+                throw new ParseException(String.format("'%s' is unsupported event type!", eventType));
         }
 
         return new Script(author,

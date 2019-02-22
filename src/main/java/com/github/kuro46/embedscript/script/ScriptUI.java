@@ -112,7 +112,7 @@ public class ScriptUI {
                 messages.add(TextComponent.fromLegacyText("@action-type " + collectionToString(script.getActionTypes())));
                 messages.add(TextComponent.fromLegacyText("@action " + collectionToString(script.getActions())));
             }
-            sendPage("Script information",sender,messages,0,12);
+            sendPage("Script information", sender, messages, 0, 12);
         });
     }
 
