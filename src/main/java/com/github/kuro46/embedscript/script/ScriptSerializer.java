@@ -117,8 +117,7 @@ public class ScriptSerializer {
             return LATEST_VERSION;
         }
 
-        try (BufferedReader bufferedReader = Files.newBufferedReader(path);
-             JsonReader reader = new JsonReader(bufferedReader)) {
+        try (JsonReader reader = new JsonReader(Files.newBufferedReader(path))) {
             String version = null;
 
             reader.beginObject();
