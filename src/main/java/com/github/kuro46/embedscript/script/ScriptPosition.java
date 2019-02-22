@@ -116,9 +116,9 @@ public class ScriptPosition implements Comparable<ScriptPosition> {
             Integer z = null;
 
             in.beginObject();
-            while (in.hasNext()){
+            while (in.hasNext()) {
                 String nextName = in.nextName();
-                switch (nextName){
+                switch (nextName) {
                     case "world":
                         world = in.nextString();
                         break;
@@ -132,15 +132,15 @@ public class ScriptPosition implements Comparable<ScriptPosition> {
                         z = in.nextInt();
                         break;
                     default:
-                        throw new JsonParseException(String.format("'%s' is unknown value!",nextName));
+                        throw new JsonParseException(String.format("'%s' is unknown value!", nextName));
                 }
             }
             in.endObject();
 
-            if (world == null || x == null || y == null || z == null){
+            if (world == null || x == null || y == null || z == null) {
                 throw new JsonParseException("'world' or 'x' or 'z' not exists!");
             }
-            return new ScriptPosition(world,x,y,z);
+            return new ScriptPosition(world, x, y, z);
         }
     }
 }

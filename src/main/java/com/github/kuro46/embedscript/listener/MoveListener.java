@@ -46,7 +46,7 @@ public class MoveListener implements Listener {
         }
 
         scripts.forEach(script -> {
-            if (validateMoveType(script,event)) {
+            if (validateMoveType(script, event)) {
                 script.perform(plugin, player);
             }
         });
@@ -61,7 +61,7 @@ public class MoveListener implements Listener {
         for (Script.MoveType moveType : moveTypes) {
             if (moveType == Script.MoveType.ALL) {
                 return true;
-            }else if (moveType == Script.MoveType.GROUND && validateGroundMoveType(event)){
+            } else if (moveType == Script.MoveType.GROUND && validateGroundMoveType(event)) {
                 return true;
             }
         }

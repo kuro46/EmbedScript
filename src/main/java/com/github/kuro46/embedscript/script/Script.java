@@ -90,19 +90,7 @@ public class Script {
         this.actions = unmodifiableList(actions);
     }
 
-    private <E extends Enum<E>> Set<E> unmodifiableEnumSet(E[] elements){
-        return elements.length == 0
-            ? Collections.emptySet()
-            : Collections.unmodifiableSet(EnumSet.copyOf(Arrays.asList(elements)));
-    }
-
-    private <E> List<E> unmodifiableList(E[] elements){
-        return elements.length == 0
-            ? Collections.emptyList()
-            : Collections.unmodifiableList(Arrays.asList(elements));
-    }
-
-    public static Script parse(UUID author,String string) throws ParseException {
+    public static Script parse(UUID author, String string) throws ParseException {
         Pattern leftSquareBracketStartsWithPattern = Pattern.compile('^' + PATTERN_LEFT_SQUARE_BRACKET);
         Pattern rightSquareBracketEndsWithPattern = Pattern.compile(PATTERN_RIGHT_SQUARE_BRACKET + '$');
         Pattern atPattern = Pattern.compile(PATTERN_AT);
@@ -119,7 +107,7 @@ public class Script {
 
         String[] split = atPattern.split(string);
         for (String s : split) {
-            if (s.isEmpty()){
+            if (s.isEmpty()) {
                 continue;
             }
             s = spacePattern.matcher(s).replaceFirst(" @");
@@ -224,6 +212,18 @@ public class Script {
             actions.toArray(new String[]{}));
     }
 
+    private <E extends Enum<E>> Set<E> unmodifiableEnumSet(E[] elements) {
+        return elements.length == 0
+            ? Collections.emptySet()
+            : Collections.unmodifiableSet(EnumSet.copyOf(Arrays.asList(elements)));
+    }
+
+    private <E> List<E> unmodifiableList(E[] elements) {
+        return elements.length == 0
+            ? Collections.emptyList()
+            : Collections.unmodifiableList(Arrays.asList(elements));
+    }
+
     public UUID getAuthor() {
         return author;
     }
@@ -260,19 +260,19 @@ public class Script {
         return actions;
     }
 
-    private boolean hasPermissionOrOP(Player player,String string){
+    private boolean hasPermissionOrOP(Player player, String string) {
         return string.equals("op") ? player.isOp() : player.hasPermission(string);
     }
 
     public void perform(Plugin plugin, Player trigger) {
         for (String permission : permissionsToNeeded) {
-            if (!hasPermissionOrOP(trigger,permission)) {
+            if (!hasPermissionOrOP(trigger, permission)) {
                 return;
             }
         }
 
         for (String permission : permissionsToNotNeeded) {
-            if (hasPermissionOrOP(trigger,permission)) {
+            if (hasPermissionOrOP(trigger, permission)) {
                 return;
             }
         }
@@ -302,7 +302,7 @@ public class Script {
                         trigger.performCommand(action);
                         break;
                     case CONSOLE:
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),action);
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), action);
                         break;
                     default:
                         throw new UnsupportedOperationException(
@@ -328,12 +328,12 @@ public class Script {
         RIGHT,
         LEFT;
 
-        public static ClickType getByAction(Action action){
-            if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK){
+        public static ClickType getByAction(Action action) {
+            if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
                 return RIGHT;
-            }else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK){
+            } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
                 return LEFT;
-            }else {
+            } else {
                 return null;
             }
         }
@@ -344,21 +344,21 @@ public class Script {
         BUTTON,
         PLATE;
 
-        public static PushType getByEvent(PlayerInteractEvent event){
-            if (event.getAction() != Action.PHYSICAL){
+        public static PushType getByEvent(PlayerInteractEvent event) {
+            if (event.getAction() != Action.PHYSICAL) {
                 return null;
             }
 
             Material clickedBlockType = event.getClickedBlock().getType();
             if (clickedBlockType == Material.STONE_BUTTON ||
-                clickedBlockType == Material.WOOD_BUTTON){
+                clickedBlockType == Material.WOOD_BUTTON) {
                 return BUTTON;
-            }else if (clickedBlockType == Material.GOLD_PLATE ||
+            } else if (clickedBlockType == Material.GOLD_PLATE ||
                 clickedBlockType == Material.IRON_PLATE ||
                 clickedBlockType == Material.STONE_PLATE ||
-                clickedBlockType == Material.WOOD_PLATE){
+                clickedBlockType == Material.WOOD_PLATE) {
                 return PLATE;
-            }else {
+            } else {
                 return null;
             }
         }
@@ -409,38 +409,42 @@ public class Script {
             Gson gson = GsonHolder.get();
             Type stringArrayType = new TypeToken<String[]>() {
             }.getType();
-            while (in.hasNext()){
+            while (in.hasNext()) {
                 String nextName = in.nextName();
-                switch (nextName){
+                switch (nextName) {
                     case "author":
-                        author = gson.fromJson(in,TypeToken.get(UUID.class).getType());
+                        author = gson.fromJson(in, TypeToken.get(UUID.class).getType());
                         break;
                     case "moveTypes":
-                        moveTypes = gson.fromJson(in,new TypeToken<MoveType[]>(){}.getType());
+                        moveTypes = gson.fromJson(in, new TypeToken<MoveType[]>() {
+                        }.getType());
                         break;
                     case "clickTypes":
-                        clickTypes = gson.fromJson(in,new TypeToken<ClickType[]>(){}.getType());
+                        clickTypes = gson.fromJson(in, new TypeToken<ClickType[]>() {
+                        }.getType());
                         break;
                     case "pushTypes":
-                        pushTypes = gson.fromJson(in,new TypeToken<PushType[]>(){}.getType());
+                        pushTypes = gson.fromJson(in, new TypeToken<PushType[]>() {
+                        }.getType());
                         break;
                     case "permissionsToGive":
                         permissionsToGive = gson.fromJson(in, stringArrayType);
                         break;
                     case "permissionsToNeeded":
-                        permissionsToNeeded = gson.fromJson(in,stringArrayType);
+                        permissionsToNeeded = gson.fromJson(in, stringArrayType);
                         break;
                     case "permissionsToNotNeeded":
-                        permissionsToNotNeeded = gson.fromJson(in,stringArrayType);
+                        permissionsToNotNeeded = gson.fromJson(in, stringArrayType);
                         break;
                     case "actionTypes":
-                        actionTypes = gson.fromJson(in,new TypeToken<ActionType[]>(){}.getType());
+                        actionTypes = gson.fromJson(in, new TypeToken<ActionType[]>() {
+                        }.getType());
                         break;
                     case "actions":
-                        actions = gson.fromJson(in,stringArrayType);
+                        actions = gson.fromJson(in, stringArrayType);
                         break;
                     default:
-                        throw new JsonParseException(String.format("'%s' is unknown value!",nextName));
+                        throw new JsonParseException(String.format("'%s' is unknown value!", nextName));
                 }
             }
             in.endObject();
@@ -452,7 +456,7 @@ public class Script {
                 || permissionsToNeeded == null
                 || permissionsToNotNeeded == null
                 || actionTypes == null
-                || actions == null){
+                || actions == null) {
                 throw new JsonParseException("'moveTypes' or" +
                     " 'clickTypes' or" +
                     " 'pushTypes' or" +

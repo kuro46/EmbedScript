@@ -18,7 +18,7 @@ import java.util.Set;
 public class ScriptManager {
     private static final Map<EventType, ScriptManager> MANAGERS = new EnumMap<>(EventType.class);
 
-    private final Map<ScriptPosition,List<Script>> scripts;
+    private final Map<ScriptPosition, List<Script>> scripts;
     private final Path path;
 
     public ScriptManager(Map<ScriptPosition, List<Script>> scripts, Path path) {
@@ -26,20 +26,20 @@ public class ScriptManager {
         this.path = path;
     }
 
-    public static void loadFiles(Path dataFolder) throws IOException{
+    public static void loadFiles(Path dataFolder) throws IOException {
         Files.createDirectories(dataFolder);
 
         for (EventType eventType : EventType.values()) {
             Path filePath = dataFolder.resolve(eventType.getFileName());
-            MANAGERS.put(eventType,load(filePath));
+            MANAGERS.put(eventType, load(filePath));
         }
     }
 
-    public static ScriptManager load(Path filePath) throws IOException{
-        return new ScriptManager(ScriptSerializer.deserialize(filePath),filePath);
+    public static ScriptManager load(Path filePath) throws IOException {
+        return new ScriptManager(ScriptSerializer.deserialize(filePath), filePath);
     }
 
-    public static ScriptManager get(EventType eventType){
+    public static ScriptManager get(EventType eventType) {
         return MANAGERS.get(eventType);
     }
 
@@ -47,26 +47,26 @@ public class ScriptManager {
         return path;
     }
 
-    private List<Script> getAndPutIfNeeded(ScriptPosition position){
-        return scripts.computeIfAbsent(position,ignore -> new ArrayList<>(1));
+    private List<Script> getAndPutIfNeeded(ScriptPosition position) {
+        return scripts.computeIfAbsent(position, ignore -> new ArrayList<>(1));
     }
 
-    public boolean contains(ScriptPosition position){
+    public boolean contains(ScriptPosition position) {
         return scripts.containsKey(position);
     }
 
-    public List<Script> get(ScriptPosition position){
-        return scripts.getOrDefault(position,Collections.emptyList());
+    public List<Script> get(ScriptPosition position) {
+        return scripts.getOrDefault(position, Collections.emptyList());
     }
 
-    public void put(ScriptPosition position, Script script){
+    public void put(ScriptPosition position, Script script) {
         List<Script> scripts = getAndPutIfNeeded(position);
         scripts.add(script);
         ScriptSerializer.serializeLaterAsync(path, new HashMap<>(this.scripts));
     }
 
-    public void putIfAbsent(ScriptPosition position, Script script){
-        if (scripts.containsKey(position)){
+    public void putIfAbsent(ScriptPosition position, Script script) {
+        if (scripts.containsKey(position)) {
             return;
         }
         List<Script> scripts = getAndPutIfNeeded(position);
@@ -74,39 +74,40 @@ public class ScriptManager {
         ScriptSerializer.serializeLaterAsync(path, new HashMap<>(this.scripts));
     }
 
-    public List<Script> remove(ScriptPosition position){
+    public List<Script> remove(ScriptPosition position) {
         List<Script> s = scripts.remove(position);
         ScriptSerializer.serializeLaterAsync(path, new HashMap<>(scripts));
         return s;
     }
 
-    public Set<ScriptPosition> keySet(){
+    public Set<ScriptPosition> keySet() {
         return scripts.keySet();
     }
 
-    public Set<Map.Entry<ScriptPosition,List<Script>>> entrySet(){
+    public Set<Map.Entry<ScriptPosition, List<Script>>> entrySet() {
         return scripts.entrySet();
     }
 
     public void save() throws IOException {
-        ScriptSerializer.serialize(path,new HashMap<>(scripts));
+        ScriptSerializer.serialize(path, new HashMap<>(scripts));
     }
 
-    public void saveAsync(){
-        ScriptSerializer.serializeLaterAsync(path,new HashMap<>(scripts));
+    public void saveAsync() {
+        ScriptSerializer.serializeLaterAsync(path, new HashMap<>(scripts));
     }
 
     /**
      * Returns snapshot of this instance. Return value is unmodifiable and thread-safe.
+     *
      * @return Snapshot of this instance
      */
-    public Map<ScriptPosition,List<Script>> snapshot(){
-        Map<ScriptPosition,List<Script>> scripts = new HashMap<>();
+    public Map<ScriptPosition, List<Script>> snapshot() {
+        Map<ScriptPosition, List<Script>> scripts = new HashMap<>();
         for (Map.Entry<ScriptPosition, List<Script>> entry : this.scripts.entrySet()) {
             ScriptPosition position = entry.getKey();
             List<Script> scriptList = entry.getValue();
 
-            scripts.put(position,Collections.unmodifiableList(scriptList));
+            scripts.put(position, Collections.unmodifiableList(scriptList));
         }
         return Collections.unmodifiableMap(scripts);
     }

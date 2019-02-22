@@ -41,25 +41,25 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
 
         try {
             Path dataFolder = getDataFolder().toPath();
-            if (Files.notExists(dataFolder)){
+            if (Files.notExists(dataFolder)) {
                 Files.createDirectory(dataFolder);
             }
 
             Path filePath = dataFolder.resolve("scripts.json");
 
-            if (Files.notExists(filePath)){
+            if (Files.notExists(filePath)) {
                 Files.createFile(filePath);
 
                 boolean needMigrate = false;
                 for (EventType eventType : EventType.values()) {
                     Path eventFilePath = dataFolder.resolve(eventType.getFileName());
-                    if (Files.exists(eventFilePath)){
+                    if (Files.exists(eventFilePath)) {
                         Files.delete(eventFilePath);
                         needMigrate = true;
                     }
                 }
 
-                if (needMigrate){
+                if (needMigrate) {
                     Map<ScriptPosition, List<Script>> merged = new HashMap<>();
                     ScriptManager.loadFiles(dataFolder);
                     for (EventType eventType : EventType.values()) {
@@ -67,12 +67,12 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
                         for (Map.Entry<ScriptPosition, List<Script>> entry : scriptManager.entrySet()) {
                             ScriptPosition position = entry.getKey();
                             List<Script> scripts = entry.getValue();
-                            List<Script> mergeTo = merged.computeIfAbsent(position,ignore -> new ArrayList<>());
+                            List<Script> mergeTo = merged.computeIfAbsent(position, ignore -> new ArrayList<>());
 
                             mergeTo.addAll(scripts);
                         }
                     }
-                    ScriptSerializer.serialize(filePath,merged);
+                    ScriptSerializer.serialize(filePath, merged);
                 }
             }
 
@@ -93,8 +93,8 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
 
     private void registerListeners(Requests requests) {
         PluginManager pluginManager = Bukkit.getPluginManager();
-        pluginManager.registerEvents(new InteractListener(this,scriptManager, requests), this);
-        pluginManager.registerEvents(new MoveListener(this,scriptManager), this);
+        pluginManager.registerEvents(new InteractListener(this, scriptManager, requests), this);
+        pluginManager.registerEvents(new MoveListener(this, scriptManager), this);
         pluginManager.registerEvents(this, this);
     }
 
