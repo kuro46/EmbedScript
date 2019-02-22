@@ -46,8 +46,6 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
             Path filePath = dataFolder.resolve("scripts.json");
 
             if (Files.notExists(filePath)) {
-                Files.createFile(filePath);
-
                 boolean needMigrate = false;
                 for (EventType eventType : EventType.values()) {
                     Path eventFilePath = dataFolder.resolve(eventType.getFileName());
