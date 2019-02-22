@@ -58,7 +58,7 @@ public class Script {
     private static final String PATTERN_AT = "[^\\\\]??@";
     private static final String PATTERN_LEFT_SQUARE_BRACKET = "[^\\\\]??\\[";
     private static final String PATTERN_RIGHT_SQUARE_BRACKET = "[^\\\\]??]";
-    private static final String PATTERN_COMMA = "[^\\\\]??,";
+    private static final String PATTERN_ARRAY_DELIMITER = "[^\\\\]??]\\[";
 
     private final UUID author;
     private final Set<MoveType> moveTypes;
@@ -132,7 +132,7 @@ public class Script {
                 rightSquareBracketEndsWithPattern.matcher(v).find()) {
                 // trim "[" and "]"
                 v = v.substring(1, v.length() - 1);
-                Collections.addAll(values, Pattern.compile(PATTERN_COMMA).split(v));
+                Collections.addAll(values, Pattern.compile(PATTERN_ARRAY_DELIMITER).split(v));
             } else {
                 values.add(v);
             }
