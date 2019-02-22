@@ -1,6 +1,5 @@
-package com.github.kuro46.embedscript.command;
+package com.github.kuro46.embedscript;
 
-import com.github.kuro46.embedscript.Prefix;
 import com.github.kuro46.embedscript.request.Request;
 import com.github.kuro46.embedscript.request.RequestType;
 import com.github.kuro46.embedscript.request.Requests;
@@ -22,11 +21,17 @@ import java.util.Locale;
 /**
  * @author shirokuro
  */
-public class MainCommandExecutor implements CommandExecutor {
+public class ESCommandExecutor implements CommandExecutor {
+    private final String preset;
     private final ScriptUI scriptUI;
     private final Requests requests;
 
-    public MainCommandExecutor(ScriptUI scriptUI, Requests requests) {
+    public ESCommandExecutor(ScriptUI scriptUI, Requests requests) {
+        this("", scriptUI, requests);
+    }
+
+    public ESCommandExecutor(String preset, ScriptUI scriptUI, Requests requests) {
+        this.preset = preset;
         this.scriptUI = scriptUI;
         this.requests = requests;
     }
@@ -148,7 +153,7 @@ public class MainCommandExecutor implements CommandExecutor {
         String stringScript = Util.joinStringSpaceDelimiter(1, args);
         Script script;
         try {
-            script = Script.parse(player.getUniqueId(), stringScript);
+            script = Script.parse(player.getUniqueId(), preset + stringScript);
         } catch (ParseException e) {
             player.sendMessage(Prefix.ERROR_PREFIX +
                 String.format("Failed to parse script. (error: %s)", e.getMessage()));

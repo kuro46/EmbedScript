@@ -1,7 +1,5 @@
 package com.github.kuro46.embedscript;
 
-import com.github.kuro46.embedscript.command.EventCommandExecutor;
-import com.github.kuro46.embedscript.command.MainCommandExecutor;
 import com.github.kuro46.embedscript.listener.InteractListener;
 import com.github.kuro46.embedscript.listener.MoveListener;
 import com.github.kuro46.embedscript.request.Requests;
@@ -101,9 +99,9 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
     private void registerCommands(Requests requests) {
         for (EventType eventType : EventType.values()) {
             getCommand(eventType.getCommandName())
-                .setExecutor(new EventCommandExecutor(eventType, requests, scriptUI));
+                .setExecutor(new ESCommandExecutor(eventType.getPreset(), scriptUI, requests));
         }
-        getCommand("embedscript").setExecutor(new MainCommandExecutor(scriptUI, requests));
+        getCommand("embedscript").setExecutor(new ESCommandExecutor(scriptUI, requests));
     }
 
     @SuppressWarnings("unused")
