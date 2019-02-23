@@ -46,11 +46,19 @@ class Migrator {
     }
 
     private static List<Script> createScriptsFromData(UUID author, EventType eventType, List<String> data) throws ParseException {
-        List<Script> scripts = new ArrayList<>(data.size());
-        for (int i = 1; i < data.size(); i++) {
-            scripts.add(createScriptFromLegacyFormat(author, eventType, data.get(i)));
+        try {
+            return data.stream()
+                .skip(1)
+                .map(script -> {
+                    try {
+                        return createScriptFromLegacyFormat(author, eventType, script);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toList());
+        } catch (RuntimeException e) {
+            throw new ParseException(e.getCause());
         }
-        return scripts;
     }
 
     /**
