@@ -50,7 +50,6 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
                 for (EventType eventType : EventType.values()) {
                     Path eventFilePath = dataFolder.resolve(eventType.getFileName());
                     if (Files.exists(eventFilePath)) {
-                        Files.delete(eventFilePath);
                         needMigrate = true;
                     }
                 }
@@ -67,6 +66,7 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
 
                             mergeTo.addAll(scripts);
                         }
+                        Files.delete(dataFolder.resolve(eventType.getFileName()));
                     }
                     ScriptSerializer.serialize(filePath, merged);
                 }
