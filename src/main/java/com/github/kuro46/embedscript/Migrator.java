@@ -11,9 +11,11 @@ import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author shirokuro
@@ -71,7 +73,9 @@ class Migrator {
 
         String[] split = legacy.split(" ");
         String actionTypeString = split[0];
-        String action = split[1];
+        String action = Arrays.stream(split)
+            .skip(1)
+            .collect(Collectors.joining(" "));
 
         String permission = null;
         Script.ActionType actionType;
