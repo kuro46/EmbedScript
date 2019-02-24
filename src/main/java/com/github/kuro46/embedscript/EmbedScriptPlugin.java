@@ -45,32 +45,7 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
 
             Path filePath = dataFolder.resolve("scripts.json");
 
-            if (Files.notExists(filePath)) {
-                boolean needMigrate = false;
-                for (EventType eventType : EventType.values()) {
-                    Path eventFilePath = dataFolder.resolve(eventType.getFileName());
-                    if (Files.exists(eventFilePath)) {
-                        needMigrate = true;
-                    }
-                }
-
-                if (needMigrate) {
-                    Map<ScriptPosition, List<Script>> merged = new HashMap<>();
-                    ScriptManager.loadFiles(dataFolder);
-                    for (EventType eventType : EventType.values()) {
-                        ScriptManager scriptManager = ScriptManager.get(eventType);
-                        for (Map.Entry<ScriptPosition, List<Script>> entry : scriptManager.entrySet()) {
-                            ScriptPosition position = entry.getKey();
-                            List<Script> scripts = entry.getValue();
-                            List<Script> mergeTo = merged.computeIfAbsent(position, ignore -> new ArrayList<>());
-
-                            mergeTo.addAll(scripts);
-                        }
-                        Files.delete(dataFolder.resolve(eventType.getFileName()));
-                    }
-                    ScriptSerializer.serialize(filePath, merged);
-                }
-            }
+            migrateFromOldFormatIfNeeded(filePath, dataFolder);
 
             scriptManager = ScriptManager.load(filePath);
             scriptUI = new ScriptUI(scriptManager);
@@ -100,6 +75,35 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
                 .setExecutor(new ESCommandExecutor(eventType.getPreset(), scriptUI, requests));
         }
         getCommand("embedscript").setExecutor(new ESCommandExecutor(scriptUI, requests));
+    }
+
+    private void migrateFromOldFormatIfNeeded(Path scriptFilePath, Path dataFolder) throws IOException {
+        if (Files.notExists(scriptFilePath)) {
+            boolean needMigrate = false;
+            for (EventType eventType : EventType.values()) {
+                Path eventFilePath = dataFolder.resolve(eventType.getFileName());
+                if (Files.exists(eventFilePath)) {
+                    needMigrate = true;
+                }
+            }
+
+            if (needMigrate) {
+                Map<ScriptPosition, List<Script>> merged = new HashMap<>();
+                ScriptManager.loadFiles(dataFolder);
+                for (EventType eventType : EventType.values()) {
+                    ScriptManager scriptManager = ScriptManager.get(eventType);
+                    for (Map.Entry<ScriptPosition, List<Script>> entry : scriptManager.entrySet()) {
+                        ScriptPosition position = entry.getKey();
+                        List<Script> scripts = entry.getValue();
+                        List<Script> mergeTo = merged.computeIfAbsent(position, ignore -> new ArrayList<>());
+
+                        mergeTo.addAll(scripts);
+                    }
+                    Files.delete(dataFolder.resolve(eventType.getFileName()));
+                }
+                ScriptSerializer.serialize(scriptFilePath, merged);
+            }
+        }
     }
 
     @SuppressWarnings("unused")
