@@ -87,9 +87,11 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         Map<ScriptPosition, List<Script>> merged = new HashMap<>();
         try {
             Arrays.stream(EventType.values())
-                .map(eventType -> {
+                .map(eventType -> dataFolder.resolve(eventType.getFileName()))
+                .filter(path -> Files.exists(path))
+                .map(path -> {
                     try {
-                        return ScriptManager.load(dataFolder.resolve(eventType.getFileName()));
+                        return ScriptManager.load(path);
                     } catch (IOException e) {
                         throw new UncheckedIOException(e);
                     }
