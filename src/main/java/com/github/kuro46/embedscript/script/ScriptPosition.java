@@ -80,11 +80,8 @@ public class ScriptPosition implements Comparable<ScriptPosition> {
         if (zCompareTo != 0) {
             return zCompareTo;
         }
-        int worldCompareTo = world.compareTo(o.world);
-        if (worldCompareTo != 0) {
-            return worldCompareTo;
-        }
-        return 0;
+
+        return world.compareTo(o.world);
     }
 
     @Override

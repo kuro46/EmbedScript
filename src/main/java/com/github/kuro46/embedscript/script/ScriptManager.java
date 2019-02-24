@@ -1,11 +1,9 @@
 package com.github.kuro46.embedscript.script;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +14,6 @@ import java.util.Set;
  * This class is not thread-safe
  */
 public class ScriptManager {
-    private static final Map<EventType, ScriptManager> MANAGERS = new EnumMap<>(EventType.class);
-
     private final Map<ScriptPosition, List<Script>> scripts;
     private final Path path;
 
@@ -26,21 +22,8 @@ public class ScriptManager {
         this.path = path;
     }
 
-    public static void loadFiles(Path dataFolder) throws IOException {
-        Files.createDirectories(dataFolder);
-
-        for (EventType eventType : EventType.values()) {
-            Path filePath = dataFolder.resolve(eventType.getFileName());
-            MANAGERS.put(eventType, load(filePath));
-        }
-    }
-
     public static ScriptManager load(Path filePath) throws IOException {
         return new ScriptManager(ScriptSerializer.deserialize(filePath), filePath);
-    }
-
-    public static ScriptManager get(EventType eventType) {
-        return MANAGERS.get(eventType);
     }
 
     public Path getPath() {
