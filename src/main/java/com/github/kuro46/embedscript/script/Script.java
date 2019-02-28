@@ -3,6 +3,8 @@ package com.github.kuro46.embedscript.script;
 import com.github.kuro46.embedscript.GsonHolder;
 import com.github.kuro46.embedscript.api.EmbedScriptAPI;
 import com.github.kuro46.embedscript.api.PerformListener;
+import com.github.kuro46.embedscript.script.parser.Processor;
+import com.github.kuro46.embedscript.script.parser.Processors;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
@@ -10,6 +12,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -20,12 +23,10 @@ import org.bukkit.plugin.Plugin;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -55,10 +56,16 @@ import java.util.regex.Pattern;
 @JsonAdapter(Script.Adapter.class)
 public class Script {
     private static final Pattern PLAYER_PATTERN = Pattern.compile("<player>", Pattern.LITERAL);
-    private static final String PATTERN_AT = "[^\\\\]??@";
-    private static final String PATTERN_LEFT_SQUARE_BRACKET = "[^\\\\]??\\[";
-    private static final String PATTERN_RIGHT_SQUARE_BRACKET = "[^\\\\]??]";
-    private static final String PATTERN_ARRAY_DELIMITER = "[^\\\\]??]\\[";
+    private static final Processor[] PROCESSORS = new Processor[]{
+        Processors.LISTEN_CLICK,
+        Processors.LISTEN_MOVE,
+        Processors.LISTEN_PUSH,
+        Processors.ENOUGH_PERMISSION,
+        Processors.NOT_ENOUGH_PERMISSION,
+        Processors.GIVE_PERMISSION,
+        Processors.ACTION_TYPE,
+        Processors.ACTION
+    };
 
     private final UUID author;
     private final Set<MoveType> moveTypes;
@@ -91,125 +98,24 @@ public class Script {
     }
 
     public static Script parse(UUID author, String string) throws ParseException {
-        Pattern leftSquareBracketStartsWithPattern = Pattern.compile('^' + PATTERN_LEFT_SQUARE_BRACKET);
-        Pattern rightSquareBracketEndsWithPattern = Pattern.compile(PATTERN_RIGHT_SQUARE_BRACKET + '$');
-        Pattern atPattern = Pattern.compile(PATTERN_AT);
-        Pattern spacePattern = Pattern.compile(" ");
-
-        List<MoveType> moveTypes = new ArrayList<>(1);
-        List<ClickType> clickTypes = new ArrayList<>(1);
-        List<PushType> pushTypes = new ArrayList<>(1);
-        List<String> permissionsToGive = new ArrayList<>(1);
-        List<String> permissionsToNeeded = new ArrayList<>(1);
-        List<String> permissionsToNotNeeded = new ArrayList<>(1);
-        List<ActionType> actionTypes = new ArrayList<>(1);
-        List<String> actions = new ArrayList<>(1);
-
-        String[] split = atPattern.split(string);
-        for (String s : split) {
-            if (s.isEmpty()) {
-                continue;
-            }
-            s = spacePattern.matcher(s).replaceFirst(" @");
-            String[] keyValue = atPattern.split(s);
-            String key = keyValue[0];
-            String v = keyValue[1];
-
-            List<String> values = new ArrayList<>(1);
-            if (leftSquareBracketStartsWithPattern.matcher(v).find() &&
-                rightSquareBracketEndsWithPattern.matcher(v).find()) {
-                // trim "[" and "]"
-                v = v.substring(1, v.length() - 1);
-                Collections.addAll(values, Pattern.compile(PATTERN_ARRAY_DELIMITER).split(v));
-            } else {
-                values.add(v);
-            }
-
-            ValueConsumer<String> valueConsumer;
-
-            switch (key) {
-                case "listen-move":
-                case "lm":
-                    moveTypes.clear();
-                    valueConsumer = value -> {
-                        try {
-                            moveTypes.add(MoveType.valueOf(value.toUpperCase(Locale.ENGLISH)));
-                        } catch (IllegalArgumentException e) {
-                            throw new ParseException(String.format("'%s' is unknown value. (key: '%s')", value, key), e);
-                        }
-                    };
-                    break;
-                case "listen-click":
-                case "lc":
-                    clickTypes.clear();
-                    valueConsumer = value -> {
-                        try {
-                            clickTypes.add(ClickType.valueOf(value.toUpperCase(Locale.ENGLISH)));
-                        } catch (IllegalArgumentException e) {
-                            throw new ParseException(String.format("'%s' is unknown value. (key: '%s')", value, key), e);
-                        }
-                    };
-                    break;
-                case "listen-push":
-                case "lp":
-                    pushTypes.clear();
-                    valueConsumer = value -> {
-                        try {
-                            pushTypes.add(PushType.valueOf(value.toUpperCase(Locale.ENGLISH)));
-                        } catch (IllegalArgumentException e) {
-                            throw new ParseException(String.format("'%s' is unknown value. (key: '%s')", value, key), e);
-                        }
-                    };
-                    break;
-                case "give-permission":
-                case "gp":
-                    pushTypes.clear();
-                    valueConsumer = permissionsToGive::add;
-                    break;
-                case "enough-permission":
-                case "ep":
-                    permissionsToNeeded.clear();
-                    valueConsumer = permissionsToNeeded::add;
-                    break;
-                case "not-enough-permission":
-                case "nep":
-                    permissionsToNotNeeded.clear();
-                    valueConsumer = permissionsToNotNeeded::add;
-                    break;
-                case "action-type":
-                case "at":
-                    actionTypes.clear();
-                    valueConsumer = value -> {
-                        try {
-                            actionTypes.add(ActionType.valueOf(value.toUpperCase(Locale.ENGLISH)));
-                        } catch (IllegalArgumentException e) {
-                            throw new ParseException(String.format("'%s' is unknown value. (key: '%s')", value, key), e);
-                        }
-                    };
-                    break;
-                case "action":
-                case "a":
-                    actions.clear();
-                    valueConsumer = actions::add;
-                    break;
-                default:
-                    throw new ParseException(String.format("'%s' is unknown key.", key));
-            }
-
-            for (String value : values) {
-                valueConsumer.accept(value);
-            }
+        ScriptBuffer source = new ScriptBuffer(string);
+        // canonicalize phase
+        for (Processor processor : PROCESSORS) {
+            processor.canonicalize(source);
         }
 
-        return new Script(author,
-            moveTypes.toArray(new MoveType[]{}),
-            clickTypes.toArray(new ClickType[]{}),
-            pushTypes.toArray(new PushType[]{}),
-            permissionsToGive.toArray(new String[]{}),
-            permissionsToNeeded.toArray(new String[]{}),
-            permissionsToNotNeeded.toArray(new String[]{}),
-            actionTypes.toArray(new ActionType[]{}),
-            actions.toArray(new String[]{}));
+        // setup phase
+        for (Processor processor : PROCESSORS) {
+            processor.setup(source);
+        }
+
+        // processing phase
+        Builder builder = new Builder(author);
+        for (Processor processor : PROCESSORS) {
+            processor.process(builder, source);
+        }
+
+        return builder.build();
     }
 
     private <E extends Enum<E>> Set<E> unmodifiableEnumSet(E[] elements) {
@@ -371,11 +277,6 @@ public class Script {
         CONSOLE
     }
 
-    @FunctionalInterface
-    private interface ValueConsumer<V> {
-        void accept(V value) throws ParseException;
-    }
-
     public static class Adapter extends TypeAdapter<Script> {
         @Override
         public void write(JsonWriter out, Script value) throws IOException {
@@ -477,4 +378,98 @@ public class Script {
                 actions);
         }
     }
+
+    public static final class Builder {
+        private final UUID author;
+        private MoveType[] moveTypes = new MoveType[0];
+        private ClickType[] clickTypes = new ClickType[0];
+        private PushType[] pushTypes = new PushType[0];
+        private String[] permissionsToGive = new String[0];
+        private String[] permissionsToNeeded = new String[0];
+        private String[] permissionsToNotNeeded = new String[0];
+        private ActionType[] actionTypes = new ActionType[0];
+        private String[] actions = new String[0];
+
+        public Builder(UUID author) {
+            this.author = author;
+        }
+
+        public Builder withMoveTypes(MoveType[] moveTypes) {
+            this.moveTypes = moveTypes;
+            return this;
+        }
+
+        public Builder withClickTypes(ClickType[] clickTypes) {
+            this.clickTypes = clickTypes;
+            return this;
+        }
+
+        public Builder withPushTypes(PushType[] pushTypes) {
+            this.pushTypes = pushTypes;
+            return this;
+        }
+
+        public Builder withPermissionsToGive(String[] permissionsToGive) {
+            this.permissionsToGive = permissionsToGive;
+            return this;
+        }
+
+        public Builder withPermissionsToNeeded(String[] permissionsToNeeded) {
+            this.permissionsToNeeded = permissionsToNeeded;
+            return this;
+        }
+
+        public Builder withPermissionsToNotNeeded(String[] permissionsToNotNeeded) {
+            this.permissionsToNotNeeded = permissionsToNotNeeded;
+            return this;
+        }
+
+        public Builder withActionTypes(ActionType[] actionTypes) {
+            this.actionTypes = actionTypes;
+            return this;
+        }
+
+        public Builder withActions(String[] actions) {
+            this.actions = actions;
+            return this;
+        }
+
+        public Script build() throws ParseException {
+            if (ArrayUtils.isEmpty(actionTypes) || ArrayUtils.isEmpty(actions)) {
+                throw new ParseException("ActionType or Action is empty!");
+            }
+
+            if (ArrayUtils.isEmpty(moveTypes) && ArrayUtils.isEmpty(clickTypes) && ArrayUtils.isEmpty(pushTypes)) {
+                throw new ParseException("MoveType, ClickType or PushType is must be specified");
+            }
+
+            return new Script(author,
+                moveTypes,
+                clickTypes,
+                pushTypes,
+                permissionsToGive,
+                permissionsToNeeded,
+                permissionsToNotNeeded,
+                actionTypes,
+                actions);
+        }
+    }
+
+//    public static class Builder{
+//        private final UUID author;
+//        private Set<MoveType> moveTypes;
+//        private Set<ClickType> clickTypes;
+//        private Set<PushType> pushTypes;
+//        private List<String> permissionsToGive;
+//        private List<String> permissionsToNeeded;
+//        private List<String> permissionsToNotNeeded;
+//        private List<ActionType> actionTypes;
+//        private List<String> actions;
+//
+//        public Builder(UUID author) {
+//            this.author = author;
+//        }
+//
+//
+//    }
 }
