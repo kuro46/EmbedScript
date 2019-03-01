@@ -6,6 +6,7 @@ import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptUI;
+import com.github.kuro46.embedscript.script.parser.ScriptParser;
 import com.github.kuro46.embedscript.util.Util;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
@@ -22,15 +23,17 @@ import java.util.Locale;
  * @author shirokuro
  */
 public class ESCommandExecutor implements CommandExecutor {
+    private final ScriptParser scriptParser;
     private final String preset;
     private final ScriptUI scriptUI;
     private final Requests requests;
 
-    public ESCommandExecutor(ScriptUI scriptUI, Requests requests) {
-        this("", scriptUI, requests);
+    public ESCommandExecutor(ScriptParser scriptParser, ScriptUI scriptUI, Requests requests) {
+        this(scriptParser, "", scriptUI, requests);
     }
 
-    public ESCommandExecutor(String preset, ScriptUI scriptUI, Requests requests) {
+    public ESCommandExecutor(ScriptParser scriptParser, String preset, ScriptUI scriptUI, Requests requests) {
+        this.scriptParser = scriptParser;
         this.preset = preset;
         this.scriptUI = scriptUI;
         this.requests = requests;
@@ -153,7 +156,7 @@ public class ESCommandExecutor implements CommandExecutor {
         String stringScript = Util.joinStringSpaceDelimiter(1, args);
         Script script;
         try {
-            script = Script.parse(player.getUniqueId(), preset + stringScript);
+            script = scriptParser.parse(player.getUniqueId(), preset + stringScript);
         } catch (ParseException e) {
             player.sendMessage(Prefix.ERROR_PREFIX +
                 String.format("Failed to parse script. (error: %s)", e.getMessage()));

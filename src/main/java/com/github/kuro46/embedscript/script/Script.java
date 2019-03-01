@@ -3,8 +3,6 @@ package com.github.kuro46.embedscript.script;
 import com.github.kuro46.embedscript.GsonHolder;
 import com.github.kuro46.embedscript.api.EmbedScriptAPI;
 import com.github.kuro46.embedscript.api.PerformListener;
-import com.github.kuro46.embedscript.script.parser.Processor;
-import com.github.kuro46.embedscript.script.parser.Processors;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
@@ -56,16 +54,6 @@ import java.util.regex.Pattern;
 @JsonAdapter(Script.Adapter.class)
 public class Script {
     private static final Pattern PLAYER_PATTERN = Pattern.compile("<player>", Pattern.LITERAL);
-    private static final Processor[] PROCESSORS = new Processor[]{
-        Processors.LISTEN_CLICK,
-        Processors.LISTEN_MOVE,
-        Processors.LISTEN_PUSH,
-        Processors.ENOUGH_PERMISSION,
-        Processors.NOT_ENOUGH_PERMISSION,
-        Processors.GIVE_PERMISSION,
-        Processors.ACTION_TYPE,
-        Processors.ACTION
-    };
 
     private final UUID author;
     private final Set<MoveType> moveTypes;
@@ -95,27 +83,6 @@ public class Script {
         this.permissionsToNotNeeded = unmodifiableList(permissionsToNotNeeded);
         this.actionTypes = unmodifiableList(actionTypes);
         this.actions = unmodifiableList(actions);
-    }
-
-    public static Script parse(UUID author, String string) throws ParseException {
-        ScriptBuffer source = new ScriptBuffer(string);
-        // canonicalize phase
-        for (Processor processor : PROCESSORS) {
-            processor.canonicalize(source);
-        }
-
-        // setup phase
-        for (Processor processor : PROCESSORS) {
-            processor.setup(source);
-        }
-
-        // processing phase
-        Builder builder = new Builder(author);
-        for (Processor processor : PROCESSORS) {
-            processor.process(builder, source);
-        }
-
-        return builder.build();
     }
 
     private <E extends Enum<E>> Set<E> unmodifiableEnumSet(E[] elements) {
