@@ -4,17 +4,17 @@ package com.github.kuro46.embedscript.script;
  * @author shirokuro
  */
 public enum EventType {
-    WALK("WalkScripts.json", "eswalk", "@listen-move GROUND "),
-    INTERACT("InteractScripts.json", "esinteract", "@listen-click ALL @listen-push ALL ");
+    WALK("WalkScripts.json", "eswalk", "walk"),
+    INTERACT("InteractScripts.json", "esinteract", "walk");
 
     private final String fileName;
     private final String commandName;
-    private final String preset;
+    private final String presetName;
 
-    EventType(String fileName, String commandName, String preset) {
+    EventType(String fileName, String commandName, String presetName) {
         this.fileName = fileName;
         this.commandName = commandName;
-        this.preset = preset;
+        this.presetName = presetName;
     }
 
     public String getFileName() {
@@ -25,7 +25,7 @@ public enum EventType {
         return commandName;
     }
 
-    public String getPreset() {
-        return preset;
+    public String getPresetName() {
+        return presetName;
     }
 }

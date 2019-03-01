@@ -86,7 +86,7 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
     private void registerCommands(Requests requests, ScriptParser scriptParser) {
         for (EventType eventType : EventType.values()) {
             getCommand(eventType.getCommandName())
-                .setExecutor(new ESCommandExecutor(scriptParser, eventType.getPreset(), scriptUI, requests));
+                .setExecutor(new ESCommandExecutor(scriptParser, eventType.getPresetName(), scriptUI, requests));
         }
         getCommand("embedscript").setExecutor(new ESCommandExecutor(scriptParser, scriptUI, requests));
     }
