@@ -9,6 +9,7 @@ import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.github.kuro46.embedscript.script.ScriptSerializer;
 import com.github.kuro46.embedscript.script.ScriptUI;
+import com.github.kuro46.embedscript.script.parser.ScriptParser;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.event.EventHandler;
@@ -56,7 +57,8 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         }
 
         Requests requests = new Requests(scriptUI);
-        registerCommands(requests);
+        ScriptParser scriptParser = new ScriptParser();
+        registerCommands(requests, scriptParser);
 
         registerListeners(requests);
 
@@ -71,12 +73,12 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         pluginManager.registerEvents(this, this);
     }
 
-    private void registerCommands(Requests requests) {
+    private void registerCommands(Requests requests, ScriptParser scriptParser) {
         for (EventType eventType : EventType.values()) {
             getCommand(eventType.getCommandName())
-                .setExecutor(new ESCommandExecutor(eventType.getPreset(), scriptUI, requests));
+                .setExecutor(new ESCommandExecutor(scriptParser, eventType.getPreset(), scriptUI, requests));
         }
-        getCommand("embedscript").setExecutor(new ESCommandExecutor(scriptUI, requests));
+        getCommand("embedscript").setExecutor(new ESCommandExecutor(scriptParser, scriptUI, requests));
     }
 
     private void migrateFromOldFormatIfNeeded(Path scriptFilePath, Path dataFolder) throws IOException {
