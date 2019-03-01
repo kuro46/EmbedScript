@@ -1,0 +1,3 @@
+presets:
+  interact: "@listen-click ALL @listen-push ALL"
+  walk: "@listen-move GROUND"

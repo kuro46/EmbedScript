@@ -12,6 +12,7 @@ import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.script.parser.ScriptParser;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
@@ -57,7 +58,16 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         }
 
         Requests requests = new Requests(scriptUI);
-        ScriptParser scriptParser = new ScriptParser();
+
+        saveDefaultConfig();
+        Configuration configuration;
+        try {
+            configuration = new Configuration(getDataFolder().toPath().resolve("config.yml"));
+        } catch (IOException | InvalidConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+        ScriptParser scriptParser = new ScriptParser(configuration);
+
         registerCommands(requests, scriptParser);
 
         registerListeners(requests);

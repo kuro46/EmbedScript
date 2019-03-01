@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript.script.parser;
 
+import com.github.kuro46.embedscript.Configuration;
 import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptBuffer;
@@ -11,7 +12,7 @@ import java.util.UUID;
 public class ScriptParser {
     private final Processor[] processors;
 
-    public ScriptParser() {
+    public ScriptParser(Configuration configuration) {
         List<Processor> processors = new ArrayList<>();
         processors.add(Processors.LISTEN_CLICK);
         processors.add(Processors.LISTEN_MOVE);
@@ -21,6 +22,7 @@ public class ScriptParser {
         processors.add(Processors.GIVE_PERMISSION);
         processors.add(Processors.ACTION_TYPE);
         processors.add(Processors.ACTION);
+        processors.add(new PresetProcessor(configuration));
         this.processors = processors.toArray(new Processor[0]);
     }
 
