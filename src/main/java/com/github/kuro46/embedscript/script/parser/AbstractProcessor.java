@@ -21,6 +21,10 @@ public abstract class AbstractProcessor implements Processor{
         this(null,null);
     }
 
+    public boolean allowEmptyList(){
+        return false;
+    }
+
     public String getKey(){
         return Objects.requireNonNull(key,"key of AbstractProcessor is null!");
     }
@@ -52,6 +56,9 @@ public abstract class AbstractProcessor implements Processor{
         for (Map.Entry<String, List<String>> entry : source.unmodifiableMap().entrySet()) {
             String key = entry.getKey();
             List<String> values = entry.getValue();
+            if (!allowEmptyList() && values.isEmpty()){
+                throw new ParseException("Cannot set empty value to '" + key + "'.");
+            }
             if (key.equals(getKey())) {
                 setup(source, key, values);
             }
