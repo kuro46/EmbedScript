@@ -21,8 +21,8 @@ public class PresetProcessor extends AbstractProcessor {
         Map<String, String> presets = configuration.getPresets();
         for (String value : values) {
             String preset = presets.get(value);
-            if (preset == null){
-                throw new ParseException(value + " is unknown preset!");
+            if (preset == null) {
+                throw new ParseException("'" + value + "' is unknown preset!");
             }else {
                 ScriptBuffer scriptBuffer = new ScriptBuffer(preset);
 
