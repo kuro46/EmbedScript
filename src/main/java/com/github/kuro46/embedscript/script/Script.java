@@ -28,25 +28,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/*
- * /es
- * @listen-move(lm) all|ground
- * @listen-click(lc) all|right|left
- * @listen-push(lp) all|button|plate
- * @give-permission(gp) permission
- * @enough-permission(ep) permission|op
- * @not-enough-permission(nep) permission|op
- * @action-type(at) command|say|plugin|console
- * @action(a) string
- *
- * able to set multiple value: "@key [value,value1]"
- *
- * "\@" is replace to "@"
- * "\[" is replace to "["
- * "\]" is replace to "]"
- * "\," is replace to ","
- */
-
 /**
  * unmodifiable class
  */
