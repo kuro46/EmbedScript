@@ -33,6 +33,10 @@ public class ScriptBuffer {
         this.script = script;
     }
 
+    public void clear() {
+        script.clear();
+    }
+
     public List<String> put(String key, List<String> values){
         return script.put(key, values);
     }

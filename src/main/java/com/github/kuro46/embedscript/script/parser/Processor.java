@@ -8,7 +8,9 @@ import com.github.kuro46.embedscript.script.ScriptBuffer;
  * Processes parse operation
  */
 public interface Processor {
-    void canonicalize(ScriptBuffer source) throws ParseException;
-    void setup(ScriptBuffer source) throws ParseException;
-    void process(Script.Builder builder,ScriptBuffer source) throws ParseException;
+    void canonicalize(ScriptParser parser, ScriptBuffer source) throws ParseException;
+
+    void setup(ScriptParser parser, ScriptBuffer source) throws ParseException;
+
+    void process(ScriptParser parser, Script.Builder builder, ScriptBuffer source) throws ParseException;
 }

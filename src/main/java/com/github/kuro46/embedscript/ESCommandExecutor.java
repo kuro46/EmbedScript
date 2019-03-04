@@ -29,12 +29,12 @@ public class ESCommandExecutor implements CommandExecutor {
     private final Requests requests;
 
     public ESCommandExecutor(ScriptParser scriptParser, ScriptUI scriptUI, Requests requests) {
-        this(scriptParser, "", scriptUI, requests);
+        this(scriptParser, null, scriptUI, requests);
     }
 
-    public ESCommandExecutor(ScriptParser scriptParser, String preset, ScriptUI scriptUI, Requests requests) {
+    public ESCommandExecutor(ScriptParser scriptParser, String presetName, ScriptUI scriptUI, Requests requests) {
         this.scriptParser = scriptParser;
-        this.preset = preset;
+        this.preset = presetName;
         this.scriptUI = scriptUI;
         this.requests = requests;
     }
@@ -156,7 +156,10 @@ public class ESCommandExecutor implements CommandExecutor {
         String stringScript = Util.joinStringSpaceDelimiter(1, args);
         Script script;
         try {
-            script = scriptParser.parse(player.getUniqueId(), preset + stringScript);
+            String preset = this.preset == null
+                ? ""
+                : "@preset " + this.preset + " ";
+            script = scriptParser.parse(player.getUniqueId(), "@preset " + preset + " " + stringScript);
         } catch (ParseException e) {
             player.sendMessage(Prefix.ERROR_PREFIX +
                 String.format("Failed to parse script. (error: %s)", e.getMessage()));

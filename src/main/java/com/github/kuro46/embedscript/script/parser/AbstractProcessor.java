@@ -34,7 +34,7 @@ public abstract class AbstractProcessor implements Processor{
     }
 
     @Override
-    public void canonicalize(ScriptBuffer source) {
+    public void canonicalize(ScriptParser parser, ScriptBuffer source) {
         List<String> list = null;
         for (Map.Entry<String, List<String>> entry : source.unmodifiableMap().entrySet()) {
             String key = entry.getKey();
@@ -52,7 +52,7 @@ public abstract class AbstractProcessor implements Processor{
     }
 
     @Override
-    public void setup(ScriptBuffer source) throws ParseException{
+    public void setup(ScriptParser parser, ScriptBuffer source) throws ParseException {
         for (Map.Entry<String, List<String>> entry : source.unmodifiableMap().entrySet()) {
             String key = entry.getKey();
             List<String> values = entry.getValue();
@@ -60,27 +60,27 @@ public abstract class AbstractProcessor implements Processor{
                 throw new ParseException("Cannot set empty value to '" + key + "'.");
             }
             if (key.equals(getKey())) {
-                setup(source, key, values);
+                setup(parser, source, key, values);
             }
         }
     }
 
-    public void setup(ScriptBuffer source, String key, List<String> values) throws ParseException{
+    public void setup(ScriptParser parser, ScriptBuffer source, String key, List<String> values) throws ParseException {
 
     }
 
     @Override
-    public void process(Script.Builder builder, ScriptBuffer source) throws ParseException {
+    public void process(ScriptParser parser, Script.Builder builder, ScriptBuffer source) throws ParseException {
         for (Map.Entry<String, List<String>> entry : source.unmodifiableMap().entrySet()) {
             String key = entry.getKey();
             List<String> values = entry.getValue();
             if (key.equals(getKey())) {
-                process(builder, source, key, values);
+                process(parser, builder, source, key, values);
             }
         }
     }
 
-    public void process(Script.Builder builder, ScriptBuffer source,String key,List<String> values) throws ParseException{
+    public void process(ScriptParser parser, Script.Builder builder, ScriptBuffer source, String key, List<String> values) throws ParseException {
 
     }
 }
