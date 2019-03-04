@@ -10,7 +10,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -346,79 +345,4 @@ public class Script {
         }
     }
 
-    public static final class Builder {
-        private final UUID author;
-        private MoveType[] moveTypes = new MoveType[0];
-        private ClickType[] clickTypes = new ClickType[0];
-        private PushType[] pushTypes = new PushType[0];
-        private String[] permissionsToGive = new String[0];
-        private String[] permissionsToNeeded = new String[0];
-        private String[] permissionsToNotNeeded = new String[0];
-        private ActionType[] actionTypes = new ActionType[0];
-        private String[] actions = new String[0];
-
-        public Builder(UUID author) {
-            this.author = author;
-        }
-
-        public Builder withMoveTypes(MoveType[] moveTypes) {
-            this.moveTypes = moveTypes;
-            return this;
-        }
-
-        public Builder withClickTypes(ClickType[] clickTypes) {
-            this.clickTypes = clickTypes;
-            return this;
-        }
-
-        public Builder withPushTypes(PushType[] pushTypes) {
-            this.pushTypes = pushTypes;
-            return this;
-        }
-
-        public Builder withPermissionsToGive(String[] permissionsToGive) {
-            this.permissionsToGive = permissionsToGive;
-            return this;
-        }
-
-        public Builder withPermissionsToNeeded(String[] permissionsToNeeded) {
-            this.permissionsToNeeded = permissionsToNeeded;
-            return this;
-        }
-
-        public Builder withPermissionsToNotNeeded(String[] permissionsToNotNeeded) {
-            this.permissionsToNotNeeded = permissionsToNotNeeded;
-            return this;
-        }
-
-        public Builder withActionTypes(ActionType[] actionTypes) {
-            this.actionTypes = actionTypes;
-            return this;
-        }
-
-        public Builder withActions(String[] actions) {
-            this.actions = actions;
-            return this;
-        }
-
-        public Script build() throws ParseException {
-            if (ArrayUtils.isEmpty(actionTypes) || ArrayUtils.isEmpty(actions)) {
-                throw new ParseException("ActionType or Action is empty!");
-            }
-
-            if (ArrayUtils.isEmpty(moveTypes) && ArrayUtils.isEmpty(clickTypes) && ArrayUtils.isEmpty(pushTypes)) {
-                throw new ParseException("MoveType, ClickType or PushType is must be specified");
-            }
-
-            return new Script(author,
-                moveTypes,
-                clickTypes,
-                pushTypes,
-                permissionsToGive,
-                permissionsToNeeded,
-                permissionsToNotNeeded,
-                actionTypes,
-                actions);
-        }
-    }
 }
