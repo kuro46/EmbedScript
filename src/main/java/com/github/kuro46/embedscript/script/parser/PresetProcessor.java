@@ -16,7 +16,7 @@ public class PresetProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void setup(ScriptBuffer source, String key, List<String> values) throws ParseException {
+    public void setup(ScriptParser parser, ScriptBuffer source, String key, List<String> values) throws ParseException {
         ScriptBuffer mergeTo = null;
         Map<String, String> presets = configuration.getPresets();
         for (String value : values) {
@@ -25,6 +25,8 @@ public class PresetProcessor extends AbstractProcessor {
                 throw new ParseException("'" + value + "' is unknown preset!");
             }else {
                 ScriptBuffer scriptBuffer = new ScriptBuffer(preset);
+
+                parser.canonicalizeAndSetup(scriptBuffer);
 
                 if (mergeTo == null){
                     mergeTo = scriptBuffer;

@@ -15,14 +15,11 @@ import java.util.Map;
 public class Configuration {
     private final Path configPath;
     private Map<String,String> presets;
+    private int parseLoopLimit;
 
     public Configuration(Path configPath) throws IOException, InvalidConfigurationException {
         this.configPath = configPath;
         load();
-    }
-
-    public Map<String, String> getPresets() {
-        return Collections.unmodifiableMap(presets);
     }
 
     public void load() throws IOException, InvalidConfigurationException {
@@ -32,10 +29,20 @@ public class Configuration {
         try (BufferedReader reader = Files.newBufferedReader(configPath)) {
             configuration.load(reader);
         }
+
+        parseLoopLimit = configuration.getInt("parse-loop-limit", 3);
         ConfigurationSection presetsSection = configuration.getConfigurationSection("presets");
         for (String presetName : presetsSection.getKeys(false)) {
             String presetValue = presetsSection.getString(presetName);
             presets.put(presetName,presetValue);
         }
+    }
+
+    public Map<String, String> getPresets() {
+        return Collections.unmodifiableMap(presets);
+    }
+
+    public int getParseLoopLimit() {
+        return parseLoopLimit;
     }
 }
