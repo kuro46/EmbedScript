@@ -421,22 +421,4 @@ public class Script {
                 actions);
         }
     }
-
-//    public static class Builder{
-//        private final UUID author;
-//        private Set<MoveType> moveTypes;
-//        private Set<ClickType> clickTypes;
-//        private Set<PushType> pushTypes;
-//        private List<String> permissionsToGive;
-//        private List<String> permissionsToNeeded;
-//        private List<String> permissionsToNotNeeded;
-//        private List<ActionType> actionTypes;
-//        private List<String> actions;
-//
-//        public Builder(UUID author) {
-//            this.author = author;
-//        }
-//
-//
-//    }
 }
