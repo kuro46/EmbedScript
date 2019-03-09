@@ -5,7 +5,7 @@ package com.github.kuro46.embedscript.script;
  */
 public enum EventType {
     WALK("WalkScripts.json", "eswalk", "walk"),
-    INTERACT("InteractScripts.json", "esinteract", "walk");
+    INTERACT("InteractScripts.json", "esinteract", "interact");
 
     private final String fileName;
     private final String commandName;
