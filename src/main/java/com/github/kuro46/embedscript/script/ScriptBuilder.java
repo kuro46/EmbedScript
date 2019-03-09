@@ -2,6 +2,7 @@ package com.github.kuro46.embedscript.script;
 
 import org.apache.commons.lang.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 public class ScriptBuilder {
@@ -20,42 +21,42 @@ public class ScriptBuilder {
     }
 
     public ScriptBuilder withMoveTypes(Script.MoveType[] moveTypes) {
-        this.moveTypes = moveTypes;
+        this.moveTypes = Arrays.copyOf(moveTypes, moveTypes.length);
         return this;
     }
 
     public ScriptBuilder withClickTypes(Script.ClickType[] clickTypes) {
-        this.clickTypes = clickTypes;
+        this.clickTypes = Arrays.copyOf(clickTypes, clickTypes.length);
         return this;
     }
 
     public ScriptBuilder withPushTypes(Script.PushType[] pushTypes) {
-        this.pushTypes = pushTypes;
+        this.pushTypes = Arrays.copyOf(pushTypes, pushTypes.length);
         return this;
     }
 
     public ScriptBuilder withPermissionsToGive(String[] permissionsToGive) {
-        this.permissionsToGive = permissionsToGive;
+        this.permissionsToGive = Arrays.copyOf(permissionsToGive, permissionsToGive.length);
         return this;
     }
 
     public ScriptBuilder withPermissionsToNeeded(String[] permissionsToNeeded) {
-        this.permissionsToNeeded = permissionsToNeeded;
+        this.permissionsToNeeded = Arrays.copyOf(permissionsToNeeded, permissionsToNeeded.length);
         return this;
     }
 
     public ScriptBuilder withPermissionsToNotNeeded(String[] permissionsToNotNeeded) {
-        this.permissionsToNotNeeded = permissionsToNotNeeded;
+        this.permissionsToNotNeeded = Arrays.copyOf(permissionsToNotNeeded, permissionsToNotNeeded.length);
         return this;
     }
 
     public ScriptBuilder withActionTypes(Script.ActionType[] actionTypes) {
-        this.actionTypes = actionTypes;
+        this.actionTypes = Arrays.copyOf(actionTypes, actionTypes.length);
         return this;
     }
 
     public ScriptBuilder withActions(String[] actions) {
-        this.actions = actions;
+        this.actions = Arrays.copyOf(actions, actions.length);
         return this;
     }
 
