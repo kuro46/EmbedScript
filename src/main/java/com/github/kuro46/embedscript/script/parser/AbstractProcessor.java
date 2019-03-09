@@ -1,8 +1,8 @@
 package com.github.kuro46.embedscript.script.parser;
 
 import com.github.kuro46.embedscript.script.ParseException;
-import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptBuffer;
+import com.github.kuro46.embedscript.script.ScriptBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -70,7 +70,7 @@ public abstract class AbstractProcessor implements Processor{
     }
 
     @Override
-    public void process(ScriptParser parser, Script.Builder builder, ScriptBuffer source) throws ParseException {
+    public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source) throws ParseException {
         for (Map.Entry<String, List<String>> entry : source.unmodifiableMap().entrySet()) {
             String key = entry.getKey();
             List<String> values = entry.getValue();
@@ -80,7 +80,7 @@ public abstract class AbstractProcessor implements Processor{
         }
     }
 
-    public void process(ScriptParser parser, Script.Builder builder, ScriptBuffer source, String key, List<String> values) throws ParseException {
+    public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) throws ParseException {
 
     }
 }

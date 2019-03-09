@@ -33,62 +33,53 @@ import java.util.Map;
 /**
  * @author shirokuro
  */
-public class EmbedScriptPlugin extends JavaPlugin implements Listener {
-    private ScriptManager scriptManager;
-    private ScriptUI scriptUI;
-
+public class EmbedScriptPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         long begin = System.currentTimeMillis();
 
+        ScriptManager scriptManager;
+
         try {
-            Path dataFolder = getDataFolder().toPath();
-            if (Files.notExists(dataFolder)) {
-                Files.createDirectory(dataFolder);
-            }
-
-            Path filePath = dataFolder.resolve("scripts.json");
-
-            migrateFromOldFormatIfNeeded(filePath, dataFolder);
-
-            scriptManager = ScriptManager.load(filePath);
-            scriptUI = new ScriptUI(scriptManager);
+            scriptManager = loadScripts();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        Requests requests = new Requests(scriptUI);
-
-        saveDefaultConfig();
         Configuration configuration;
         try {
-            configuration = new Configuration(getDataFolder().toPath().resolve("config.yml"));
+            configuration = loadConfiguration();
         } catch (IOException | InvalidConfigurationException e) {
             throw new RuntimeException(e);
         }
+
+        ScriptUI scriptUI = new ScriptUI(scriptManager);
+        Requests requests = new Requests(scriptUI);
         ScriptParser scriptParser = new ScriptParser(configuration);
 
-        registerCommands(requests, scriptParser);
-
-        registerListeners(requests);
+        registerCommands(requests, scriptParser, scriptUI);
+        registerListeners(requests, scriptManager, scriptUI);
 
         long end = System.currentTimeMillis();
         getLogger().info(String.format("Enabled! (%sms)", end - begin));
     }
 
-    private void registerListeners(Requests requests) {
-        PluginManager pluginManager = Bukkit.getPluginManager();
-        pluginManager.registerEvents(new InteractListener(this, scriptManager, requests), this);
-        pluginManager.registerEvents(new MoveListener(this, scriptManager), this);
-        pluginManager.registerEvents(this, this);
+    private Configuration loadConfiguration() throws IOException, InvalidConfigurationException {
+        saveDefaultConfig();
+        return new Configuration(getDataFolder().toPath().resolve("config.yml"));
     }
 
-    private void registerCommands(Requests requests, ScriptParser scriptParser) {
-        for (EventType eventType : EventType.values()) {
-            getCommand(eventType.getCommandName())
-                .setExecutor(new ESCommandExecutor(scriptParser, eventType.getPresetName(), scriptUI, requests));
+    private ScriptManager loadScripts() throws IOException {
+        Path dataFolder = getDataFolder().toPath();
+        if (Files.notExists(dataFolder)) {
+            Files.createDirectory(dataFolder);
         }
-        getCommand("embedscript").setExecutor(new ESCommandExecutor(scriptParser, scriptUI, requests));
+
+        Path filePath = dataFolder.resolve("scripts.json");
+
+        migrateFromOldFormatIfNeeded(filePath, dataFolder);
+
+        return ScriptManager.load(filePath);
     }
 
     private void migrateFromOldFormatIfNeeded(Path scriptFilePath, Path dataFolder) throws IOException {
@@ -134,22 +125,46 @@ public class EmbedScriptPlugin extends JavaPlugin implements Listener {
         ScriptSerializer.serialize(scriptFilePath, merged);
     }
 
-    @SuppressWarnings("unused")
-    @EventHandler
-    public void onPluginEnable(PluginEnableEvent event) {
-        Plugin plugin = event.getPlugin();
-        if (plugin.getName().equals("ScriptBlock")) {
-            ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
-            consoleSender.sendMessage(Prefix.PREFIX + "ScriptBlock found! Migrating scripts.");
-            try {
-                Migrator.migrate(consoleSender, scriptUI, plugin);
-            } catch (Exception e) {
-                Bukkit.getPluginManager().disablePlugin(this);
-                throw new RuntimeException("Failed to migration! Disabling EmbedScript.", e);
-            }
-            consoleSender.sendMessage(Prefix.SUCCESS_PREFIX + "Scripts has been migrated. Disabling ScriptBlock.");
+    private void registerListeners(Requests requests, ScriptManager scriptManager, ScriptUI scriptUI) {
+        PluginManager pluginManager = Bukkit.getPluginManager();
+        pluginManager.registerEvents(new InteractListener(this, scriptManager, requests), this);
+        pluginManager.registerEvents(new MoveListener(this, scriptManager), this);
+        pluginManager.registerEvents(new PluginEnableListener(this, scriptUI), this);
+    }
 
-            Bukkit.getPluginManager().disablePlugin(plugin);
+    private void registerCommands(Requests requests, ScriptParser scriptParser, ScriptUI scriptUI) {
+        for (EventType eventType : EventType.values()) {
+            getCommand(eventType.getCommandName())
+                .setExecutor(new ESCommandExecutor(scriptParser, eventType.getPresetName(), scriptUI, requests));
+        }
+        getCommand("embedscript").setExecutor(new ESCommandExecutor(scriptParser, scriptUI, requests));
+    }
+
+    private static class PluginEnableListener implements Listener {
+        private final Plugin embedScript;
+        private final ScriptUI scriptUI;
+
+        PluginEnableListener(Plugin embedScript, ScriptUI scriptUI) {
+            this.embedScript = embedScript;
+            this.scriptUI = scriptUI;
+        }
+
+        @EventHandler
+        public void onPluginEnable(PluginEnableEvent event) {
+            Plugin plugin = event.getPlugin();
+            if (plugin.getName().equals("ScriptBlock")) {
+                ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
+                consoleSender.sendMessage(Prefix.PREFIX + "ScriptBlock found! Migrating scripts.");
+                try {
+                    Migrator.migrate(consoleSender, scriptUI, plugin);
+                } catch (Exception e) {
+                    Bukkit.getPluginManager().disablePlugin(this.embedScript);
+                    throw new RuntimeException("Failed to migration! Disabling EmbedScript.", e);
+                }
+                consoleSender.sendMessage(Prefix.SUCCESS_PREFIX + "Scripts has been migrated. Disabling ScriptBlock.");
+
+                Bukkit.getPluginManager().disablePlugin(plugin);
+            }
         }
     }
 }

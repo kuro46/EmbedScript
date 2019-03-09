@@ -4,6 +4,7 @@ import com.github.kuro46.embedscript.Configuration;
 import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptBuffer;
+import com.github.kuro46.embedscript.script.ScriptBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ public class ScriptParser {
         canonicalizeAndSetup(source);
 
         // processing phase
-        Script.Builder builder = new Script.Builder(author);
+        ScriptBuilder builder = new ScriptBuilder(author);
         process(builder, source);
 
         return builder.build();
@@ -50,7 +51,7 @@ public class ScriptParser {
         forEachProcessors(processor -> processor.setup(this, source));
     }
 
-    public void process(Script.Builder builder, ScriptBuffer source) throws ParseException {
+    public void process(ScriptBuilder builder, ScriptBuffer source) throws ParseException {
         if (isInParseLoop() && parseLoopCount++ > configuration.getParseLoopLimit()) {
             throw new ParseException("Limit of loop count exceeded while parsing!");
         }
