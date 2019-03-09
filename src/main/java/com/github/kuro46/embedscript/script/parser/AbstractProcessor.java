@@ -83,4 +83,9 @@ public abstract class AbstractProcessor implements Processor{
     public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) throws ParseException {
 
     }
+
+    @Override
+    public void finalize(ScriptBuilder modifiableScript) throws ParseException {
+
+    }
 }

@@ -13,4 +13,6 @@ public interface Processor {
     void setup(ScriptParser parser, ScriptBuffer source) throws ParseException;
 
     void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source) throws ParseException;
+
+    void finalize(ScriptBuilder modifiableScript) throws ParseException;
 }
