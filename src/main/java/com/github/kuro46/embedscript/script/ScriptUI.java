@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -250,7 +251,8 @@ public class ScriptUI {
         return pages;
     }
 
-    private static class ScriptPositionComparator implements Comparator<Map.Entry<ScriptPosition, List<Script>>> {
+    @SuppressWarnings("serial")
+    private static class ScriptPositionComparator implements Comparator<Map.Entry<ScriptPosition, List<Script>>>, Serializable {
         @Override
         public int compare(Map.Entry<ScriptPosition, List<Script>> entry,
                            Map.Entry<ScriptPosition, List<Script>> entry1) {
