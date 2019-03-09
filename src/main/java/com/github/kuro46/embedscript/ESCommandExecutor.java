@@ -24,7 +24,7 @@ import java.util.Locale;
  */
 public class ESCommandExecutor implements CommandExecutor {
     private final ScriptParser scriptParser;
-    private final String preset;
+    private final String presetName;
     private final ScriptUI scriptUI;
     private final Requests requests;
 
@@ -34,7 +34,7 @@ public class ESCommandExecutor implements CommandExecutor {
 
     public ESCommandExecutor(ScriptParser scriptParser, String presetName, ScriptUI scriptUI, Requests requests) {
         this.scriptParser = scriptParser;
-        this.preset = presetName;
+        this.presetName = presetName;
         this.scriptUI = scriptUI;
         this.requests = requests;
     }
@@ -156,10 +156,10 @@ public class ESCommandExecutor implements CommandExecutor {
         String stringScript = Util.joinStringSpaceDelimiter(1, args);
         Script script;
         try {
-            String preset = this.preset == null
+            String preset = presetName == null
                 ? ""
-                : "@preset " + this.preset + " ";
-            script = scriptParser.parse(player.getUniqueId(), "@preset " + preset + " " + stringScript);
+                : "@preset " + presetName + " ";
+            script = scriptParser.parse(player.getUniqueId(), preset + " " + stringScript);
         } catch (ParseException e) {
             player.sendMessage(Prefix.ERROR_PREFIX +
                 String.format("Failed to parse script. (error: %s)", e.getMessage()));
