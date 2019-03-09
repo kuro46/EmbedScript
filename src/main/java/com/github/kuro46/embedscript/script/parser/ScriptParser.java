@@ -39,7 +39,12 @@ public class ScriptParser {
         ScriptBuilder builder = new ScriptBuilder(author);
         process(builder, source);
 
-        return builder.build();
+        Script built = builder.build();
+
+        ScriptBuilder builderForFinalize = new ScriptBuilder(built);
+        finalize(builderForFinalize);
+
+        return builderForFinalize.build();
     }
 
     public void canonicalizeAndSetup(ScriptBuffer source) throws ParseException {
@@ -57,6 +62,14 @@ public class ScriptParser {
         }
 
         forEachProcessors(processor -> processor.process(this, builder, source));
+    }
+
+    public void finalize(ScriptBuilder modifiableScript) throws ParseException {
+        if (isInParseLoop() && parseLoopCount++ > configuration.getParseLoopLimit()) {
+            throw new ParseException("Limit of loop count exceeded while parsing!");
+        }
+
+        forEachProcessors(processor -> processor.finalize(modifiableScript));
     }
 
     private void forEachProcessors(ProcessFunction<Processor> function) throws ParseException {

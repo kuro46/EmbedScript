@@ -7,17 +7,38 @@ import java.util.UUID;
 
 public class ScriptBuilder {
     private final UUID author;
-    private Script.MoveType[] moveTypes = new Script.MoveType[0];
-    private Script.ClickType[] clickTypes = new Script.ClickType[0];
-    private Script.PushType[] pushTypes = new Script.PushType[0];
-    private String[] permissionsToGive = new String[0];
-    private String[] permissionsToNeeded = new String[0];
-    private String[] permissionsToNotNeeded = new String[0];
-    private Script.ActionType[] actionTypes = new Script.ActionType[0];
-    private String[] actions = new String[0];
+    private Script.MoveType[] moveTypes;
+    private Script.ClickType[] clickTypes;
+    private Script.PushType[] pushTypes;
+    private String[] permissionsToGive;
+    private String[] permissionsToNeeded;
+    private String[] permissionsToNotNeeded;
+    private Script.ActionType[] actionTypes;
+    private String[] actions;
 
     public ScriptBuilder(UUID author) {
         this.author = author;
+        this.moveTypes = new Script.MoveType[0];
+        this.clickTypes = new Script.ClickType[0];
+        this.pushTypes = new Script.PushType[0];
+        String[] emptyStringArray = new String[0];
+        this.permissionsToGive = emptyStringArray;
+        this.permissionsToNeeded = emptyStringArray;
+        this.permissionsToNotNeeded = emptyStringArray;
+        this.actionTypes = new Script.ActionType[0];
+        this.actions = emptyStringArray;
+    }
+
+    public ScriptBuilder(Script script) {
+        this.author = script.getAuthor();
+        this.moveTypes = script.getMoveTypes().toArray(new Script.MoveType[0]);
+        this.clickTypes = script.getClickTypes().toArray(new Script.ClickType[0]);
+        this.pushTypes = script.getPushTypes().toArray(new Script.PushType[0]);
+        this.permissionsToGive = script.getPermissionsToGive().toArray(new String[0]);
+        this.permissionsToNeeded = script.getPermissionsToNeeded().toArray(new String[0]);
+        this.permissionsToNotNeeded = script.getPermissionsToNotNeeded().toArray(new String[0]);
+        this.actionTypes = script.getActionTypes().toArray(new Script.ActionType[0]);
+        this.actions = script.getActions().toArray(new String[0]);
     }
 
     public ScriptBuilder withMoveTypes(Script.MoveType[] moveTypes) {
@@ -36,17 +57,17 @@ public class ScriptBuilder {
     }
 
     public ScriptBuilder withPermissionsToGive(String[] permissionsToGive) {
-        this.permissionsToGive = Arrays.copyOf(permissionsToGive, permissionsToGive.length);
+        this.permissionsToGive = copyStringArray(permissionsToGive);
         return this;
     }
 
     public ScriptBuilder withPermissionsToNeeded(String[] permissionsToNeeded) {
-        this.permissionsToNeeded = Arrays.copyOf(permissionsToNeeded, permissionsToNeeded.length);
+        this.permissionsToNeeded = copyStringArray(permissionsToNeeded);
         return this;
     }
 
     public ScriptBuilder withPermissionsToNotNeeded(String[] permissionsToNotNeeded) {
-        this.permissionsToNotNeeded = Arrays.copyOf(permissionsToNotNeeded, permissionsToNotNeeded.length);
+        this.permissionsToNotNeeded = copyStringArray(permissionsToNotNeeded);
         return this;
     }
 
@@ -56,8 +77,48 @@ public class ScriptBuilder {
     }
 
     public ScriptBuilder withActions(String[] actions) {
-        this.actions = Arrays.copyOf(actions, actions.length);
+        this.actions = copyStringArray(actions);
         return this;
+    }
+
+    public UUID getAuthor() {
+        return author;
+    }
+
+    public Script.MoveType[] getMoveTypes() {
+        return Arrays.copyOf(moveTypes, moveTypes.length);
+    }
+
+    public Script.ClickType[] getClickTypes() {
+        return Arrays.copyOf(clickTypes, clickTypes.length);
+    }
+
+    public Script.PushType[] getPushTypes() {
+        return Arrays.copyOf(pushTypes, pushTypes.length);
+    }
+
+    public String[] getPermissionsToGive() {
+        return copyStringArray(permissionsToGive);
+    }
+
+    public String[] getPermissionsToNeeded() {
+        return copyStringArray(permissionsToNeeded);
+    }
+
+    public String[] getPermissionsToNotNeeded() {
+        return copyStringArray(permissionsToNotNeeded);
+    }
+
+    public Script.ActionType[] getActionTypes() {
+        return Arrays.copyOf(actionTypes, actionTypes.length);
+    }
+
+    public String[] getActions() {
+        return copyStringArray(actions);
+    }
+
+    private String[] copyStringArray(String[] array) {
+        return Arrays.copyOf(array, array.length);
     }
 
     public Script build() throws ParseException {

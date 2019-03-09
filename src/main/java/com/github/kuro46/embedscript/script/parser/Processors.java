@@ -6,6 +6,7 @@ import com.github.kuro46.embedscript.script.ScriptBuffer;
 import com.github.kuro46.embedscript.script.ScriptBuilder;
 import com.github.kuro46.embedscript.script.UncheckedParseException;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.IntFunction;
@@ -68,6 +69,19 @@ public class Processors {
         @Override
         public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) {
             builder.withActions(stringListToArray(values));
+        }
+
+        @Override
+        public void finalize(ScriptBuilder modifiableScript) {
+            for (Script.ActionType actionType : modifiableScript.getActionTypes()) {
+                if (actionType == Script.ActionType.COMMAND) {
+                    String[] slashRemoved = Arrays.stream(modifiableScript.getActions())
+                        .map(s -> s.startsWith("/") ? s.substring(1) : s)
+                        .toArray(String[]::new);
+                    modifiableScript.withActions(slashRemoved);
+                    break;
+                }
+            }
         }
     };
 
