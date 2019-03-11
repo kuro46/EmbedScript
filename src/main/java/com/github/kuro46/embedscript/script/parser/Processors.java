@@ -5,11 +5,13 @@ import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptBuffer;
 import com.github.kuro46.embedscript.script.ScriptBuilder;
 import com.github.kuro46.embedscript.script.UncheckedParseException;
+import org.bukkit.Bukkit;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 
 public class Processors {
     private Processors(){
@@ -75,10 +77,22 @@ public class Processors {
         public void finalize(ScriptBuilder modifiableScript) {
             for (Script.ActionType actionType : modifiableScript.getActionTypes()) {
                 if (actionType == Script.ActionType.COMMAND) {
-                    String[] slashRemoved = Arrays.stream(modifiableScript.getActions())
-                        .map(s -> s.startsWith("/") ? s.substring(1) : s)
+                    String[] modifiedForCommand = Arrays.stream(modifiableScript.getActions())
+                        // remove slash char if needed
+                        .map(commandWithArgs -> commandWithArgs.startsWith("/")
+                            ? commandWithArgs.substring(1)
+                            : commandWithArgs)
+                        // canonicalize the command
+                        .map(commandWithArgs -> {
+                            String[] splitCommandWithArgs = commandWithArgs.split(" ");
+                            String canonicalizedCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0]).getName();
+                            String args = Arrays.stream(splitCommandWithArgs)
+                                .skip(1)
+                                .collect(Collectors.joining(" "));
+                            return canonicalizedCommand + " " + args;
+                        })
                         .toArray(String[]::new);
-                    modifiableScript.withActions(slashRemoved);
+                    modifiableScript.withActions(modifiedForCommand);
                     break;
                 }
             }
