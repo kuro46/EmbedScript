@@ -157,6 +157,11 @@ public class Script {
                     case CONSOLE:
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), action);
                         break;
+                    case BROADCAST:
+                        for (Player player : Bukkit.getOnlinePlayers()) {
+                            player.sendMessage(action);
+                        }
+                        break;
                     default:
                         throw new UnsupportedOperationException(
                             String.format("Cannot perform '%s': '%s' is unsupported type!",
@@ -220,6 +225,7 @@ public class Script {
     public enum ActionType {
         COMMAND,
         SAY,
+        BROADCAST,
         PLUGIN,
         CONSOLE
     }
