@@ -167,6 +167,11 @@ public class Script {
                             player.sendMessage(action);
                         }
                         break;
+                    case BROADCAST_RAW:
+                        for (Player player : Bukkit.getOnlinePlayers()) {
+                            player.spigot().sendMessage(ComponentSerializer.parse(action));
+                        }
+                        break;
                     default:
                         throw new UnsupportedOperationException(
                             String.format("Cannot perform '%s': '%s' is unsupported type!",
@@ -232,6 +237,7 @@ public class Script {
         SAY,
         SAY_RAW,
         BROADCAST,
+        BROADCAST_RAW,
         PLUGIN,
         CONSOLE
     }
