@@ -95,14 +95,6 @@ public class ScriptBuffer {
         return new KeyValue(key,values);
     }
 
-    private String deleteAtFromKey(String key) throws ParseException{
-        if (!key.startsWith("@")){
-            throw new ParseException("Expected '@' at index 0 : " + key);
-        }
-
-        return key.substring(1);
-    }
-
     private List<String> splitValue(String string){
         if (string.startsWith("[") && string.endsWith("]")){
             // trim "[" and "]"
