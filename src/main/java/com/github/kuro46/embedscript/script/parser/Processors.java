@@ -6,6 +6,7 @@ import com.github.kuro46.embedscript.script.ScriptBuffer;
 import com.github.kuro46.embedscript.script.ScriptBuilder;
 import com.github.kuro46.embedscript.script.UncheckedParseException;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 
 import java.util.Arrays;
 import java.util.List;
@@ -85,7 +86,10 @@ public class Processors {
                         // canonicalize the command
                         .map(commandWithArgs -> {
                             String[] splitCommandWithArgs = commandWithArgs.split(" ");
-                            String canonicalizedCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0]).getName();
+                            PluginCommand pluginCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0]);
+                            String canonicalizedCommand = pluginCommand == null
+                                ? splitCommandWithArgs[0]
+                                : pluginCommand.getName();
                             String args = Arrays.stream(splitCommandWithArgs)
                                 .skip(1)
                                 .collect(Collectors.joining(" "));
