@@ -10,6 +10,8 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -145,6 +147,9 @@ public class Script {
                     case SAY:
                         trigger.sendMessage(action);
                         break;
+                    case SAY_RAW:
+                        trigger.spigot().sendMessage(ComponentSerializer.parse(action));
+                        break;
                     case PLUGIN:
                         PerformListener listener = EmbedScriptAPI.getListener(action);
                         if (listener != null) {
@@ -225,6 +230,7 @@ public class Script {
     public enum ActionType {
         COMMAND,
         SAY,
+        SAY_RAW,
         BROADCAST,
         PLUGIN,
         CONSOLE
