@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 @JsonAdapter(Script.Adapter.class)
 public class Script {
     private static final Pattern PLAYER_PATTERN = Pattern.compile("<player>", Pattern.LITERAL);
+    private static final Pattern WORLD_PATTERN = Pattern.compile("<world>", Pattern.LITERAL);
 
     private final UUID author;
     private final Set<MoveType> moveTypes;
@@ -142,6 +143,8 @@ public class Script {
 
         for (String action : actions) {
             action = PLAYER_PATTERN.matcher(action).replaceAll(trigger.getName());
+            action = WORLD_PATTERN.matcher(action).replaceAll(trigger.getWorld().getName());
+
             for (ActionType actionType : actionTypes) {
                 switch (actionType) {
                     case SAY:
