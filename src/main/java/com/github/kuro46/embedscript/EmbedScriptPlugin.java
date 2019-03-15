@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * @author shirokuro
@@ -43,14 +44,18 @@ public class EmbedScriptPlugin extends JavaPlugin {
         try {
             scriptManager = loadScripts();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            getLogger().log(Level.SEVERE, "Failed to load the scripts! disabling plugin...", e);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
         Configuration configuration;
         try {
             configuration = loadConfiguration();
         } catch (IOException | InvalidConfigurationException e) {
-            throw new RuntimeException(e);
+            getLogger().log(Level.SEVERE, "Failed to load the configuration! disabling plugin...", e);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
         ScriptUI scriptUI = new ScriptUI(scriptManager);
