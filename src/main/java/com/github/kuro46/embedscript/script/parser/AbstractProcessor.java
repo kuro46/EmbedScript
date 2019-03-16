@@ -4,6 +4,7 @@ import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.ScriptBuffer;
 import com.github.kuro46.embedscript.script.ScriptBuilder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -85,7 +86,7 @@ public abstract class AbstractProcessor implements Processor{
     }
 
     @Override
-    public void finalize(ScriptBuilder modifiableScript) throws ParseException {
-
+    public List<Class<? extends Processor>> getDepends(Phase phase) {
+        return Collections.emptyList();
     }
 }

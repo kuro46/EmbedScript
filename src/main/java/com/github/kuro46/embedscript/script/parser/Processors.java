@@ -5,10 +5,12 @@ import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptBuffer;
 import com.github.kuro46.embedscript.script.ScriptBuilder;
 import com.github.kuro46.embedscript.script.UncheckedParseException;
+import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.IntFunction;
@@ -70,35 +72,41 @@ public class Processors {
 
     public static final Processor ACTION = new AbstractProcessor("action","a") {
         @Override
-        public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) {
-            builder.withActions(stringListToArray(values));
+        public List<Class<? extends Processor>> getDepends(Phase phase) {
+            if (phase == Phase.PROCESS) {
+                return Collections.singletonList(ACTION_TYPE.getClass());
+            } else {
+                return super.getDepends(phase);
+            }
         }
 
         @Override
-        public void finalize(ScriptBuilder modifiableScript) {
-            for (Script.ActionType actionType : modifiableScript.getActionTypes()) {
-                if (actionType == Script.ActionType.COMMAND) {
-                    String[] modifiedForCommand = Arrays.stream(modifiableScript.getActions())
-                        // remove slash char if needed
-                        .map(commandWithArgs -> commandWithArgs.startsWith("/")
-                            ? commandWithArgs.substring(1)
-                            : commandWithArgs)
-                        // canonicalize the command
-                        .map(commandWithArgs -> {
-                            String[] splitCommandWithArgs = commandWithArgs.split(" ");
-                            PluginCommand pluginCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0]);
-                            String canonicalizedCommand = pluginCommand == null
-                                ? splitCommandWithArgs[0]
-                                : pluginCommand.getName();
-                            String args = Arrays.stream(splitCommandWithArgs)
-                                .skip(1)
-                                .collect(Collectors.joining(" "));
-                            return canonicalizedCommand + " " + args;
-                        })
-                        .toArray(String[]::new);
-                    modifiableScript.withActions(modifiedForCommand);
-                    break;
-                }
+        public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) {
+            String[] arrayValues = stringListToArray(values);
+
+            if (!ArrayUtils.contains(builder.getActionTypes(), Script.ActionType.COMMAND)) {
+                builder.withActions(arrayValues);
+            } else {
+                String[] modifiedForCommand = Arrays.stream(arrayValues)
+                    // remove slash char if needed
+                    .map(commandWithArgs -> commandWithArgs.startsWith("/")
+                        ? commandWithArgs.substring(1)
+                        : commandWithArgs)
+                    // canonicalize the command
+                    .map(commandWithArgs -> {
+                        String[] splitCommandWithArgs = commandWithArgs.split(" ");
+                        PluginCommand pluginCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0]);
+                        String canonicalizedCommand = pluginCommand == null
+                            ? splitCommandWithArgs[0]
+                            : pluginCommand.getName();
+                        String args = Arrays.stream(splitCommandWithArgs)
+                            .skip(1)
+                            .collect(Collectors.joining(" "));
+                        return canonicalizedCommand + " " + args;
+                    })
+                    .toArray(String[]::new);
+
+                builder.withActions(modifiedForCommand);
             }
         }
     };

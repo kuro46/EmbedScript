@@ -4,6 +4,8 @@ import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.ScriptBuffer;
 import com.github.kuro46.embedscript.script.ScriptBuilder;
 
+import java.util.List;
+
 /**
  * Processes parse operation
  */
@@ -14,5 +16,5 @@ public interface Processor {
 
     void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source) throws ParseException;
 
-    void finalize(ScriptBuilder modifiableScript) throws ParseException;
+    List<Class<? extends Processor>> getDepends(Phase phase);
 }
