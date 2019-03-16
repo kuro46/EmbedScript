@@ -45,7 +45,7 @@ public class ScriptManager {
     public void put(ScriptPosition position, Script script) {
         List<Script> scripts = getAndPutIfNeeded(position);
         scripts.add(script);
-        ScriptSerializer.serializeLaterAsync(path, new HashMap<>(this.scripts));
+        ScriptSerializer.serializeLaterAsync(path, snapshot());
     }
 
     public void putIfAbsent(ScriptPosition position, Script script) {
@@ -54,12 +54,12 @@ public class ScriptManager {
         }
         List<Script> scripts = getAndPutIfNeeded(position);
         scripts.add(script);
-        ScriptSerializer.serializeLaterAsync(path, new HashMap<>(this.scripts));
+        ScriptSerializer.serializeLaterAsync(path, snapshot());
     }
 
     public List<Script> remove(ScriptPosition position) {
         List<Script> s = scripts.remove(position);
-        ScriptSerializer.serializeLaterAsync(path, new HashMap<>(scripts));
+        ScriptSerializer.serializeLaterAsync(path, snapshot());
         return s;
     }
 
@@ -72,11 +72,11 @@ public class ScriptManager {
     }
 
     public void save() throws IOException {
-        ScriptSerializer.serialize(path, new HashMap<>(scripts));
+        ScriptSerializer.serialize(path, snapshot());
     }
 
     public void saveAsync() {
-        ScriptSerializer.serializeLaterAsync(path, new HashMap<>(scripts));
+        ScriptSerializer.serializeLaterAsync(path, snapshot());
     }
 
     /**
@@ -90,7 +90,7 @@ public class ScriptManager {
             ScriptPosition position = entry.getKey();
             List<Script> scriptList = entry.getValue();
 
-            scripts.put(position, Collections.unmodifiableList(scriptList));
+            scripts.put(position, Collections.unmodifiableList(new ArrayList<>(scriptList)));
         }
         return Collections.unmodifiableMap(scripts);
     }
