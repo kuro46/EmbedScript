@@ -131,12 +131,24 @@ public class ESCommandExecutor implements CommandExecutor {
 
     private void list(Player player, String[] args) {
         String world = args.length < 2
-            ? null
+            ? player.getWorld().getName()
             : args[1];
         int pageIndex = !(args.length < 3) && NumberUtils.isNumber(args[2])
             ? Integer.parseInt(args[2]) - 1
             : 0;
-        scriptUI.list(player, world, null, pageIndex);
+        Script filter;
+        if (presetName == null) {
+            filter = null;
+        } else {
+            try {
+                filter = scriptParser.parse(player.getUniqueId(), "@preset " + presetName);
+            } catch (ParseException e) {
+                player.sendMessage(Prefix.ERROR_PREFIX +
+                    String.format("Failed to filter the scripts. (error: %s)", e.getMessage()));
+                return;
+            }
+        }
+        scriptUI.list(player, world, filter, pageIndex);
     }
 
     private void view(Player player) {
@@ -159,7 +171,7 @@ public class ESCommandExecutor implements CommandExecutor {
             String preset = presetName == null
                 ? ""
                 : "@preset " + presetName + " ";
-            script = scriptParser.parse(player.getUniqueId(), preset + " " + stringScript);
+            script = scriptParser.parse(player.getUniqueId(), preset + stringScript);
         } catch (ParseException e) {
             player.sendMessage(Prefix.ERROR_PREFIX +
                 String.format("Failed to parse script. (error: %s)", e.getMessage()));
