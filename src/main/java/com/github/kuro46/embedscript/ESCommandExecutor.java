@@ -131,7 +131,7 @@ public class ESCommandExecutor implements CommandExecutor {
 
     private void list(Player player, String[] args) {
         String world = args.length < 2
-            ? null
+            ? player.getWorld().getName()
             : args[1];
         int pageIndex = !(args.length < 3) && NumberUtils.isNumber(args[2])
             ? Integer.parseInt(args[2]) - 1
