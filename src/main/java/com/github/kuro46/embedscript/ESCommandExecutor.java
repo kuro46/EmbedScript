@@ -171,7 +171,7 @@ public class ESCommandExecutor implements CommandExecutor {
             String preset = presetName == null
                 ? ""
                 : "@preset " + presetName + " ";
-            script = scriptParser.parse(player.getUniqueId(), preset + " " + stringScript);
+            script = scriptParser.parse(player.getUniqueId(), preset + stringScript);
         } catch (ParseException e) {
             player.sendMessage(Prefix.ERROR_PREFIX +
                 String.format("Failed to parse script. (error: %s)", e.getMessage()));
