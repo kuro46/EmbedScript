@@ -7,6 +7,7 @@ import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.script.parser.ScriptParser;
+import com.github.kuro46.embedscript.util.Scheduler;
 import com.github.kuro46.embedscript.util.Util;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
@@ -15,24 +16,35 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
+import java.io.IOException;
 import java.util.Locale;
 
 /**
  * @author shirokuro
  */
 public class ESCommandExecutor implements CommandExecutor {
+    private final Configuration configuration;
     private final ScriptParser scriptParser;
     private final String presetName;
     private final ScriptUI scriptUI;
     private final Requests requests;
 
-    public ESCommandExecutor(ScriptParser scriptParser, ScriptUI scriptUI, Requests requests) {
-        this(scriptParser, null, scriptUI, requests);
+    public ESCommandExecutor(Configuration configuration,
+                             ScriptParser scriptParser,
+                             ScriptUI scriptUI,
+                             Requests requests) {
+        this(configuration, scriptParser, null, scriptUI, requests);
     }
 
-    public ESCommandExecutor(ScriptParser scriptParser, String presetName, ScriptUI scriptUI, Requests requests) {
+    public ESCommandExecutor(Configuration configuration,
+                             ScriptParser scriptParser,
+                             String presetName,
+                             ScriptUI scriptUI,
+                             Requests requests) {
+        this.configuration = configuration;
         this.scriptParser = scriptParser;
         this.presetName = presetName;
         this.scriptUI = scriptUI;
@@ -71,6 +83,19 @@ public class ESCommandExecutor implements CommandExecutor {
                 return modifyAction(player, args, RequestType.EMBED);
             case "add":
                 return modifyAction(player, args, RequestType.ADD);
+            case "reload":
+                Scheduler.execute(() -> {
+                    sender.sendMessage(Prefix.PREFIX + "Reloading configuration...");
+                    try {
+                        configuration.load();
+                    } catch (IOException | InvalidConfigurationException e) {
+                        sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + e.getMessage() + ")");
+                        e.printStackTrace();
+                        return;
+                    }
+                    sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!");
+                });
+                return true;
             default:
                 return false;
         }
