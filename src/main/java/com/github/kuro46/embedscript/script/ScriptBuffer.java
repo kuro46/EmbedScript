@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -34,11 +35,11 @@ public class ScriptBuffer {
     }
 
     public List<String> put(String key, List<String> values){
-        return script.put(key, values);
+        return script.put(key.toLowerCase(Locale.ENGLISH), values);
     }
 
     public List<String> get(String key){
-        List<String> list = script.get(key);
+        List<String> list = script.get(key.toLowerCase(Locale.ENGLISH));
         return list == null ? null : Collections.unmodifiableList(list);
     }
 
