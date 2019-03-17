@@ -3,6 +3,7 @@ package com.github.kuro46.embedscript.script;
 import com.github.kuro46.embedscript.GsonHolder;
 import com.github.kuro46.embedscript.api.EmbedScriptAPI;
 import com.github.kuro46.embedscript.api.PerformListener;
+import com.github.kuro46.embedscript.util.Util;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
@@ -10,7 +11,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -28,16 +28,12 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 /**
  * unmodifiable class
  */
 @JsonAdapter(Script.Adapter.class)
 public class Script {
-    private static final Pattern PLAYER_PATTERN = Pattern.compile("<player>", Pattern.LITERAL);
-    private static final Pattern WORLD_PATTERN = Pattern.compile("<world>", Pattern.LITERAL);
-
     private final UUID author;
     private final Set<MoveType> moveTypes;
     private final Set<ClickType> clickTypes;
@@ -142,8 +138,8 @@ public class Script {
         }
 
         for (String action : actions) {
-            action = PLAYER_PATTERN.matcher(action).replaceAll(trigger.getName());
-            action = WORLD_PATTERN.matcher(action).replaceAll(trigger.getWorld().getName());
+            action = Util.replaceAndUnescape(action, "<player>", trigger.getName());
+            action = Util.replaceAndUnescape(action, "<world>", trigger.getWorld().getName());
 
             for (ActionType actionType : actionTypes) {
                 switch (actionType) {
