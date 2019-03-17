@@ -56,13 +56,6 @@ public class Processors {
         }
     };
 
-    public static final Processor GIVE_PERMISSION = new AbstractProcessor("give-permission","gp") {
-        @Override
-        public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) {
-            builder.withPermissionsToGive(stringListToArray(values));
-        }
-    };
-
     public static final Processor ACTION_TYPE = new AbstractProcessor("action-type","at") {
         @Override
         public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) throws ParseException {
