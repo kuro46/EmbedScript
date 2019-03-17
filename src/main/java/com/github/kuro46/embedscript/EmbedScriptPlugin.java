@@ -62,7 +62,7 @@ public class EmbedScriptPlugin extends JavaPlugin {
         Requests requests = new Requests(scriptUI);
         ScriptParser scriptParser = new ScriptParser(configuration);
 
-        registerCommands(requests, scriptParser, scriptUI);
+        registerCommands(configuration, requests, scriptParser, scriptUI);
         registerListeners(requests, scriptManager, scriptUI);
 
         long end = System.currentTimeMillis();
@@ -137,12 +137,15 @@ public class EmbedScriptPlugin extends JavaPlugin {
         pluginManager.registerEvents(new PluginEnableListener(this, scriptUI), this);
     }
 
-    private void registerCommands(Requests requests, ScriptParser scriptParser, ScriptUI scriptUI) {
+    private void registerCommands(Configuration configuration,
+                                  Requests requests,
+                                  ScriptParser scriptParser,
+                                  ScriptUI scriptUI) {
         for (EventType eventType : EventType.values()) {
             getCommand(eventType.getCommandName())
-                .setExecutor(new ESCommandExecutor(scriptParser, eventType.getPresetName(), scriptUI, requests));
+                .setExecutor(new ESCommandExecutor(configuration, scriptParser, eventType.getPresetName(), scriptUI, requests));
         }
-        getCommand("embedscript").setExecutor(new ESCommandExecutor(scriptParser, scriptUI, requests));
+        getCommand("embedscript").setExecutor(new ESCommandExecutor(configuration, scriptParser, scriptUI, requests));
     }
 
     private static class PluginEnableListener implements Listener {
