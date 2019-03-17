@@ -54,16 +54,15 @@ public abstract class AbstractProcessor implements Processor{
 
     @Override
     public void setup(ScriptParser parser, ScriptBuffer source) throws ParseException {
-        for (Map.Entry<String, List<String>> entry : source.unmodifiableMap().entrySet()) {
-            String key = entry.getKey();
-            if (key.equals(getKey())) {
-                List<String> values = entry.getValue();
-                if (!allowEmptyList() && values.isEmpty()) {
-                    throw new ParseException("Cannot set empty value to '" + key + "'.");
-                }
-                setup(parser, source, key, values);
-            }
+        List<String> values = source.get(getKey());
+        if (values == null) {
+            return;
         }
+
+        if (!allowEmptyList() && values.isEmpty()) {
+            throw new ParseException("Cannot set empty value to '" + getKey() + "'.");
+        }
+        setup(parser, source, getKey(), values);
     }
 
     public void setup(ScriptParser parser, ScriptBuffer source, String key, List<String> values) throws ParseException {
