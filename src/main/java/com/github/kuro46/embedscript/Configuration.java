@@ -3,6 +3,7 @@ package com.github.kuro46.embedscript;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
@@ -22,15 +23,16 @@ public class Configuration {
     private Map<String, List<String>> permissionsForActions;
     private int parseLoopLimit;
 
-    public Configuration(Path configPath) throws IOException, InvalidConfigurationException {
-        this.configPath = configPath;
+    private Configuration(Path dataFolder) throws IOException, InvalidConfigurationException {
+        this.configPath = dataFolder.resolve("config.yml");
         load();
     }
 
-    public void load() throws IOException, InvalidConfigurationException {
-        presets = new HashMap<>();
-        permissionsForActions = new HashMap<>();
+    public static Configuration load(Path dataFolder) throws IOException, InvalidConfigurationException {
+        return new Configuration(dataFolder);
+    }
 
+    public void load() throws IOException, InvalidConfigurationException {
         YamlConfiguration configuration = new YamlConfiguration();
         try (BufferedReader reader = Files.newBufferedReader(configPath)) {
             configuration.load(reader);
@@ -39,14 +41,24 @@ public class Configuration {
         // load parse-loop-limit
         parseLoopLimit = configuration.getInt("parse-loop-limit", 3);
 
-        // load presets
+        loadPresets(configuration);
+
+        loadPermissionsForActions(configuration);
+    }
+
+    private void loadPresets(org.bukkit.configuration.Configuration configuration) {
+        Map<String, String> presets = new HashMap<>();
         ConfigurationSection presetsSection = configuration.getConfigurationSection("presets");
         for (String presetName : presetsSection.getKeys(false)) {
             String presetValue = presetsSection.getString(presetName);
-            presets.put(presetName,presetValue);
+            presets.put(presetName, presetValue);
         }
+        this.presets = Collections.unmodifiableMap(presets);
+    }
 
-        // load permissions for commands
+    private void loadPermissionsForActions(FileConfiguration configuration) throws IOException {
+        // load
+        Map<String, List<String>> permissionsForActions = new HashMap<>();
         ConfigurationSection permForActionsSection
             = configuration.getConfigurationSection("permissions-for-actions");
         if (permForActionsSection != null) {
@@ -55,7 +67,7 @@ public class Configuration {
                 permissionsForActions.put(action, permissions);
             }
         }
-        // update permissions for commands
+        // update
         boolean needSave = false;
         for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
             Map<String, Map<String, Object>> commands = plugin.getDescription().getCommands();
@@ -81,19 +93,21 @@ public class Configuration {
                 needSave = true;
             }
         }
-        // save permissions for actions if needed
+        // save if needed
         if (needSave) {
             configuration.set("permissions-for-actions", permissionsForActions);
             configuration.save(configPath.toFile());
         }
+
+        this.permissionsForActions = Collections.unmodifiableMap(permissionsForActions);
     }
 
     public Map<String, String> getPresets() {
-        return Collections.unmodifiableMap(presets);
+        return presets;
     }
 
     public Map<String, List<String>> getPermissionsForActions() {
-        return Collections.unmodifiableMap(permissionsForActions);
+        return permissionsForActions;
     }
 
     public int getParseLoopLimit() {

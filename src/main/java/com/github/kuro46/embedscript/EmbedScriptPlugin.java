@@ -71,7 +71,7 @@ public class EmbedScriptPlugin extends JavaPlugin {
 
     private Configuration loadConfiguration() throws IOException, InvalidConfigurationException {
         saveDefaultConfig();
-        return new Configuration(getDataFolder().toPath().resolve("config.yml"));
+        return Configuration.load(getDataFolder().toPath());
     }
 
     private ScriptManager loadScripts() throws IOException {
