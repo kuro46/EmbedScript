@@ -5,7 +5,9 @@ import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.github.kuro46.embedscript.script.ScriptUI;
+import com.github.kuro46.embedscript.script.UncheckedParseException;
 import com.github.kuro46.embedscript.util.MojangUtil;
+import com.github.kuro46.embedscript.util.Util;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
@@ -15,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -53,11 +56,11 @@ class Migrator {
                     try {
                         return createScriptFromLegacyFormat(author, eventType, script);
                     } catch (ParseException e) {
-                        throw new RuntimeException(e);
+                        throw new UncheckedParseException(e);
                     }
                 }).collect(Collectors.toList());
-        } catch (RuntimeException e) {
-            throw new ParseException(e.getCause());
+        } catch (UncheckedParseException e) {
+            throw e.getCause();
         }
     }
 
@@ -81,9 +84,7 @@ class Migrator {
 
         String[] split = legacy.split(" ");
         String actionTypeString = split[0];
-        String action = Arrays.stream(split)
-            .skip(1)
-            .collect(Collectors.joining(" "));
+        String action = Util.joinStringSpaceDelimiter(1, split);
 
         String permission = null;
         Script.ActionType actionType;
@@ -142,25 +143,18 @@ class Migrator {
     }
 
     private static UUID getAuthorFromData(List<String> data) {
-        //Author:MCID/Group → MCID/Group → MCID
-        String authorName = data.get(0).split(":")[1].split("/")[0];
-        return MojangUtil.getUUID(authorName);
+        String mcid = Pattern.compile("Author:(.+)/.+").matcher(data.get(0)).group(1);
+        return MojangUtil.getUUID(mcid);
     }
 
     private static List<Pair<EventType, Map<String, List<String>>>> getBlockList(Object scriptBlockInstance) throws Exception {
-
-        Class<?> scriptManagerSuperClass = null;
         List<Object> scriptManagers = getField(scriptBlockInstance, "scriptManagerList");
         List<Pair<EventType, Map<String, List<String>>>> list = new ArrayList<>();
 
-        for (int index = 0; index < scriptManagers.size(); index++) {
-            Object scriptManager = scriptManagers.get(index);
+        for (Object scriptManager : scriptManagers) {
             Class<?> scriptManagerClass = scriptManager.getClass();
-            if (index == 0) {
-                scriptManagerSuperClass = scriptManagerClass.getSuperclass();
-            }
 
-            Object mapManager = getField(scriptManagerSuperClass, scriptManager, "mapManager");
+            Object mapManager = getField(scriptManagerClass.getSuperclass(), scriptManager, "mapManager");
             Map<String, List<String>> blocksMap = getField(mapManager, "blocksMap");
             EventType eventType = getEventTypeByClass(scriptManagerClass);
 
