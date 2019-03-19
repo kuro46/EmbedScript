@@ -2,6 +2,7 @@ package com.github.kuro46.embedscript;
 
 import com.github.kuro46.embedscript.listener.InteractListener;
 import com.github.kuro46.embedscript.listener.MoveListener;
+import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
@@ -63,7 +64,7 @@ public class EmbedScriptPlugin extends JavaPlugin {
         ScriptParser scriptParser = new ScriptParser(configuration);
 
         registerCommands(configuration, requests, scriptParser, scriptUI);
-        registerListeners(requests, scriptManager, scriptUI);
+        registerListeners(requests, scriptManager);
 
         long end = System.currentTimeMillis();
         getLogger().info(String.format("Enabled! (%sms)", end - begin));
@@ -130,11 +131,11 @@ public class EmbedScriptPlugin extends JavaPlugin {
         ScriptSerializer.serialize(scriptFilePath, merged);
     }
 
-    private void registerListeners(Requests requests, ScriptManager scriptManager, ScriptUI scriptUI) {
+    private void registerListeners(Requests requests, ScriptManager scriptManager) {
         PluginManager pluginManager = Bukkit.getPluginManager();
         pluginManager.registerEvents(new InteractListener(this, scriptManager, requests), this);
         pluginManager.registerEvents(new MoveListener(this, scriptManager), this);
-        pluginManager.registerEvents(new PluginEnableListener(this, scriptUI), this);
+        pluginManager.registerEvents(new PluginEnableListener(this, scriptManager), this);
     }
 
     private void registerCommands(Configuration configuration,
@@ -150,11 +151,11 @@ public class EmbedScriptPlugin extends JavaPlugin {
 
     private static class PluginEnableListener implements Listener {
         private final Plugin embedScript;
-        private final ScriptUI scriptUI;
+        private final ScriptManager mergeTo;
 
-        PluginEnableListener(Plugin embedScript, ScriptUI scriptUI) {
+        PluginEnableListener(Plugin embedScript, ScriptManager mergeTo) {
             this.embedScript = embedScript;
-            this.scriptUI = scriptUI;
+            this.mergeTo = mergeTo;
         }
 
         @EventHandler
@@ -164,9 +165,9 @@ public class EmbedScriptPlugin extends JavaPlugin {
                 ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
                 consoleSender.sendMessage(Prefix.PREFIX + "ScriptBlock found! Migrating scripts.");
                 try {
-                    Migrator.migrate(consoleSender, scriptUI, plugin);
+                    ScriptBlockMigrator.migrate(mergeTo, embedScript.getDataFolder().toPath());
                 } catch (Exception e) {
-                    Bukkit.getPluginManager().disablePlugin(this.embedScript);
+                    Bukkit.getPluginManager().disablePlugin(embedScript);
                     throw new RuntimeException("Failed to migration! Disabling EmbedScript.", e);
                 }
                 consoleSender.sendMessage(Prefix.SUCCESS_PREFIX + "Scripts has been migrated. Disabling ScriptBlock.");
