@@ -150,12 +150,14 @@ public class ScriptUI {
                     world.equalsIgnoreCase(entry.getKey().getWorld()))
                 .sorted(new ScriptPositionComparator())
                 .collect(new ScriptCollector(filter));
+
+            String target = world == null || world.equals("all")
+                ? "this server"
+                : world;
+
             if (messages.isEmpty()) {
-                player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists.");
+                player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in " + target);
             } else {
-                String target = world == null || world.equals("all")
-                    ? "this server"
-                    : world;
                 sendPage("List of scripts in " + target,
                     player,
                     messages,
