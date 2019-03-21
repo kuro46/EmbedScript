@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript.listener;
 
+import com.github.kuro46.embedscript.EmbedScript;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
@@ -23,9 +24,9 @@ public class MoveListener implements Listener {
     private final ScriptManager scriptManager;
     private final Plugin plugin;
 
-    public MoveListener(Plugin plugin, ScriptManager scriptManager) {
-        this.plugin = plugin;
-        this.scriptManager = scriptManager;
+    public MoveListener(EmbedScript embedScript) {
+        this.plugin = embedScript.getPlugin();
+        this.scriptManager = embedScript.getScriptManager();
     }
 
     @EventHandler

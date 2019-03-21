@@ -127,27 +127,16 @@ public class EmbedScript {
 
     private void registerListeners() {
         PluginManager pluginManager = Bukkit.getPluginManager();
-        pluginManager.registerEvents(new InteractListener(plugin, scriptManager, requests), plugin);
-        pluginManager.registerEvents(new MoveListener(plugin, scriptManager), plugin);
+        pluginManager.registerEvents(new InteractListener(this), plugin);
+        pluginManager.registerEvents(new MoveListener(this), plugin);
     }
 
     private void registerCommands() {
         for (EventType eventType : EventType.values()) {
             Bukkit.getPluginCommand(eventType.getCommandName())
-                .setExecutor(new ESCommandExecutor(configuration,
-                    scriptParser,
-                    eventType.getPresetName(),
-                    scriptUI,
-                    requests,
-                    scriptManager,
-                    dataFolder));
+                .setExecutor(new ESCommandExecutor(this, eventType.getPresetName()));
         }
-        Bukkit.getPluginCommand("embedscript").setExecutor(new ESCommandExecutor(configuration,
-            scriptParser,
-            scriptUI,
-            requests,
-            scriptManager,
-            dataFolder));
+        Bukkit.getPluginCommand("embedscript").setExecutor(new ESCommandExecutor(this));
     }
 
     public Plugin getPlugin() {
