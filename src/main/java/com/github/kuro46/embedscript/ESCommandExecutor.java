@@ -1,10 +1,12 @@
 package com.github.kuro46.embedscript;
 
+import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator;
 import com.github.kuro46.embedscript.request.Request;
 import com.github.kuro46.embedscript.request.RequestType;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
+import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.script.parser.ScriptParser;
 import com.github.kuro46.embedscript.util.Scheduler;
@@ -20,6 +22,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Locale;
 
 /**
@@ -31,24 +34,32 @@ public class ESCommandExecutor implements CommandExecutor {
     private final String presetName;
     private final ScriptUI scriptUI;
     private final Requests requests;
+    private final ScriptManager scriptManager;
+    private final Path dataFolder;
 
     public ESCommandExecutor(Configuration configuration,
                              ScriptParser scriptParser,
                              ScriptUI scriptUI,
-                             Requests requests) {
-        this(configuration, scriptParser, null, scriptUI, requests);
+                             Requests requests,
+                             ScriptManager scriptManager,
+                             Path dataFolder) {
+        this(configuration, scriptParser, null, scriptUI, requests, scriptManager, dataFolder);
     }
 
     public ESCommandExecutor(Configuration configuration,
                              ScriptParser scriptParser,
                              String presetName,
                              ScriptUI scriptUI,
-                             Requests requests) {
+                             Requests requests,
+                             ScriptManager scriptManager,
+                             Path dataFolder) {
+        this.scriptManager = scriptManager;
         this.configuration = configuration;
         this.scriptParser = scriptParser;
         this.presetName = presetName;
         this.scriptUI = scriptUI;
         this.requests = requests;
+        this.dataFolder = dataFolder;
     }
 
     @Override
@@ -94,6 +105,20 @@ public class ESCommandExecutor implements CommandExecutor {
                         return;
                     }
                     sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!");
+                });
+                return true;
+            case "migrate":
+                Scheduler.execute(() -> {
+                    sender.sendMessage("Migrating data of ScriptBlock...");
+                    try {
+                        ScriptBlockMigrator.migrate(configuration, scriptManager, dataFolder);
+                    } catch (InvalidConfigurationException | ParseException | IOException e) {
+                        sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to migrate data of ScriptBlock!");
+                        System.err.println("Failed to migrate data of ScriptBlock!");
+                        e.printStackTrace();
+                        return;
+                    }
+                    sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!");
                 });
                 return true;
             default:
