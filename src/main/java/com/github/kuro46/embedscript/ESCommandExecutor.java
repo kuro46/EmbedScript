@@ -37,29 +37,18 @@ public class ESCommandExecutor implements CommandExecutor {
     private final ScriptManager scriptManager;
     private final Path dataFolder;
 
-    public ESCommandExecutor(Configuration configuration,
-                             ScriptParser scriptParser,
-                             ScriptUI scriptUI,
-                             Requests requests,
-                             ScriptManager scriptManager,
-                             Path dataFolder) {
-        this(configuration, scriptParser, null, scriptUI, requests, scriptManager, dataFolder);
+    public ESCommandExecutor(EmbedScript embedScript) {
+        this(embedScript, null);
     }
 
-    public ESCommandExecutor(Configuration configuration,
-                             ScriptParser scriptParser,
-                             String presetName,
-                             ScriptUI scriptUI,
-                             Requests requests,
-                             ScriptManager scriptManager,
-                             Path dataFolder) {
-        this.scriptManager = scriptManager;
-        this.configuration = configuration;
-        this.scriptParser = scriptParser;
+    public ESCommandExecutor(EmbedScript embedScript, String presetName) {
+        this.scriptManager = embedScript.getScriptManager();
+        this.configuration = embedScript.getConfiguration();
+        this.scriptParser = embedScript.getScriptParser();
         this.presetName = presetName;
-        this.scriptUI = scriptUI;
-        this.requests = requests;
-        this.dataFolder = dataFolder;
+        this.scriptUI = embedScript.getScriptUI();
+        this.requests = embedScript.getRequests();
+        this.dataFolder = embedScript.getDataFolder();
     }
 
     @Override

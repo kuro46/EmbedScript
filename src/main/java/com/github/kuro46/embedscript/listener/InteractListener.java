@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript.listener;
 
+import com.github.kuro46.embedscript.EmbedScript;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
@@ -29,10 +30,10 @@ public class InteractListener implements Listener {
     private final ScriptManager scriptManager;
     private final Requests requests;
 
-    public InteractListener(Plugin plugin, ScriptManager scriptManager, Requests requests) {
-        this.plugin = plugin;
-        this.scriptManager = scriptManager;
-        this.requests = requests;
+    public InteractListener(EmbedScript embedScript) {
+        this.plugin = embedScript.getPlugin();
+        this.scriptManager = embedScript.getScriptManager();
+        this.requests = embedScript.getRequests();
     }
 
     @EventHandler
