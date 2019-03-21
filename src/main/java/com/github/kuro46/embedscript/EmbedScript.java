@@ -48,6 +48,10 @@ public class EmbedScript {
         instance = new EmbedScript(plugin);
     }
 
+    public static synchronized void reset() {
+        instance = null;
+    }
+
     private EmbedScript(Plugin plugin) throws IOException, InvalidConfigurationException {
         this.plugin = plugin;
         this.dataFolder = plugin.getDataFolder().toPath();
