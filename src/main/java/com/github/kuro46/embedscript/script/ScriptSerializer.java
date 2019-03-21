@@ -33,10 +33,6 @@ public class ScriptSerializer {
         Thread thread = new Thread(r);
         thread.setName("EmbedScript IO Thread");
         thread.setDaemon(true);
-        thread.setUncaughtExceptionHandler((t, e) -> {
-            System.err.println("Exception occurred in " + t.getName() + " .");
-            e.printStackTrace();
-        });
 
         return thread;
     });
