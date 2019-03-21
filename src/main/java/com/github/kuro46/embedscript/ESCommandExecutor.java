@@ -35,20 +35,20 @@ public class ESCommandExecutor implements CommandExecutor {
     private final ScriptUI scriptUI;
     private final Requests requests;
     private final ScriptManager scriptManager;
-    private final Path dataFolder;
+    private final EmbedScript embedScript;
 
     public ESCommandExecutor(EmbedScript embedScript) {
         this(embedScript, null);
     }
 
     public ESCommandExecutor(EmbedScript embedScript, String presetName) {
+        this.embedScript = embedScript;
         this.scriptManager = embedScript.getScriptManager();
         this.configuration = embedScript.getConfiguration();
         this.scriptParser = embedScript.getScriptParser();
         this.presetName = presetName;
         this.scriptUI = embedScript.getScriptUI();
         this.requests = embedScript.getRequests();
-        this.dataFolder = embedScript.getDataFolder();
     }
 
     @Override
@@ -152,7 +152,7 @@ public class ESCommandExecutor implements CommandExecutor {
         Scheduler.execute(() -> {
             sender.sendMessage("Migrating data of ScriptBlock...");
             try {
-                ScriptBlockMigrator.migrate(configuration, scriptManager, dataFolder);
+                ScriptBlockMigrator.migrate(embedScript);
             } catch (InvalidConfigurationException | ParseException | IOException e) {
                 sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to migrate data of ScriptBlock!");
                 System.err.println("Failed to migrate data of ScriptBlock!");

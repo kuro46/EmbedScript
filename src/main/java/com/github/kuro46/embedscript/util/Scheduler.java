@@ -13,10 +13,6 @@ public final class Scheduler {
         Thread thread = new Thread(r);
         thread.setName("EmbedScript Scheduler Thread");
         thread.setDaemon(true);
-        thread.setUncaughtExceptionHandler((t, e) -> {
-            System.err.println("Exception in " + t.getName());
-            e.printStackTrace();
-        });
 
         return thread;
     });

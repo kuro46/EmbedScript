@@ -24,4 +24,9 @@ public class EmbedScriptPlugin extends JavaPlugin {
         long end = System.currentTimeMillis();
         getLogger().info(String.format("Enabled! (%sms)", end - begin));
     }
+
+    @Override
+    public void onDisable() {
+        EmbedScript.reset();
+    }
 }
