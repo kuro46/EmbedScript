@@ -1,6 +1,7 @@
 package com.github.kuro46.embedscript.migrator;
 
 import com.github.kuro46.embedscript.Configuration;
+import com.github.kuro46.embedscript.EmbedScript;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
@@ -31,21 +32,21 @@ public class ScriptBlockMigrator {
     private final ScriptParser parser;
     private final ScriptManager mergeTo;
 
-    private ScriptBlockMigrator(Configuration configuration, ScriptManager mergeTo, Path dataFolder)
+    private ScriptBlockMigrator(EmbedScript embedScript)
         throws IOException, InvalidConfigurationException, ParseException {
 
-        this.mergeTo = mergeTo;
-        this.parser = new ScriptParser(configuration);
-        Path sbDataFolder = dataFolder.resolve(Paths.get("..", "ScriptBlock", "BlocksData"));
+        this.mergeTo = embedScript.getScriptManager();
+        this.parser = embedScript.getScriptParser();
+        Path sbDataFolder = embedScript.getDataFolder().resolve(Paths.get("..", "ScriptBlock", "BlocksData"));
         for (EventType eventType : EventType.values()) {
             migrate(eventType, sbDataFolder.resolve(getSBFileName(eventType)));
         }
     }
 
-    public static void migrate(Configuration configuration, ScriptManager mergeTo, Path dataFolder)
+    public static void migrate(EmbedScript embedScript)
         throws InvalidConfigurationException, ParseException, IOException {
 
-        new ScriptBlockMigrator(configuration, mergeTo, dataFolder);
+        new ScriptBlockMigrator(embedScript);
     }
 
     private String getSBFileName(EventType eventType) {
