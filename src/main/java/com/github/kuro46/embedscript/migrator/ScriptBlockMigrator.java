@@ -148,7 +148,7 @@ public class ScriptBlockMigrator {
         for (Map.Entry<String, String> entry : formatBuilder.entrySet()) {
             formattedByNewVersion.append(entry.getKey()).append(" ").append(entry.getValue()).append(" ");
         }
-        // trim a space character in end of string
+        // trim a space character at end of string
         String substring = formattedByNewVersion.substring(0, formattedByNewVersion.length() - 1);
 
         return parser.parse(author, substring);
