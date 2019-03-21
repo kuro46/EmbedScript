@@ -53,74 +53,101 @@ public class ESCommandExecutor implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("Can't perform this command from the console.");
-            return true;
-        }
         if (args.length < 1) {
             return false;
         }
+
+        HandleResult consoleHandleResult = handleConsoleCommand(sender, args);
+        if (consoleHandleResult != HandleResult.UNMATCH) {
+            return consoleHandleResult.toBoolean();
+        }
+
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("Cannot perform this command from the console.");
+            return true;
+        }
+
         Player player = (Player) sender;
+
+        return handlePlayerCommand(player, args).toBoolean();
+    }
+
+    private HandleResult handleConsoleCommand(CommandSender sender, String[] args) {
+        switch (args[0].toLowerCase(Locale.ENGLISH)) {
+            case "help":
+                help(sender);
+                return HandleResult.COLLECT_USE;
+            case "reload":
+                reload(sender);
+                return HandleResult.COLLECT_USE;
+            case "migrate":
+                migrate(sender);
+                return HandleResult.COLLECT_USE;
+            default:
+                return HandleResult.UNMATCH;
+        }
+    }
+
+    private HandleResult handlePlayerCommand(Player player, String[] args) {
         switch (args[0].toLowerCase(Locale.ENGLISH)) {
             case "teleport":
-                return teleport(player, args);
-            case "help":
-                help(player);
-                return true;
+                return HandleResult.getByBoolean(teleport(player, args));
             case "page":
-                return page(player, args);
+                return HandleResult.getByBoolean(page(player, args));
             //Script operations
             case "list":
                 list(player, args);
-                return true;
+                return HandleResult.COLLECT_USE;
             case "view":
                 view(player);
-                return true;
+                return HandleResult.COLLECT_USE;
             case "remove":
                 remove(player);
-                return true;
+                return HandleResult.COLLECT_USE;
             case "embed":
-                return modifyAction(player, args, RequestType.EMBED);
+                return HandleResult.getByBoolean(modifyAction(player, args, RequestType.EMBED));
             case "add":
-                return modifyAction(player, args, RequestType.ADD);
-            case "reload":
-                Scheduler.execute(() -> {
-                    sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...");
-                    try {
-                        configuration.load();
-                    } catch (IOException | InvalidConfigurationException e) {
-                        sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + e.getMessage() + ")");
-                        e.printStackTrace();
-                        return;
-                    }
-
-                    try {
-                        scriptManager.reload();
-                    } catch (IOException e) {
-                        sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload scripts! (error: " + e.getMessage() + ")");
-                        e.printStackTrace();
-                    }
-
-                    sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!");
-                });
-                return true;
-            case "migrate":
-                Scheduler.execute(() -> {
-                    sender.sendMessage("Migrating data of ScriptBlock...");
-                    try {
-                        ScriptBlockMigrator.migrate(configuration, scriptManager, dataFolder);
-                    } catch (InvalidConfigurationException | ParseException | IOException e) {
-                        sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to migrate data of ScriptBlock!");
-                        System.err.println("Failed to migrate data of ScriptBlock!");
-                        e.printStackTrace();
-                        return;
-                    }
-                    sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!");
-                });
-                return true;
+                return HandleResult.getByBoolean(modifyAction(player, args, RequestType.ADD));
             default:
-                return false;
+                return HandleResult.UNMATCH;
         }
+    }
+
+    private void reload(CommandSender sender) {
+        Scheduler.execute(() -> {
+            sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...");
+            try {
+                configuration.load();
+            } catch (IOException | InvalidConfigurationException e) {
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + e.getMessage() + ")");
+                e.printStackTrace();
+                return;
+            }
+
+            try {
+                scriptManager.reload();
+            } catch (IOException e) {
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload scripts! (error: " + e.getMessage() + ")");
+                e.printStackTrace();
+            }
+
+            sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!");
+        });
+    }
+
+    private void migrate(CommandSender sender) {
+        Scheduler.execute(() -> {
+            sender.sendMessage("Migrating data of ScriptBlock...");
+            try {
+                ScriptBlockMigrator.migrate(configuration, scriptManager, dataFolder);
+            } catch (InvalidConfigurationException | ParseException | IOException e) {
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to migrate data of ScriptBlock!");
+                System.err.println("Failed to migrate data of ScriptBlock!");
+                e.printStackTrace();
+                return;
+            }
+            sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!");
+        });
     }
 
     private boolean teleport(Player player, String[] args) {
@@ -147,8 +174,8 @@ public class ESCommandExecutor implements CommandExecutor {
         return true;
     }
 
-    private void help(Player player) {
-        player.sendMessage(new String[]{
+    private void help(CommandSender sender) {
+        sender.sendMessage(new String[]{
             "/embedscript teleport <world> <x> <y> <z> - Teleport to specific location.",
             "/embedscript list [world] - Displays list of scripts in specific world or the server.",
             "/embedscript view - Displays list of scripts in the clicked block.",
@@ -228,5 +255,27 @@ public class ESCommandExecutor implements CommandExecutor {
         requests.putRequest(player, new Request(requestType, script));
 
         return true;
+    }
+
+    private enum HandleResult {
+        COLLECT_USE,
+        INCORRECT_USE,
+        UNMATCH;
+
+        public static HandleResult getByBoolean(boolean bool) {
+            return bool ? COLLECT_USE : INCORRECT_USE;
+        }
+
+        public boolean toBoolean() {
+            switch (this) {
+                case UNMATCH:
+                case INCORRECT_USE:
+                    return false;
+                case COLLECT_USE:
+                    return true;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
     }
 }
