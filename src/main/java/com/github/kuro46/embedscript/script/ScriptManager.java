@@ -72,6 +72,12 @@ public class ScriptManager {
         return scripts.entrySet();
     }
 
+    public void reload() throws IOException {
+        Map<ScriptPosition, List<Script>> scripts = ScriptSerializer.deserialize(path);
+        this.scripts.clear();
+        this.scripts.putAll(scripts);
+    }
+
     public void save() throws IOException {
         ScriptSerializer.serialize(path, scripts);
     }

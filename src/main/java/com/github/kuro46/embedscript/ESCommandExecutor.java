@@ -85,7 +85,7 @@ public class ESCommandExecutor implements CommandExecutor {
                 return modifyAction(player, args, RequestType.ADD);
             case "reload":
                 Scheduler.execute(() -> {
-                    sender.sendMessage(Prefix.PREFIX + "Reloading configuration...");
+                    sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...");
                     try {
                         configuration.load();
                     } catch (IOException | InvalidConfigurationException e) {
@@ -93,6 +93,14 @@ public class ESCommandExecutor implements CommandExecutor {
                         e.printStackTrace();
                         return;
                     }
+
+                    try {
+                        scriptManager.reload();
+                    } catch (IOException e) {
+                        sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload scripts! (error: " + e.getMessage() + ")");
+                        e.printStackTrace();
+                    }
+
                     sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!");
                 });
                 return true;
