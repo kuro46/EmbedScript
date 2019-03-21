@@ -169,6 +169,7 @@ public class ESCommandExecutor implements CommandExecutor {
                 playerLocation.getPitch()));
         } catch (NumberFormatException e) {
             player.sendMessage("X or Y or Z is not valid number.");
+            return true;
         }
         player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.");
         return true;
