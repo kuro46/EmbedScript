@@ -113,6 +113,19 @@ public class ESCommandExecutor implements CommandExecutor {
         }
     }
 
+    private void help(CommandSender sender) {
+        sender.sendMessage(new String[]{
+            "/es help - displays this message",
+            "/es reload - reloads configuration and scripts",
+            "/es migrate - migrates from ScriptBlock",
+            "/es list [world] [page] - displays list of scripts",
+            "/es view - displays information of the script in the clicked block",
+            "/es remove - removes the script in the clicked block",
+            "/es embed - embeds a script to the clicked block",
+            "/es add - adds a script to the clicked block"
+        });
+    }
+
     private void reload(CommandSender sender) {
         Scheduler.execute(() -> {
             sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...");
@@ -173,18 +186,6 @@ public class ESCommandExecutor implements CommandExecutor {
         }
         player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.");
         return true;
-    }
-
-    private void help(CommandSender sender) {
-        sender.sendMessage(new String[]{
-            "/embedscript teleport <world> <x> <y> <z> - Teleport to specific location.",
-            "/embedscript list [world] - Displays list of scripts in specific world or the server.",
-            "/embedscript view - Displays list of scripts in the clicked block.",
-            "/embedscript remove - Removes scripts in the clicked block.",
-            "/embedscript embed - Embeds scripts to the clicked block.",
-            "/",
-            "/embedscript help - Display this message."
-        });
     }
 
     private boolean page(Player player, String[] args) {
