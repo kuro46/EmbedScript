@@ -41,7 +41,7 @@ public class EmbedScript {
     public static synchronized void initialize(Plugin plugin)
         throws IOException, InvalidConfigurationException, IllegalStateException {
 
-        if (instance == null) {
+        if (instance != null) {
             throw new IllegalStateException("Instance already initialized!");
         }
 
