@@ -11,12 +11,7 @@ import com.github.kuro46.embedscript.script.ScriptSerializer;
 import com.github.kuro46.embedscript.script.ScriptUI;
 import com.github.kuro46.embedscript.script.parser.ScriptParser;
 import org.bukkit.Bukkit;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.server.PluginEnableEvent;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -62,8 +57,8 @@ public class EmbedScriptPlugin extends JavaPlugin {
         Requests requests = new Requests(scriptUI);
         ScriptParser scriptParser = new ScriptParser(configuration);
 
-        registerCommands(configuration, requests, scriptParser, scriptUI);
-        registerListeners(requests, scriptManager, scriptUI);
+        registerCommands(configuration, requests, scriptParser, scriptUI, scriptManager, getDataFolder().toPath());
+        registerListeners(requests, scriptManager);
 
         long end = System.currentTimeMillis();
         getLogger().info(String.format("Enabled! (%sms)", end - begin));
@@ -130,49 +125,32 @@ public class EmbedScriptPlugin extends JavaPlugin {
         ScriptSerializer.serialize(scriptFilePath, merged);
     }
 
-    private void registerListeners(Requests requests, ScriptManager scriptManager, ScriptUI scriptUI) {
+    private void registerListeners(Requests requests, ScriptManager scriptManager) {
         PluginManager pluginManager = Bukkit.getPluginManager();
         pluginManager.registerEvents(new InteractListener(this, scriptManager, requests), this);
         pluginManager.registerEvents(new MoveListener(this, scriptManager), this);
-        pluginManager.registerEvents(new PluginEnableListener(this, scriptUI), this);
     }
 
     private void registerCommands(Configuration configuration,
                                   Requests requests,
                                   ScriptParser scriptParser,
-                                  ScriptUI scriptUI) {
+                                  ScriptUI scriptUI,
+                                  ScriptManager scriptManager, Path dataFolder) {
         for (EventType eventType : EventType.values()) {
             getCommand(eventType.getCommandName())
-                .setExecutor(new ESCommandExecutor(configuration, scriptParser, eventType.getPresetName(), scriptUI, requests));
+                .setExecutor(new ESCommandExecutor(configuration,
+                    scriptParser,
+                    eventType.getPresetName(),
+                    scriptUI,
+                    requests,
+                    scriptManager,
+                    dataFolder));
         }
-        getCommand("embedscript").setExecutor(new ESCommandExecutor(configuration, scriptParser, scriptUI, requests));
-    }
-
-    private static class PluginEnableListener implements Listener {
-        private final Plugin embedScript;
-        private final ScriptUI scriptUI;
-
-        PluginEnableListener(Plugin embedScript, ScriptUI scriptUI) {
-            this.embedScript = embedScript;
-            this.scriptUI = scriptUI;
-        }
-
-        @EventHandler
-        public void onPluginEnable(PluginEnableEvent event) {
-            Plugin plugin = event.getPlugin();
-            if (plugin.getName().equals("ScriptBlock")) {
-                ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
-                consoleSender.sendMessage(Prefix.PREFIX + "ScriptBlock found! Migrating scripts.");
-                try {
-                    Migrator.migrate(consoleSender, scriptUI, plugin);
-                } catch (Exception e) {
-                    Bukkit.getPluginManager().disablePlugin(this.embedScript);
-                    throw new RuntimeException("Failed to migration! Disabling EmbedScript.", e);
-                }
-                consoleSender.sendMessage(Prefix.SUCCESS_PREFIX + "Scripts has been migrated. Disabling ScriptBlock.");
-
-                Bukkit.getPluginManager().disablePlugin(plugin);
-            }
-        }
+        getCommand("embedscript").setExecutor(new ESCommandExecutor(configuration,
+            scriptParser,
+            scriptUI,
+            requests,
+            scriptManager,
+            dataFolder));
     }
 }

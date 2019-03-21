@@ -143,9 +143,8 @@ public class ScriptUI {
      * @param pageIndex page index
      */
     public void list(Player player, String world, Script filter, int pageIndex) {
-        Map<ScriptPosition, List<Script>> snapshot = scriptManager.snapshot();
         Scheduler.execute(() -> {
-            List<BaseComponent[]> messages = snapshot.entrySet().stream()
+            List<BaseComponent[]> messages = scriptManager.getScripts().entrySet().stream()
                 .filter(entry -> world == null ||
                     world.equals("all") ||
                     world.equalsIgnoreCase(entry.getKey().getWorld()))

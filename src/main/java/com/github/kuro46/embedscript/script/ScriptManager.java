@@ -4,26 +4,27 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Script manager<br>
- * This class is not thread-safe
+ * This class is thread-safe
  */
 public class ScriptManager {
-    private final Map<ScriptPosition, List<Script>> scripts;
+    private final ConcurrentMap<ScriptPosition, List<Script>> scripts;
     private final Path path;
 
-    public ScriptManager(Map<ScriptPosition, List<Script>> scripts, Path path) {
+    public ScriptManager(ConcurrentMap<ScriptPosition, List<Script>> scripts, Path path) {
         this.scripts = scripts;
         this.path = path;
     }
 
     public static ScriptManager load(Path filePath) throws IOException {
-        return new ScriptManager(ScriptSerializer.deserialize(filePath), filePath);
+        return new ScriptManager(new ConcurrentHashMap<>(ScriptSerializer.deserialize(filePath)), filePath);
     }
 
     public Path getPath() {
@@ -45,7 +46,7 @@ public class ScriptManager {
     public void put(ScriptPosition position, Script script) {
         List<Script> scripts = getAndPutIfNeeded(position);
         scripts.add(script);
-        ScriptSerializer.serializeLaterAsync(path, snapshot());
+        ScriptSerializer.serializeLaterAsync(path, this.scripts);
     }
 
     public void putIfAbsent(ScriptPosition position, Script script) {
@@ -54,12 +55,12 @@ public class ScriptManager {
         }
         List<Script> scripts = getAndPutIfNeeded(position);
         scripts.add(script);
-        ScriptSerializer.serializeLaterAsync(path, snapshot());
+        ScriptSerializer.serializeLaterAsync(path, this.scripts);
     }
 
     public List<Script> remove(ScriptPosition position) {
         List<Script> s = scripts.remove(position);
-        ScriptSerializer.serializeLaterAsync(path, snapshot());
+        ScriptSerializer.serializeLaterAsync(path, scripts);
         return s;
     }
 
@@ -72,26 +73,14 @@ public class ScriptManager {
     }
 
     public void save() throws IOException {
-        ScriptSerializer.serialize(path, snapshot());
+        ScriptSerializer.serialize(path, scripts);
     }
 
     public void saveAsync() {
-        ScriptSerializer.serializeLaterAsync(path, snapshot());
+        ScriptSerializer.serializeLaterAsync(path, scripts);
     }
 
-    /**
-     * Returns snapshot of this instance. Return value is unmodifiable and thread-safe.
-     *
-     * @return Snapshot of this instance
-     */
-    public Map<ScriptPosition, List<Script>> snapshot() {
-        Map<ScriptPosition, List<Script>> scripts = new HashMap<>();
-        for (Map.Entry<ScriptPosition, List<Script>> entry : this.scripts.entrySet()) {
-            ScriptPosition position = entry.getKey();
-            List<Script> scriptList = entry.getValue();
-
-            scripts.put(position, Collections.unmodifiableList(new ArrayList<>(scriptList)));
-        }
-        return Collections.unmodifiableMap(scripts);
+    public ConcurrentMap<ScriptPosition, List<Script>> getScripts() {
+        return scripts;
     }
 }
