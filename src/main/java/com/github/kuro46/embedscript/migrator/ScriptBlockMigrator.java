@@ -109,6 +109,7 @@ public class ScriptBlockMigrator {
          * @bypassperm:permission action
          * @command action
          * @player action
+         * @bypass action
          */
 
         Pattern splitPattern = Pattern.compile("([^ ]+) (.+)");
@@ -130,6 +131,9 @@ public class ScriptBlockMigrator {
                 break;
             case "@player":
                 formatBuilder.put("@action-type", "SAY");
+                break;
+            case "@bypass":
+                formatBuilder.put("@preset", "alternative-bypass");
                 break;
             default:
                 Pattern bypassPermPattern = Pattern.compile("^@bypassperm:(.+)", Pattern.CASE_INSENSITIVE);
