@@ -64,7 +64,7 @@ public class EmbedScriptPlugin extends JavaPlugin {
         ScriptParser scriptParser = new ScriptParser(configuration);
 
         registerCommands(configuration, requests, scriptParser, scriptUI);
-        registerListeners(requests, scriptManager);
+        registerListeners(configuration, requests, scriptManager);
 
         long end = System.currentTimeMillis();
         getLogger().info(String.format("Enabled! (%sms)", end - begin));
@@ -131,11 +131,11 @@ public class EmbedScriptPlugin extends JavaPlugin {
         ScriptSerializer.serialize(scriptFilePath, merged);
     }
 
-    private void registerListeners(Requests requests, ScriptManager scriptManager) {
+    private void registerListeners(Configuration configuration, Requests requests, ScriptManager scriptManager) {
         PluginManager pluginManager = Bukkit.getPluginManager();
         pluginManager.registerEvents(new InteractListener(this, scriptManager, requests), this);
         pluginManager.registerEvents(new MoveListener(this, scriptManager), this);
-        pluginManager.registerEvents(new PluginEnableListener(this, scriptManager), this);
+        pluginManager.registerEvents(new PluginEnableListener(this, scriptManager, configuration), this);
     }
 
     private void registerCommands(Configuration configuration,
@@ -152,10 +152,12 @@ public class EmbedScriptPlugin extends JavaPlugin {
     private static class PluginEnableListener implements Listener {
         private final Plugin embedScript;
         private final ScriptManager mergeTo;
+        private final Configuration configuration;
 
-        PluginEnableListener(Plugin embedScript, ScriptManager mergeTo) {
+        PluginEnableListener(Plugin embedScript, ScriptManager mergeTo, Configuration configuration) {
             this.embedScript = embedScript;
             this.mergeTo = mergeTo;
+            this.configuration = configuration;
         }
 
         @EventHandler
@@ -165,7 +167,7 @@ public class EmbedScriptPlugin extends JavaPlugin {
                 ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
                 consoleSender.sendMessage(Prefix.PREFIX + "ScriptBlock found! Migrating scripts.");
                 try {
-                    ScriptBlockMigrator.migrate(mergeTo, embedScript.getDataFolder().toPath());
+                    ScriptBlockMigrator.migrate(configuration, mergeTo, embedScript.getDataFolder().toPath());
                 } catch (Exception e) {
                     Bukkit.getPluginManager().disablePlugin(embedScript);
                     throw new RuntimeException("Failed to migration! Disabling EmbedScript.", e);

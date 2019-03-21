@@ -1,10 +1,12 @@
 package com.github.kuro46.embedscript.migrator;
 
+import com.github.kuro46.embedscript.Configuration;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
+import com.github.kuro46.embedscript.script.parser.ScriptParser;
 import com.github.kuro46.embedscript.util.MojangUtil;
 import com.github.kuro46.embedscript.util.Util;
 import org.bukkit.configuration.ConfigurationSection;
@@ -17,25 +19,33 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ScriptBlockMigrator {
+    private final ScriptParser parser;
     private final ScriptManager mergeTo;
 
-    private ScriptBlockMigrator(ScriptManager mergeTo, Path dataFolder) throws IOException, InvalidConfigurationException, ParseException {
+    private ScriptBlockMigrator(Configuration configuration, ScriptManager mergeTo, Path dataFolder)
+        throws IOException, InvalidConfigurationException, ParseException {
+
         this.mergeTo = mergeTo;
+        this.parser = new ScriptParser(configuration);
         Path sbDataFolder = dataFolder.resolve(Paths.get("..", "ScriptBlock", "BlocksData"));
         for (EventType eventType : EventType.values()) {
             migrate(eventType, sbDataFolder.resolve(getSBFileName(eventType)));
         }
     }
 
-    public static void migrate(ScriptManager mergeTo, Path dataFolder) throws InvalidConfigurationException, ParseException, IOException {
-        new ScriptBlockMigrator(mergeTo, dataFolder);
+    public static void migrate(Configuration configuration, ScriptManager mergeTo, Path dataFolder)
+        throws InvalidConfigurationException, ParseException, IOException {
+
+        new ScriptBlockMigrator(configuration, mergeTo, dataFolder);
     }
 
     private String getSBFileName(EventType eventType) {
@@ -91,7 +101,7 @@ public class ScriptBlockMigrator {
      * @param legacy legacy format of script
      * @return script
      */
-    private static Script createScriptFromLegacyFormat(UUID author,
+    private Script createScriptFromLegacyFormat(UUID author,
                                                        EventType eventType,
                                                        String legacy) throws ParseException {
         /*
@@ -101,58 +111,50 @@ public class ScriptBlockMigrator {
          * @player action
          */
 
-        String[] split = legacy.split(" ");
-        String actionTypeString = split[0].toLowerCase(Locale.ENGLISH);
-        String action = Util.joinStringSpaceDelimiter(1, split);
+        Pattern splitPattern = Pattern.compile("([^ ]+) (.+)");
+        Matcher splitPatternMatcher = splitPattern.matcher(legacy);
+        if (!splitPatternMatcher.find()) {
+            throw new ParseException("Illegal script");
+        }
+        String actionType = splitPatternMatcher.group(1);
+        String action = splitPatternMatcher.group(2);
 
-        String permission = null;
-        Script.ActionType actionType;
+        Map<String, String> formatBuilder = new HashMap<>();
 
-        switch (actionTypeString) {
+        formatBuilder.put("@preset", eventType.getPresetName());
+        formatBuilder.put("@action", action);
+
+        switch (actionType.toLowerCase(Locale.ENGLISH)) {
             case "@command":
-                actionType = Script.ActionType.COMMAND;
+                formatBuilder.put("@action-type", "COMMAND");
                 break;
             case "@player":
-                actionType = Script.ActionType.SAY;
+                formatBuilder.put("@action-type", "SAY");
                 break;
             default:
-                if (actionTypeString.startsWith("@bypassperm")) {
-                    permission = actionTypeString.split(":")[1];
-                    actionType = Script.ActionType.COMMAND;
+                Pattern bypassPermPattern = Pattern.compile("^@bypassperm:(.+)", Pattern.CASE_INSENSITIVE);
+                Matcher bypassPermPatternMatcher = bypassPermPattern.matcher(actionType);
+
+                if (bypassPermPatternMatcher.find()) {
+                    formatBuilder.put("@action-type", "COMMAND");
+                    formatBuilder.put("@give-permission", bypassPermPatternMatcher.group(1));
                     break;
                 }
-                throw new ParseException(String.format("'%s' is unsupported action type!", actionTypeString));
+
+                throw new ParseException(String.format("'%s' is unsupported action type!", actionType));
         }
 
-        Script.MoveType[] moveTypes = null;
-        Script.ClickType[] clickTypes = null;
-        Script.PushType[] pushTypes;
-
-        switch (eventType) {
-            case INTERACT:
-                clickTypes = new Script.ClickType[]{Script.ClickType.ALL};
-                pushTypes = new Script.PushType[]{Script.PushType.ALL};
-                break;
-            case WALK:
-                moveTypes = new Script.MoveType[]{Script.MoveType.GROUND};
-                pushTypes = new Script.PushType[0];
-                break;
-            default:
-                throw new ParseException(String.format("'%s' is unsupported event type!", eventType));
+        StringBuilder formattedByNewVersion = new StringBuilder();
+        for (Map.Entry<String, String> entry : formatBuilder.entrySet()) {
+            formattedByNewVersion.append(entry.getKey()).append(" ").append(entry.getValue()).append(" ");
         }
+        // trim a space character in end of string
+        String substring = formattedByNewVersion.substring(0, formattedByNewVersion.length() - 1);
 
-        return new Script(author,
-            moveTypes == null ? new Script.MoveType[0] : moveTypes,
-            clickTypes == null ? new Script.ClickType[0] : clickTypes,
-            pushTypes,
-            permission == null ? new String[0] : new String[]{permission},
-            new String[0],
-            new String[0],
-            new Script.ActionType[]{actionType},
-            new String[]{action});
+        return parser.parse(author, substring);
     }
 
-    private static ScriptPosition createPositionFromRawLocation(String world, String rawLocation) {
+    private ScriptPosition createPositionFromRawLocation(String world, String rawLocation) {
         //index0: world, 1: x, 2: y, 3: z
         String[] coordinates = rawLocation.split(",");
         return new ScriptPosition(world,
