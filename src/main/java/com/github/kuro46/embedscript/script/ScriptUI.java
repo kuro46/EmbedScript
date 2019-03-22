@@ -12,6 +12,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -125,14 +126,9 @@ public class ScriptUI {
         } else {
             return collection.stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(",", "[", "]"));
+                .map(s -> s + ChatColor.RESET)
+                .collect(Collectors.joining("][", "[", "]"));
         }
-    }
-
-    //TODO: EDIT OPERATION
-
-    public boolean hasScript(ScriptPosition position) {
-        return scriptManager.contains(position);
     }
 
     /**
