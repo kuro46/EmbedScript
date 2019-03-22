@@ -82,13 +82,20 @@ public class ScriptBuffer {
         return new KeyValue(key,values);
     }
 
-    private List<String> splitValue(String string){
+    private List<String> splitValue(String string) {
+        if (string.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // translate color codes
+        string = Util.replaceAndUnescape(string, "&(?<code>[0123456789AaBbCcDdEeFfKkLlMmNnOoRr])",
+            "&${code}",
+            "§${code}",
+            false);
         if (string.startsWith("[") && string.endsWith("]")){
             // trim "[" and "]"
             string = string.substring(1, string.length() - 1);
             return Arrays.asList(Util.splitAndUnescape(string, "]["));
-        }else if (string.isEmpty()){
-            return Collections.emptyList();
         }else {
             return Collections.singletonList(string);
         }
