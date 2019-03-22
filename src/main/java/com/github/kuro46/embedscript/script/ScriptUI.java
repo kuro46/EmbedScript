@@ -131,10 +131,6 @@ public class ScriptUI {
 
     //TODO: EDIT OPERATION
 
-    public boolean hasScript(ScriptPosition position) {
-        return scriptManager.contains(position);
-    }
-
     /**
      * Send list of scripts to player
      *
