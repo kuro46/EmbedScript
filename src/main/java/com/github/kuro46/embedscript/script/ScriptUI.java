@@ -129,8 +129,6 @@ public class ScriptUI {
         }
     }
 
-    //TODO: EDIT OPERATION
-
     /**
      * Send list of scripts to player
      *
