@@ -20,18 +20,22 @@ public final class Util {
     }
 
     public static String replaceAndUnescape(String source, String target, String replacement) {
-        Patterns patterns = createPatterns(target);
+        return replaceAndUnescape(source, target, target, replacement, true);
+    }
+
+    public static String replaceAndUnescape(String source, String target, String escapeTo, String replacement, boolean quote) {
+        Patterns patterns = createPatterns(target, quote);
         Pattern pattern = patterns.pattern;
         Pattern escapedPattern = patterns.escapedPattern;
 
         source = pattern.matcher(source).replaceAll("$1" + replacement);
-        source = escapedPattern.matcher(source).replaceAll(target);
+        source = escapedPattern.matcher(source).replaceAll(escapeTo);
 
         return source;
     }
 
     public static String[] splitAndUnescape(String source, String target) {
-        Patterns patterns = createPatterns(target);
+        Patterns patterns = createPatterns(target, true);
         Pattern pattern = patterns.pattern;
         Pattern escapedPattern = patterns.escapedPattern;
 
@@ -42,8 +46,10 @@ public final class Util {
             .toArray(String[]::new);
     }
 
-    private static Patterns createPatterns(String target) {
-        target = Pattern.quote(target);
+    private static Patterns createPatterns(String target, boolean quote) {
+        if (quote) {
+            target = Pattern.quote(target);
+        }
         Pattern pattern = Pattern.compile("(^|[^\\\\])" + target);
         Pattern escapedPattern = Pattern.compile("\\\\" + target);
 
