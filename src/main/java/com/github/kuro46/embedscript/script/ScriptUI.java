@@ -125,7 +125,7 @@ public class ScriptUI {
         } else {
             return collection.stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(",", "[", "]"));
+                .collect(Collectors.joining("][", "[", "]"));
         }
     }
 
