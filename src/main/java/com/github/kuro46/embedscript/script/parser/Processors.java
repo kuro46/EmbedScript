@@ -45,14 +45,14 @@ public class Processors {
     public static final Processor ENOUGH_PERMISSION = new AbstractProcessor("enough-permission","ep") {
         @Override
         public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) {
-            builder.withPermissionsToNeeded(stringListToArray(values));
+            builder.withNeededPermissions(stringListToArray(values));
         }
     };
 
     public static final Processor NOT_ENOUGH_PERMISSION = new AbstractProcessor("not-enough-permission","nep") {
         @Override
         public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) {
-            builder.withPermissionsToNotNeeded(stringListToArray(values));
+            builder.withUnneededPermissions(stringListToArray(values));
         }
     };
 

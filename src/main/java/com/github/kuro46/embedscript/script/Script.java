@@ -31,8 +31,8 @@ public class Script {
     private final Set<ClickType> clickTypes;
     private final Set<PushType> pushTypes;
     private final List<String> permissionsToGive;
-    private final List<String> permissionsToNeeded;
-    private final List<String> permissionsToNotNeeded;
+    private final List<String> neededPermissions;
+    private final List<String> unneededPermissions;
     private final List<ActionType> actionTypes;
     private final List<String> actions;
 
@@ -41,8 +41,8 @@ public class Script {
                   ClickType[] clickTypes,
                   PushType[] pushTypes,
                   String[] permissionsToGive,
-                  String[] permissionsToNeeded,
-                  String[] permissionsToNotNeeded,
+                  String[] neededPermissions,
+                  String[] unneededPermissions,
                   ActionType[] actionTypes,
                   String[] actions) {
         this.author = author;
@@ -50,8 +50,8 @@ public class Script {
         this.clickTypes = unmodifiableEnumSet(clickTypes);
         this.pushTypes = unmodifiableEnumSet(pushTypes);
         this.permissionsToGive = unmodifiableList(permissionsToGive);
-        this.permissionsToNeeded = unmodifiableList(permissionsToNeeded);
-        this.permissionsToNotNeeded = unmodifiableList(permissionsToNotNeeded);
+        this.neededPermissions = unmodifiableList(neededPermissions);
+        this.unneededPermissions = unmodifiableList(unneededPermissions);
         this.actionTypes = unmodifiableList(actionTypes);
         this.actions = unmodifiableList(actions);
     }
@@ -88,12 +88,12 @@ public class Script {
         return permissionsToGive;
     }
 
-    public List<String> getPermissionsToNeeded() {
-        return permissionsToNeeded;
+    public List<String> getNeededPermissions() {
+        return neededPermissions;
     }
 
-    public List<String> getPermissionsToNotNeeded() {
-        return permissionsToNotNeeded;
+    public List<String> getUnneededPermissions() {
+        return unneededPermissions;
     }
 
     public List<ActionType> getActionTypes() {
@@ -170,8 +170,8 @@ public class Script {
             out.name("clickTypes").jsonValue(gson.toJson(value.clickTypes));
             out.name("pushTypes").jsonValue(gson.toJson(value.pushTypes));
             out.name("permissionsToGive").jsonValue(gson.toJson(value.permissionsToGive));
-            out.name("permissionsToNeeded").jsonValue(gson.toJson(value.permissionsToNeeded));
-            out.name("permissionsToNotNeeded").jsonValue(gson.toJson(value.permissionsToNotNeeded));
+            out.name("neededPermissions").jsonValue(gson.toJson(value.neededPermissions));
+            out.name("unneededPermissions").jsonValue(gson.toJson(value.unneededPermissions));
             out.name("actionTypes").jsonValue(gson.toJson(value.actionTypes));
             out.name("actions").jsonValue(gson.toJson(value.actions));
             out.endObject();
@@ -184,8 +184,8 @@ public class Script {
             ClickType[] clickTypes = null;
             PushType[] pushTypes = null;
             String[] permissionsToGive = null;
-            String[] permissionsToNeeded = null;
-            String[] permissionsToNotNeeded = null;
+            String[] neededPermissions = null;
+            String[] unneededPermissions = null;
             ActionType[] actionTypes = null;
             String[] actions = null;
 
@@ -214,11 +214,11 @@ public class Script {
                     case "permissionsToGive":
                         permissionsToGive = gson.fromJson(in, stringArrayType);
                         break;
-                    case "permissionsToNeeded":
-                        permissionsToNeeded = gson.fromJson(in, stringArrayType);
+                    case "neededPermissions":
+                        neededPermissions = gson.fromJson(in, stringArrayType);
                         break;
-                    case "permissionsToNotNeeded":
-                        permissionsToNotNeeded = gson.fromJson(in, stringArrayType);
+                    case "unneededPermissions":
+                        unneededPermissions = gson.fromJson(in, stringArrayType);
                         break;
                     case "actionTypes":
                         actionTypes = gson.fromJson(in, new TypeToken<ActionType[]>() {
@@ -237,16 +237,16 @@ public class Script {
                 || clickTypes == null
                 || pushTypes == null
                 || permissionsToGive == null
-                || permissionsToNeeded == null
-                || permissionsToNotNeeded == null
+                || neededPermissions == null
+                || unneededPermissions == null
                 || actionTypes == null
                 || actions == null) {
                 throw new JsonParseException("'moveTypes' or" +
                     " 'clickTypes' or" +
                     " 'pushTypes' or" +
                     " 'permissionsToGive' or" +
-                    " 'permissionsToNeeded' or" +
-                    " 'permissionsToNotNeeded' or" +
+                    " 'neededPermissions' or" +
+                    " 'unneededPermissions' or" +
                     " 'actionTypes' or" +
                     " 'actions' not exists!");
             }
@@ -255,8 +255,8 @@ public class Script {
                 clickTypes,
                 pushTypes,
                 permissionsToGive,
-                permissionsToNeeded,
-                permissionsToNotNeeded,
+                neededPermissions,
+                unneededPermissions,
                 actionTypes,
                 actions);
         }
