@@ -25,8 +25,8 @@ public class ScriptParser {
         processors.add(Processors.LISTEN_CLICK);
         processors.add(Processors.LISTEN_MOVE);
         processors.add(Processors.LISTEN_PUSH);
-        processors.add(Processors.ENOUGH_PERMISSION);
-        processors.add(Processors.NOT_ENOUGH_PERMISSION);
+        processors.add(Processors.NEEDED_PERMISSION);
+        processors.add(Processors.UNNEEDED_PERMISSION);
         processors.add(Processors.ACTION_TYPE);
         processors.add(Processors.ACTION);
         processors.add(new GivePermissionProcessor(configuration));
