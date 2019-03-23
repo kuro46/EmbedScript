@@ -121,8 +121,8 @@ public class ESCommandExecutor implements CommandExecutor {
             "/es list [world] [page] - displays list of scripts",
             "/es view - displays information of the script in the clicked block",
             "/es remove - removes the script in the clicked block",
-            "/es embed - embeds a script to the clicked block",
-            "/es add - adds a script to the clicked block"
+            "/es embed <script> - embeds a script to the clicked block",
+            "/es add <script> - adds a script to the clicked block"
         });
     }
 
