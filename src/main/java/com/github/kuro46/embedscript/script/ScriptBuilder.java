@@ -11,8 +11,8 @@ public class ScriptBuilder {
     private Script.ClickType[] clickTypes;
     private Script.PushType[] pushTypes;
     private String[] permissionsToGive;
-    private String[] permissionsToNeeded;
-    private String[] permissionsToNotNeeded;
+    private String[] neededPermissions;
+    private String[] unneededPermissions;
     private Script.ActionType[] actionTypes;
     private String[] actions;
 
@@ -23,8 +23,8 @@ public class ScriptBuilder {
         this.pushTypes = new Script.PushType[0];
         String[] emptyStringArray = new String[0];
         this.permissionsToGive = emptyStringArray;
-        this.permissionsToNeeded = emptyStringArray;
-        this.permissionsToNotNeeded = emptyStringArray;
+        this.neededPermissions = emptyStringArray;
+        this.unneededPermissions = emptyStringArray;
         this.actionTypes = new Script.ActionType[0];
         this.actions = emptyStringArray;
     }
@@ -35,8 +35,8 @@ public class ScriptBuilder {
         this.clickTypes = script.getClickTypes().toArray(new Script.ClickType[0]);
         this.pushTypes = script.getPushTypes().toArray(new Script.PushType[0]);
         this.permissionsToGive = script.getPermissionsToGive().toArray(new String[0]);
-        this.permissionsToNeeded = script.getPermissionsToNeeded().toArray(new String[0]);
-        this.permissionsToNotNeeded = script.getPermissionsToNotNeeded().toArray(new String[0]);
+        this.neededPermissions = script.getNeededPermissions().toArray(new String[0]);
+        this.unneededPermissions = script.getUnneededPermissions().toArray(new String[0]);
         this.actionTypes = script.getActionTypes().toArray(new Script.ActionType[0]);
         this.actions = script.getActions().toArray(new String[0]);
     }
@@ -61,13 +61,13 @@ public class ScriptBuilder {
         return this;
     }
 
-    public ScriptBuilder withPermissionsToNeeded(String[] permissionsToNeeded) {
-        this.permissionsToNeeded = copyStringArray(permissionsToNeeded);
+    public ScriptBuilder withNeededPermissions(String[] permissionsToNeeded) {
+        this.neededPermissions = copyStringArray(permissionsToNeeded);
         return this;
     }
 
-    public ScriptBuilder withPermissionsToNotNeeded(String[] permissionsToNotNeeded) {
-        this.permissionsToNotNeeded = copyStringArray(permissionsToNotNeeded);
+    public ScriptBuilder withUnneededPermissions(String[] permissionsToNotNeeded) {
+        this.unneededPermissions = copyStringArray(permissionsToNotNeeded);
         return this;
     }
 
@@ -101,12 +101,12 @@ public class ScriptBuilder {
         return copyStringArray(permissionsToGive);
     }
 
-    public String[] getPermissionsToNeeded() {
-        return copyStringArray(permissionsToNeeded);
+    public String[] getNeededPermissions() {
+        return copyStringArray(neededPermissions);
     }
 
-    public String[] getPermissionsToNotNeeded() {
-        return copyStringArray(permissionsToNotNeeded);
+    public String[] getUnneededPermissions() {
+        return copyStringArray(unneededPermissions);
     }
 
     public Script.ActionType[] getActionTypes() {
@@ -135,8 +135,8 @@ public class ScriptBuilder {
             clickTypes,
             pushTypes,
             permissionsToGive,
-            permissionsToNeeded,
-            permissionsToNotNeeded,
+            neededPermissions,
+            unneededPermissions,
             actionTypes,
             actions);
     }

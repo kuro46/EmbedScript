@@ -28,13 +28,13 @@ public class ScriptPerformer {
     }
 
     public void perform(ScriptPosition position, Script script, Player trigger) {
-        for (String permission : script.getPermissionsToNeeded()) {
+        for (String permission : script.getNeededPermissions()) {
             if (!hasPermissionOrOP(trigger, permission)) {
                 return;
             }
         }
 
-        for (String permission : script.getPermissionsToNotNeeded()) {
+        for (String permission : script.getUnneededPermissions()) {
             if (hasPermissionOrOP(trigger, permission)) {
                 return;
             }

@@ -109,8 +109,8 @@ public class ScriptUI {
                 messages.add(TextComponent.fromLegacyText("@listen-click " + collectionToString(script.getClickTypes())));
                 messages.add(TextComponent.fromLegacyText("@listen-push " + collectionToString(script.getPushTypes())));
                 messages.add(TextComponent.fromLegacyText("@give-permission " + collectionToString(script.getPermissionsToGive())));
-                messages.add(TextComponent.fromLegacyText("@enough-permission " + collectionToString(script.getPermissionsToNeeded())));
-                messages.add(TextComponent.fromLegacyText("@not-enough-permission " + collectionToString(script.getPermissionsToNotNeeded())));
+                messages.add(TextComponent.fromLegacyText("@enough-permission " + collectionToString(script.getNeededPermissions())));
+                messages.add(TextComponent.fromLegacyText("@not-enough-permission " + collectionToString(script.getUnneededPermissions())));
                 messages.add(TextComponent.fromLegacyText("@action-type " + collectionToString(script.getActionTypes())));
                 messages.add(TextComponent.fromLegacyText("@action " + collectionToString(script.getActions())));
             }
@@ -351,11 +351,11 @@ public class ScriptUI {
             if (isFilterable(script.getPermissionsToGive(), filter.getPermissionsToGive(), stringPredicate)) {
                 return true;
             }
-            if (isFilterable(script.getPermissionsToNeeded(), filter.getPermissionsToNeeded(), stringPredicate)) {
+            if (isFilterable(script.getNeededPermissions(), filter.getNeededPermissions(), stringPredicate)) {
                 return true;
             }
 
-            return isFilterable(script.getPermissionsToNotNeeded(), filter.getPermissionsToNotNeeded(), stringPredicate);
+            return isFilterable(script.getUnneededPermissions(), filter.getUnneededPermissions(), stringPredicate);
         }
 
         private <E> boolean isFilterable(Collection<E> target, Collection<E> filter, BiPredicate<E, E> equals) {
