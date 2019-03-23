@@ -22,6 +22,8 @@ public class Configuration {
     private Map<String,String> presets;
     private Map<String, List<String>> permissionsForActions;
     private int parseLoopLimit;
+    private boolean logEnabled;
+    private String logFormat;
 
     private Configuration(Path dataFolder) throws IOException, InvalidConfigurationException {
         this.configPath = dataFolder.resolve("config.yml");
@@ -41,9 +43,16 @@ public class Configuration {
         // load parse-loop-limit
         parseLoopLimit = configuration.getInt("parse-loop-limit", 3);
 
+        loadLogging(configuration);
+
         loadPresets(configuration);
 
         loadPermissionsForActions(configuration);
+    }
+
+    private void loadLogging(org.bukkit.configuration.Configuration configuration) {
+        logEnabled = configuration.getBoolean("logging.enabled");
+        logFormat = configuration.getString("logging.format");
     }
 
     private void loadPresets(org.bukkit.configuration.Configuration configuration) {
@@ -112,5 +121,13 @@ public class Configuration {
 
     public int getParseLoopLimit() {
         return parseLoopLimit;
+    }
+
+    public boolean isLogEnabled() {
+        return logEnabled;
+    }
+
+    public String getLogFormat() {
+        return logFormat;
     }
 }

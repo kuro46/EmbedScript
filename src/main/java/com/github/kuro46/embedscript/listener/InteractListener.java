@@ -4,6 +4,7 @@ import com.github.kuro46.embedscript.EmbedScript;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptPerformer;
 import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -12,7 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 import java.util.Set;
@@ -26,14 +26,14 @@ public class InteractListener implements Listener {
     private final Cache<UUID, Boolean> coolTime = CacheBuilder.newBuilder()
         .expireAfterWrite(300, TimeUnit.MILLISECONDS)
         .build();
-    private final Plugin plugin;
     private final ScriptManager scriptManager;
+    private final ScriptPerformer scriptPerformer;
     private final Requests requests;
 
     public InteractListener(EmbedScript embedScript) {
-        this.plugin = embedScript.getPlugin();
         this.scriptManager = embedScript.getScriptManager();
         this.requests = embedScript.getRequests();
+        this.scriptPerformer = embedScript.getScriptPerformer();
     }
 
     @EventHandler
@@ -57,7 +57,7 @@ public class InteractListener implements Listener {
 
         for (Script script : scripts) {
             if (validateClickType(script, event.getAction()) || validatePushType(script, event)) {
-                script.perform(plugin, player);
+                scriptPerformer.perform(position, script, player);
                 event.setCancelled(true);
             }
         }

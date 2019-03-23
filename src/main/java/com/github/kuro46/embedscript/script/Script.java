@@ -1,9 +1,6 @@
 package com.github.kuro46.embedscript.script;
 
 import com.github.kuro46.embedscript.GsonHolder;
-import com.github.kuro46.embedscript.api.EmbedScriptAPI;
-import com.github.kuro46.embedscript.api.PerformListener;
-import com.github.kuro46.embedscript.util.Util;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
@@ -11,14 +8,9 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import net.md_5.bungee.chat.ComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.plugin.Plugin;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -110,79 +102,6 @@ public class Script {
 
     public List<String> getActions() {
         return actions;
-    }
-
-    private boolean hasPermissionOrOP(Player player, String string) {
-        return string.equals("op") ? player.isOp() : player.hasPermission(string);
-    }
-
-    public void perform(Plugin plugin, Player trigger) {
-        for (String permission : permissionsToNeeded) {
-            if (!hasPermissionOrOP(trigger, permission)) {
-                return;
-            }
-        }
-
-        for (String permission : permissionsToNotNeeded) {
-            if (hasPermissionOrOP(trigger, permission)) {
-                return;
-            }
-        }
-
-        PermissionAttachment attachment = permissionsToGive.isEmpty() ? null : trigger.addAttachment(plugin);
-        for (String permission : permissionsToGive) {
-            if (trigger.hasPermission(permission)) {
-                continue;
-            }
-            attachment.setPermission(permission, true);
-        }
-
-        for (String action : actions) {
-            action = Util.replaceAndUnescape(action, "<player>", trigger.getName());
-            action = Util.replaceAndUnescape(action, "<world>", trigger.getWorld().getName());
-
-            for (ActionType actionType : actionTypes) {
-                switch (actionType) {
-                    case SAY:
-                        trigger.sendMessage(action);
-                        break;
-                    case SAY_RAW:
-                        trigger.spigot().sendMessage(ComponentSerializer.parse(action));
-                        break;
-                    case PLUGIN:
-                        PerformListener listener = EmbedScriptAPI.getListener(action);
-                        if (listener != null) {
-                            listener.onPerformed(trigger);
-                        }
-                        break;
-                    case COMMAND:
-                        trigger.performCommand(action);
-                        break;
-                    case CONSOLE:
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), action);
-                        break;
-                    case BROADCAST:
-                        for (Player player : Bukkit.getOnlinePlayers()) {
-                            player.sendMessage(action);
-                        }
-                        break;
-                    case BROADCAST_RAW:
-                        for (Player player : Bukkit.getOnlinePlayers()) {
-                            player.spigot().sendMessage(ComponentSerializer.parse(action));
-                        }
-                        break;
-                    default:
-                        throw new UnsupportedOperationException(
-                            String.format("Cannot perform '%s': '%s' is unsupported type!",
-                                action,
-                                actionType.name()));
-                }
-            }
-        }
-
-        if (attachment != null) {
-            trigger.removeAttachment(attachment);
-        }
     }
 
     public enum MoveType {
