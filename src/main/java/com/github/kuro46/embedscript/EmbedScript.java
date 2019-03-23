@@ -6,6 +6,7 @@ import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptPerformer;
 import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.github.kuro46.embedscript.script.ScriptSerializer;
 import com.github.kuro46.embedscript.script.ScriptUI;
@@ -37,6 +38,7 @@ public class EmbedScript {
     private final ScriptUI scriptUI;
     private final Requests requests;
     private final ScriptParser scriptParser;
+    private final ScriptPerformer scriptPerformer;
 
     public static synchronized void initialize(Plugin plugin)
         throws IOException, InvalidConfigurationException, IllegalStateException {
@@ -64,6 +66,7 @@ public class EmbedScript {
         this.scriptUI = new ScriptUI(scriptManager);
         this.requests = new Requests(scriptUI);
         this.scriptParser = new ScriptParser(configuration);
+        this.scriptPerformer = new ScriptPerformer(logger, plugin, configuration);
 
         registerCommands();
         registerListeners();
@@ -173,5 +176,9 @@ public class EmbedScript {
 
     public ScriptParser getScriptParser() {
         return scriptParser;
+    }
+
+    public ScriptPerformer getScriptPerformer() {
+        return scriptPerformer;
     }
 }

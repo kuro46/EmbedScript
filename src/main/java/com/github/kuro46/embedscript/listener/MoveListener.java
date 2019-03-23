@@ -3,6 +3,7 @@ package com.github.kuro46.embedscript.listener;
 import com.github.kuro46.embedscript.EmbedScript;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
+import com.github.kuro46.embedscript.script.ScriptPerformer;
 import com.github.kuro46.embedscript.script.ScriptPosition;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -12,7 +13,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 import java.util.Set;
@@ -21,12 +21,12 @@ import java.util.Set;
  * @author shirokuro
  */
 public class MoveListener implements Listener {
+    private final ScriptPerformer scriptPerformer;
     private final ScriptManager scriptManager;
-    private final Plugin plugin;
 
     public MoveListener(EmbedScript embedScript) {
-        this.plugin = embedScript.getPlugin();
         this.scriptManager = embedScript.getScriptManager();
+        this.scriptPerformer = embedScript.getScriptPerformer();
     }
 
     @EventHandler
@@ -37,18 +37,19 @@ public class MoveListener implements Listener {
         }
 
         Player player = event.getPlayer();
+        ScriptPosition scriptPosition = new ScriptPosition(to.getWorld().getName(),
+            to.getBlockX(),
+            to.getBlockY() - 1,
+            to.getBlockZ());
         List<Script> scripts = scriptManager.get(
-            new ScriptPosition(to.getWorld().getName(),
-                to.getBlockX(),
-                to.getBlockY() - 1,
-                to.getBlockZ()));
+            scriptPosition);
         if (scripts.isEmpty()) {
             return;
         }
 
         scripts.forEach(script -> {
             if (validateMoveType(script, event)) {
-                script.perform(plugin, player);
+                scriptPerformer.perform(scriptPosition, script, player);
             }
         });
     }
