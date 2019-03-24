@@ -18,6 +18,12 @@ import java.util.List;
 import java.util.Map;
 
 public class Configuration {
+    private static final String KEY_PARSE_LOOP_LIMIT = "parse-loop-limit";
+    private static final String KEY_LOGGING_ENABLED = "logging.enabled";
+    private static final String KEY_LOGGING_FORMAT = "logging.format";
+    private static final String KEY_PRESETS = "presets";
+    private static final String KEY_PERMISSIONS_FOR_ACTIONS = "permissions-for-actions";
+
     private final Path configPath;
     private Map<String,String> presets;
     private Map<String, List<String>> permissionsForActions;
@@ -41,7 +47,7 @@ public class Configuration {
         }
 
         // load parse-loop-limit
-        parseLoopLimit = configuration.getInt("parse-loop-limit", 3);
+        parseLoopLimit = configuration.getInt(KEY_PARSE_LOOP_LIMIT, 3);
 
         loadLogging(configuration);
 
@@ -51,13 +57,13 @@ public class Configuration {
     }
 
     private void loadLogging(org.bukkit.configuration.Configuration configuration) {
-        logEnabled = configuration.getBoolean("logging.enabled");
-        logFormat = configuration.getString("logging.format");
+        logEnabled = configuration.getBoolean(KEY_LOGGING_ENABLED);
+        logFormat = configuration.getString(KEY_LOGGING_FORMAT);
     }
 
     private void loadPresets(org.bukkit.configuration.Configuration configuration) {
         Map<String, String> presets = new HashMap<>();
-        ConfigurationSection presetsSection = configuration.getConfigurationSection("presets");
+        ConfigurationSection presetsSection = configuration.getConfigurationSection(KEY_PRESETS);
         for (String presetName : presetsSection.getKeys(false)) {
             String presetValue = presetsSection.getString(presetName);
             presets.put(presetName, presetValue);
@@ -69,7 +75,7 @@ public class Configuration {
         // load
         Map<String, List<String>> permissionsForActions = new HashMap<>();
         ConfigurationSection permForActionsSection
-            = configuration.getConfigurationSection("permissions-for-actions");
+            = configuration.getConfigurationSection(KEY_PERMISSIONS_FOR_ACTIONS);
         if (permForActionsSection != null) {
             for (String action : permForActionsSection.getKeys(false)) {
                 List<String> permissions = permForActionsSection.getStringList(action);
@@ -104,7 +110,7 @@ public class Configuration {
         }
         // save if needed
         if (needSave) {
-            configuration.set("permissions-for-actions", permissionsForActions);
+            configuration.set(KEY_PERMISSIONS_FOR_ACTIONS, permissionsForActions);
             configuration.save(configPath.toFile());
         }
 
