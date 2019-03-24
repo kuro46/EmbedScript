@@ -51,10 +51,10 @@ public class ScriptBuffer {
         this.script.putAll(other.script);
     }
 
-    public Map<String,List<String>> unmodifiableMap(){
+    public Map<String,List<String>> unmodifiableView() {
         LinkedHashMap<String,List<String>> map = new LinkedHashMap<>();
         for (Map.Entry<String, List<String>> entry : script.entrySet()) {
-            map.put(entry.getKey(),Collections.unmodifiableList(entry.getValue()));
+            map.put(entry.getKey(), Collections.unmodifiableList(entry.getValue()));
         }
         return Collections.unmodifiableMap(map);
     }

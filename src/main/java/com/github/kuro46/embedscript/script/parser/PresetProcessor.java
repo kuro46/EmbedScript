@@ -40,6 +40,6 @@ public class PresetProcessor extends AbstractProcessor {
 
         mergeTo.merge(source);
         source.clear();
-        mergeTo.unmodifiableMap().forEach(source::put);
+        mergeTo.unmodifiableView().forEach(source::put);
     }
 }

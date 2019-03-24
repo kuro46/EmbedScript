@@ -37,7 +37,7 @@ public abstract class AbstractProcessor implements Processor{
     @Override
     public void canonicalize(ScriptParser parser, ScriptBuffer source) {
         List<String> list = null;
-        for (Map.Entry<String, List<String>> entry : source.unmodifiableMap().entrySet()) {
+        for (Map.Entry<String, List<String>> entry : source.unmodifiableView().entrySet()) {
             String key = entry.getKey();
             if (key.equalsIgnoreCase(getKey()) || key.equalsIgnoreCase(getShortKey())){
                 list = entry.getValue();
@@ -71,7 +71,7 @@ public abstract class AbstractProcessor implements Processor{
 
     @Override
     public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source) throws ParseException {
-        for (Map.Entry<String, List<String>> entry : source.unmodifiableMap().entrySet()) {
+        for (Map.Entry<String, List<String>> entry : source.unmodifiableView().entrySet()) {
             String key = entry.getKey();
             List<String> values = entry.getValue();
             if (key.equals(getKey())) {
