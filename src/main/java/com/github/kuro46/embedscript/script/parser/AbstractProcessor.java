@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public abstract class AbstractProcessor implements Processor{
+public abstract class AbstractProcessor implements Processor {
     private final String key;
     private final String shortKey;
 
@@ -19,19 +19,19 @@ public abstract class AbstractProcessor implements Processor{
     }
 
     public AbstractProcessor() {
-        this(null,null);
+        this(null, null);
     }
 
-    public boolean allowEmptyList(){
+    public boolean allowEmptyList() {
         return false;
     }
 
-    public String getKey(){
-        return Objects.requireNonNull(key,"key of AbstractProcessor is null!");
+    public String getKey() {
+        return Objects.requireNonNull(key, "key of AbstractProcessor is null!");
     }
 
-    public String getShortKey(){
-        return Objects.requireNonNull(shortKey,"key of AbstractProcessor is null!");
+    public String getShortKey() {
+        return Objects.requireNonNull(shortKey, "key of AbstractProcessor is null!");
     }
 
     @Override
@@ -39,17 +39,17 @@ public abstract class AbstractProcessor implements Processor{
         List<String> list = null;
         for (Map.Entry<String, List<String>> entry : source.unmodifiableView().entrySet()) {
             String key = entry.getKey();
-            if (key.equalsIgnoreCase(getKey()) || key.equalsIgnoreCase(getShortKey())){
+            if (key.equalsIgnoreCase(getKey()) || key.equalsIgnoreCase(getShortKey())) {
                 list = entry.getValue();
             }
         }
 
-        if (list == null){
+        if (list == null) {
             return;
         }
 
         source.remove(getShortKey());
-        source.put(getKey(),list);
+        source.put(getKey(), list);
     }
 
     @Override

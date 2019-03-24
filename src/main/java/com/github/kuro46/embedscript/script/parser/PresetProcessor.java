@@ -23,14 +23,14 @@ public class PresetProcessor extends AbstractProcessor {
             String preset = presets.get(value);
             if (preset == null) {
                 throw new ParseException("'" + value + "' is unknown preset!");
-            }else {
+            } else {
                 ScriptBuffer scriptBuffer = new ScriptBuffer(preset);
 
                 parser.canonicalizeAndSetup(scriptBuffer);
 
-                if (mergeTo == null){
+                if (mergeTo == null) {
                     mergeTo = scriptBuffer;
-                }else {
+                } else {
                     mergeTo.merge(scriptBuffer);
                 }
             }

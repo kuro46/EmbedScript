@@ -1,6 +1,5 @@
 package com.github.kuro46.embedscript.migrator;
 
-import com.github.kuro46.embedscript.Configuration;
 import com.github.kuro46.embedscript.EmbedScript;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.ParseException;
@@ -77,7 +76,7 @@ public class ScriptBlockMigrator {
         }
     }
 
-    private UUID getAuthorFromData(String data) throws ParseException{
+    private UUID getAuthorFromData(String data) throws ParseException {
         // Author:<MCID>/<Group>
         Matcher matcher = Pattern.compile("Author:(.+)/.+").matcher(data);
         if (!matcher.find()) {
@@ -104,8 +103,8 @@ public class ScriptBlockMigrator {
      * @return script
      */
     private Script createScriptFromLegacyFormat(UUID author,
-                                                       EventType eventType,
-                                                       String legacy) throws ParseException {
+                                                EventType eventType,
+                                                String legacy) throws ParseException {
         /*
          * Targets
          * @bypassperm:permission action

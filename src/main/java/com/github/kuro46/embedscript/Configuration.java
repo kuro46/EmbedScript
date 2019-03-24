@@ -25,7 +25,7 @@ public class Configuration {
     private static final String KEY_PERMISSIONS_FOR_ACTIONS = "permissions-for-actions";
 
     private final Path configPath;
-    private Map<String,String> presets;
+    private Map<String, String> presets;
     private Map<String, List<String>> permissionsForActions;
     private int parseLoopLimit;
     private boolean logEnabled;

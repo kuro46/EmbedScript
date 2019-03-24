@@ -1,7 +1,7 @@
 package com.github.kuro46.embedscript.script;
 
 public class UncheckedParseException extends RuntimeException {
-    public UncheckedParseException(ParseException cause){
+    public UncheckedParseException(ParseException cause) {
         super(cause);
     }
 
