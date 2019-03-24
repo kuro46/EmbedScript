@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript.script;
 
+import com.github.kuro46.embedscript.util.Pair;
 import com.github.kuro46.embedscript.util.Util;
 
 import java.util.Arrays;
@@ -8,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ScriptBuffer {
     // Element order is important
@@ -66,16 +66,14 @@ public class ScriptBuffer {
      * @return KeyValue
      */
     private KeyValue splitToKeyValue(String string) throws ParseException{
-        String[] splitBySpace = string.split(" ");
-        if (splitBySpace.length < 1){
+        Pair<String, String> pair = Util.splitByFirstSpace(string);
+        if (pair == null){
             throw new ParseException("Failed to parse '" + string + "' to KeyValue");
         }
         // expect "key"
-        String key = splitBySpace[0];
+        String key = pair.getKey();
         // expect "", "value", "[value]", or "[value1][value2]"
-        String value = Arrays.stream(splitBySpace)
-            .skip(1)
-            .collect(Collectors.joining(" "));
+        String value = pair.getValue();
 
         List<String> values = splitValue(value);
 

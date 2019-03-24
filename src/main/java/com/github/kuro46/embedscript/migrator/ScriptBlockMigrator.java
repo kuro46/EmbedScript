@@ -9,6 +9,7 @@ import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.github.kuro46.embedscript.script.parser.ScriptParser;
 import com.github.kuro46.embedscript.util.MojangUtil;
+import com.github.kuro46.embedscript.util.Pair;
 import com.github.kuro46.embedscript.util.Util;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -113,13 +114,12 @@ public class ScriptBlockMigrator {
          * @bypass action
          */
 
-        Pattern splitPattern = Pattern.compile("([^ ]+) (.+)");
-        Matcher splitPatternMatcher = splitPattern.matcher(legacy);
-        if (!splitPatternMatcher.find()) {
+        Pair<String, String> pair = Util.splitByFirstSpace(legacy);
+        if (pair == null) {
             throw new ParseException("Illegal script");
         }
-        String actionType = splitPatternMatcher.group(1);
-        String action = splitPatternMatcher.group(2);
+        String actionType = pair.getKey();
+        String action = pair.getValue();
 
         Map<String, String> formatBuilder = new HashMap<>();
 
