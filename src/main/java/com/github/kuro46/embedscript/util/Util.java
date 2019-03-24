@@ -9,8 +9,19 @@ import java.util.stream.Collectors;
  * @author shirokuro
  */
 public final class Util {
+    private static final Pattern PATTERN_SPLIT_BY_FIRST_SPACE = Pattern.compile("(?<left>[^ ]+) (?<right>.+)");
+
     private Util() {
         throw new UnsupportedOperationException("Utility class");
+    }
+
+    public static Pair<String, String> splitByFirstSpace(String string) {
+        Matcher splitMatcher = PATTERN_SPLIT_BY_FIRST_SPACE.matcher(string);
+        if (!splitMatcher.find()) {
+            return null;
+        }
+
+        return new Pair<>(splitMatcher.group("left"), splitMatcher.group("right"));
     }
 
     public static String joinStringSpaceDelimiter(int startIndex, String[] strings) {

@@ -40,20 +40,6 @@ public class EmbedScript {
     private final ScriptParser scriptParser;
     private final ScriptPerformer scriptPerformer;
 
-    public static synchronized void initialize(Plugin plugin)
-        throws IOException, InvalidConfigurationException, IllegalStateException {
-
-        if (instance != null) {
-            throw new IllegalStateException("Instance already initialized!");
-        }
-
-        instance = new EmbedScript(plugin);
-    }
-
-    public static synchronized void reset() {
-        instance = null;
-    }
-
     private EmbedScript(Plugin plugin) throws IOException, InvalidConfigurationException {
         this.plugin = plugin;
         this.dataFolder = plugin.getDataFolder().toPath();
@@ -70,6 +56,20 @@ public class EmbedScript {
 
         registerCommands();
         registerListeners();
+    }
+
+    public static synchronized void initialize(Plugin plugin)
+        throws IOException, InvalidConfigurationException, IllegalStateException {
+
+        if (instance != null) {
+            throw new IllegalStateException("Instance already initialized!");
+        }
+
+        instance = new EmbedScript(plugin);
+    }
+
+    public static synchronized void reset() {
+        instance = null;
     }
 
     private Configuration loadConfiguration() throws IOException, InvalidConfigurationException {

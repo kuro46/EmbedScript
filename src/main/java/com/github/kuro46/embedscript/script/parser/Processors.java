@@ -17,53 +17,43 @@ import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
 public class Processors {
-    private Processors(){
-
-    }
-
-    public static final Processor LISTEN_CLICK = new AbstractProcessor("listen-click","lc") {
+    public static final Processor LISTEN_CLICK = new AbstractProcessor("listen-click", "lc") {
         @Override
         public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) throws ParseException {
-            builder.withClickTypes(stringListToEnumArray(Script.ClickType.class,values, Script.ClickType[]::new));
+            builder.withClickTypes(stringListToEnumArray(Script.ClickType.class, values, Script.ClickType[]::new));
         }
     };
-    
-    public static final Processor LISTEN_MOVE = new AbstractProcessor("listen-move","lm") {
+    public static final Processor LISTEN_MOVE = new AbstractProcessor("listen-move", "lm") {
         @Override
         public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) throws ParseException {
-            builder.withMoveTypes(stringListToEnumArray(Script.MoveType.class,values, Script.MoveType[]::new));
+            builder.withMoveTypes(stringListToEnumArray(Script.MoveType.class, values, Script.MoveType[]::new));
         }
     };
-    
-    public static final Processor LISTEN_PUSH = new AbstractProcessor("listen-push","lp") {
+    public static final Processor LISTEN_PUSH = new AbstractProcessor("listen-push", "lp") {
         @Override
         public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) throws ParseException {
-            builder.withPushTypes(stringListToEnumArray(Script.PushType.class,values, Script.PushType[]::new));
+            builder.withPushTypes(stringListToEnumArray(Script.PushType.class, values, Script.PushType[]::new));
         }
     };
-
-    public static final Processor NEEDED_PERMISSION = new AbstractProcessor("needed-permission","np") {
+    public static final Processor NEEDED_PERMISSION = new AbstractProcessor("needed-permission", "np") {
         @Override
         public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) {
             builder.withNeededPermissions(stringListToArray(values));
         }
     };
-
-    public static final Processor UNNEEDED_PERMISSION = new AbstractProcessor("unneeded-permission","up") {
+    public static final Processor UNNEEDED_PERMISSION = new AbstractProcessor("unneeded-permission", "up") {
         @Override
         public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) {
             builder.withUnneededPermissions(stringListToArray(values));
         }
     };
-
-    public static final Processor ACTION_TYPE = new AbstractProcessor("action-type","at") {
+    public static final Processor ACTION_TYPE = new AbstractProcessor("action-type", "at") {
         @Override
         public void process(ScriptParser parser, ScriptBuilder builder, ScriptBuffer source, String key, List<String> values) throws ParseException {
-            builder.withActionTypes(stringListToEnumArray(Script.ActionType.class,values, Script.ActionType[]::new));
+            builder.withActionTypes(stringListToEnumArray(Script.ActionType.class, values, Script.ActionType[]::new));
         }
     };
-
-    public static final Processor ACTION = new AbstractProcessor("action","a") {
+    public static final Processor ACTION = new AbstractProcessor("action", "a") {
         @Override
         public List<Class<? extends Processor>> getDepends(Phase phase) {
             if (phase == Phase.PROCESS) {
@@ -104,9 +94,13 @@ public class Processors {
         }
     };
 
+    private Processors() {
+
+    }
+
     private static <E extends Enum<E>> E[] stringListToEnumArray(Class<E> enumClass,
-                                                                List<String> stringList,
-                                                                IntFunction<E[]> arrayFunction) throws ParseException {
+                                                                 List<String> stringList,
+                                                                 IntFunction<E[]> arrayFunction) throws ParseException {
         try {
             return stringList.stream()
                 .map(s -> {
@@ -117,12 +111,12 @@ public class Processors {
                             new ParseException(String.format("'%s' is unknown value.", s)));
                     }
                 }).toArray(arrayFunction);
-        }catch (UncheckedParseException e){
+        } catch (UncheckedParseException e) {
             throw e.getCause();
         }
     }
 
-    private static String[] stringListToArray(List<String> list){
+    private static String[] stringListToArray(List<String> list) {
         return list.toArray(new String[0]);
     }
 }

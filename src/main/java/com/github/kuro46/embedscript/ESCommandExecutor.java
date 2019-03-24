@@ -22,7 +22,6 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Locale;
 
 /**
