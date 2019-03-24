@@ -101,7 +101,7 @@ public class Configuration {
                     // note:
                     // please don't replace with Collections.emptyList()
                     // because SnakeYaml cannot serialize Collections.emptyList()
-                    ? new ArrayList<>(0)
+                    ? Collections.unmodifiableList(new ArrayList<>(0))
                     : Collections.singletonList(permission);
 
                 permissionsForActions.put(command, permissions);
