@@ -17,6 +17,7 @@ public class MutableScript {
     private ImmutableListMultimap<String, String> view;
 
     public MutableScript(String script) throws ParseException {
+        script = escapeAtInSquareBrackets(script);
         String[] keyValueStrings = Util.splitAndUnescape(script, "@");
 
         for (String keyValueString : keyValueStrings) {
@@ -29,6 +30,25 @@ public class MutableScript {
                 add(pair.getKey(), value);
             }
         }
+    }
+
+    private String escapeAtInSquareBrackets(String string) {
+        StringBuilder result = new StringBuilder(string.length());
+        boolean inSquareBrackets = false;
+        for (char c : string.toCharArray()) {
+            if (c == '[') {
+                inSquareBrackets = true;
+            } else if (c == ']') {
+                inSquareBrackets = false;
+            }
+
+            if (inSquareBrackets && c == '@') {
+                result.append("\\@");
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 
     public void clear() {
