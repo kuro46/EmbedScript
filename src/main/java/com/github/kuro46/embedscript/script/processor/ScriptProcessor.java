@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -163,13 +164,11 @@ public class ScriptProcessor {
                 String message = configuration.getLogFormat();
                 message = replaceAndUnescape(message, "<trigger>", trigger::getName);
                 message = replaceAndUnescape(message, "<script>", () -> {
-                    StringBuilder builder = new StringBuilder();
+                    StringJoiner joiner = new StringJoiner(" ");
                     for (String key : scriptMap.keySet()) {
-                        builder.append('@').append(key)
-                            .append(' ')
-                            .append(ScriptUtil.toString(scriptMap.get(key)));
+                        joiner.add('@' + key + ' ' + ScriptUtil.toString(scriptMap.get(key)));
                     }
-                    return builder.toString();
+                    return joiner.toString();
                 });
                 Location location = trigger.getLocation();
                 String worldName = location.getWorld().getName();
