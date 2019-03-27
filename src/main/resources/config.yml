@@ -1,9 +1,9 @@
 parse-loop-limit: 3
 presets:
-  interact: "@listen-click ALL @listen-push ALL"
-  walk: "@listen-move GROUND"
+  interact: "@listen-click [ALL] @listen-push [ALL]"
+  walk: "@listen-move [GROUND]"
   alternative-bypass: "@give-permission"
 logging:
   enabled: true
-  format: "<trigger> executed '<action>' as action type '<action-type>' at <trigger_world>: <trigger_x>, <trigger_y>, <trigger_z>"
+  format: "<trigger> executed '<script>' at <trigger_world>: <trigger_x>, <trigger_y>, <trigger_z>"
 permissions-for-actions:

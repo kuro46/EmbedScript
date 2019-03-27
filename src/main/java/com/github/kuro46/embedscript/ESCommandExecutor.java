@@ -8,7 +8,7 @@ import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptUI;
-import com.github.kuro46.embedscript.script.parser.ScriptParser;
+import com.github.kuro46.embedscript.script.processor.ScriptProcessor;
 import com.github.kuro46.embedscript.util.Scheduler;
 import com.github.kuro46.embedscript.util.Util;
 import org.apache.commons.lang.math.NumberUtils;
@@ -29,7 +29,7 @@ import java.util.Locale;
  */
 public class ESCommandExecutor implements CommandExecutor {
     private final Configuration configuration;
-    private final ScriptParser scriptParser;
+    private final ScriptProcessor scriptProcessor;
     private final String presetName;
     private final ScriptUI scriptUI;
     private final Requests requests;
@@ -44,7 +44,7 @@ public class ESCommandExecutor implements CommandExecutor {
         this.embedScript = embedScript;
         this.scriptManager = embedScript.getScriptManager();
         this.configuration = embedScript.getConfiguration();
-        this.scriptParser = embedScript.getScriptParser();
+        this.scriptProcessor = embedScript.getScriptProcessor();
         this.presetName = presetName;
         this.scriptUI = embedScript.getScriptUI();
         this.requests = embedScript.getRequests();
@@ -216,7 +216,7 @@ public class ESCommandExecutor implements CommandExecutor {
             filter = null;
         } else {
             try {
-                filter = scriptParser.parse(player.getUniqueId(), "@preset " + presetName);
+                filter = scriptProcessor.parse(player.getUniqueId(), "@preset " + presetName);
             } catch (ParseException e) {
                 player.sendMessage(Prefix.ERROR_PREFIX +
                     String.format("Failed to filter the scripts. (error: %s)", e.getMessage()));
@@ -246,7 +246,7 @@ public class ESCommandExecutor implements CommandExecutor {
             String preset = presetName == null
                 ? ""
                 : "@preset " + presetName + " ";
-            script = scriptParser.parse(player.getUniqueId(), preset + stringScript);
+            script = scriptProcessor.parse(player.getUniqueId(), preset + stringScript);
         } catch (ParseException e) {
             player.sendMessage(Prefix.ERROR_PREFIX +
                 String.format("Failed to parse script. (error: %s)", e.getMessage()));

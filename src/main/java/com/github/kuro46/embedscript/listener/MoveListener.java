@@ -3,8 +3,8 @@ package com.github.kuro46.embedscript.listener;
 import com.github.kuro46.embedscript.EmbedScript;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
-import com.github.kuro46.embedscript.script.ScriptPerformer;
 import com.github.kuro46.embedscript.script.ScriptPosition;
+import com.github.kuro46.embedscript.script.processor.ScriptProcessor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -21,12 +21,12 @@ import java.util.Set;
  * @author shirokuro
  */
 public class MoveListener implements Listener {
-    private final ScriptPerformer scriptPerformer;
+    private final ScriptProcessor scriptProcessor;
     private final ScriptManager scriptManager;
 
     public MoveListener(EmbedScript embedScript) {
         this.scriptManager = embedScript.getScriptManager();
-        this.scriptPerformer = embedScript.getScriptPerformer();
+        this.scriptProcessor = embedScript.getScriptProcessor();
     }
 
     @EventHandler
@@ -49,7 +49,7 @@ public class MoveListener implements Listener {
 
         scripts.forEach(script -> {
             if (validateMoveType(script, event)) {
-                scriptPerformer.perform(scriptPosition, script, player);
+                scriptProcessor.execute(player, script, scriptPosition);
             }
         });
     }

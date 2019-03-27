@@ -5,6 +5,8 @@ import com.github.kuro46.embedscript.util.MojangUtil;
 import com.github.kuro46.embedscript.util.Scheduler;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -108,11 +110,11 @@ public class ScriptUI {
                 messages.add(TextComponent.fromLegacyText("@listen-move " + collectionToString(script.getMoveTypes())));
                 messages.add(TextComponent.fromLegacyText("@listen-click " + collectionToString(script.getClickTypes())));
                 messages.add(TextComponent.fromLegacyText("@listen-push " + collectionToString(script.getPushTypes())));
-                messages.add(TextComponent.fromLegacyText("@give-permission " + collectionToString(script.getPermissionsToGive())));
-                messages.add(TextComponent.fromLegacyText("@enough-permission " + collectionToString(script.getNeededPermissions())));
-                messages.add(TextComponent.fromLegacyText("@not-enough-permission " + collectionToString(script.getUnneededPermissions())));
-                messages.add(TextComponent.fromLegacyText("@action-type " + collectionToString(script.getActionTypes())));
-                messages.add(TextComponent.fromLegacyText("@action " + collectionToString(script.getActions())));
+                ImmutableListMultimap<String, String> scriptMap = script.getScript();
+                for (String key : scriptMap.keySet()) {
+                    ImmutableList<String> value = scriptMap.get(key);
+                    messages.add(TextComponent.fromLegacyText('@' + key + ' ' + collectionToString(value)));
+                }
             }
             sendPage("Script information", sender, messages, 0, 12);
         });
@@ -340,22 +342,18 @@ public class ScriptUI {
             if (isFilterable(script.getPushTypes(), filter.getPushTypes())) {
                 return true;
             }
-            if (isFilterable(script.getActionTypes(), filter.getActionTypes())) {
-                return true;
-            }
 
-            BiPredicate<String, String> stringPredicate = String::equalsIgnoreCase;
-            if (isFilterable(script.getActions(), filter.getActions(), stringPredicate)) {
-                return true;
-            }
-            if (isFilterable(script.getPermissionsToGive(), filter.getPermissionsToGive(), stringPredicate)) {
-                return true;
-            }
-            if (isFilterable(script.getNeededPermissions(), filter.getNeededPermissions(), stringPredicate)) {
-                return true;
-            }
+            ImmutableListMultimap<String, String> scriptMap = script.getScript();
+            for (String key : scriptMap.keySet()) {
+                ImmutableList<String> scriptValues = scriptMap.get(key);
+                ImmutableListMultimap<String, String> filterMap = filter.getScript();
+                ImmutableList<String> filterValues = filterMap.get(key);
 
-            return isFilterable(script.getUnneededPermissions(), filter.getUnneededPermissions(), stringPredicate);
+                if (isFilterable(scriptValues, filterValues)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private <E> boolean isFilterable(Collection<E> target, Collection<E> filter, BiPredicate<E, E> equals) {

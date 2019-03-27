@@ -6,7 +6,7 @@ import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptPosition;
-import com.github.kuro46.embedscript.script.parser.ScriptParser;
+import com.github.kuro46.embedscript.script.processor.ScriptProcessor;
 import com.github.kuro46.embedscript.util.MojangUtil;
 import com.github.kuro46.embedscript.util.Pair;
 import com.github.kuro46.embedscript.util.Util;
@@ -29,14 +29,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ScriptBlockMigrator {
-    private final ScriptParser parser;
+    private final ScriptProcessor processor;
     private final ScriptManager mergeTo;
 
     private ScriptBlockMigrator(EmbedScript embedScript)
         throws IOException, InvalidConfigurationException, ParseException {
 
         this.mergeTo = embedScript.getScriptManager();
-        this.parser = embedScript.getScriptParser();
+        this.processor = embedScript.getScriptProcessor();
         Path sbDataFolder = embedScript.getDataFolder().resolve(Paths.get("..", "ScriptBlock", "BlocksData"));
         for (EventType eventType : EventType.values()) {
             migrate(eventType, sbDataFolder.resolve(getSBFileName(eventType)));
@@ -117,35 +117,34 @@ public class ScriptBlockMigrator {
         if (pair == null) {
             throw new ParseException("Illegal script");
         }
-        String actionType = pair.getKey();
-        String action = pair.getValue();
+        String key = pair.getKey();
+        String value = '[' + pair.getValue() + ']';
 
         Map<String, String> formatBuilder = new HashMap<>();
 
-        formatBuilder.put("@preset", eventType.getPresetName());
-        formatBuilder.put("@action", action);
+        formatBuilder.put("@preset", '[' + eventType.getPresetName() + ']');
 
-        switch (actionType.toLowerCase(Locale.ENGLISH)) {
+        switch (key.toLowerCase(Locale.ENGLISH)) {
             case "@command":
-                formatBuilder.put("@action-type", "COMMAND");
+                formatBuilder.put("@command", value);
                 break;
             case "@player":
-                formatBuilder.put("@action-type", "SAY");
+                formatBuilder.put("@say", value);
                 break;
             case "@bypass":
-                formatBuilder.put("@preset", "alternative-bypass");
+                formatBuilder.put("@preset", "[alternative-bypass]");
                 break;
             default:
                 Pattern bypassPermPattern = Pattern.compile("^@bypassperm:(.+)", Pattern.CASE_INSENSITIVE);
-                Matcher bypassPermPatternMatcher = bypassPermPattern.matcher(actionType);
+                Matcher bypassPermPatternMatcher = bypassPermPattern.matcher(key);
 
                 if (bypassPermPatternMatcher.find()) {
-                    formatBuilder.put("@action-type", "COMMAND");
-                    formatBuilder.put("@give-permission", bypassPermPatternMatcher.group(1));
+                    formatBuilder.put("@console", value);
+                    formatBuilder.put("@give-permission", '[' + bypassPermPatternMatcher.group(1) + ']');
                     break;
                 }
 
-                throw new ParseException(String.format("'%s' is unsupported action type!", actionType));
+                throw new ParseException(String.format("'%s' is unsupported action type!", key));
         }
 
         StringBuilder formattedByNewVersion = new StringBuilder();
@@ -155,7 +154,7 @@ public class ScriptBlockMigrator {
         // trim a space character at end of string
         String substring = formattedByNewVersion.substring(0, formattedByNewVersion.length() - 1);
 
-        return parser.parse(author, substring);
+        return processor.parse(author, substring);
     }
 
     private ScriptPosition createPositionFromRawLocation(String world, String rawLocation) {

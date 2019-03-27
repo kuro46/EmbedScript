@@ -1,6 +1,10 @@
 package com.github.kuro46.embedscript.script;
 
 import com.github.kuro46.embedscript.GsonHolder;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
@@ -342,8 +346,8 @@ public class ScriptSerializer {
             while (in.hasNext()) {
                 UUID author = null;
                 String command = null;
-                Script.ActionType actionType = null;
-                String permission = null;
+                Multimap<String, String> multimap = ArrayListMultimap.create();
+                List<String> keys = new ArrayList<>();
 
                 in.beginObject();
                 while (in.hasNext()) {
@@ -364,24 +368,23 @@ public class ScriptSerializer {
                                         switch (nextString) {
                                             case "BYPASS_PERMISSION":
                                             case "COMMAND":
-                                                actionType = Script.ActionType.COMMAND;
+                                                keys.add("command");
                                                 break;
                                             case "CONSOLE":
-                                                actionType = Script.ActionType.CONSOLE;
+                                                keys.add("console");
                                                 break;
                                             case "PLAYER":
-                                                actionType = Script.ActionType.SAY;
+                                                keys.add("say");
                                                 break;
                                             case "PLUGIN":
-                                                actionType = Script.ActionType.PLUGIN;
-                                                break;
+                                                throw new JsonParseException("@plugin was removed since ver0.7.0!");
                                             default:
                                                 throw new JsonParseException(
                                                     String.format("'%s' is unknown type!", nextString));
                                         }
                                         break;
                                     case "permission":
-                                        permission = in.nextString();
+                                        multimap.put("give-permission", in.nextString());
                                         break;
                                     default:
                                         in.skipValue();
@@ -395,15 +398,15 @@ public class ScriptSerializer {
                 }
                 in.endObject();
 
+                for (String key : keys) {
+                    multimap.put(key, command);
+                }
+
                 scripts.add(new Script(author,
-                    eventType == EventType.WALK ? new Script.MoveType[]{Script.MoveType.GROUND} : new Script.MoveType[0],
-                    eventType == EventType.INTERACT ? new Script.ClickType[]{Script.ClickType.ALL} : new Script.ClickType[0],
-                    eventType == EventType.INTERACT ? new Script.PushType[]{Script.PushType.ALL} : new Script.PushType[0],
-                    permission == null ? new String[0] : new String[]{permission},
-                    new String[0],
-                    new String[0],
-                    new Script.ActionType[]{actionType},
-                    new String[]{command}));
+                    eventType == EventType.WALK ? ImmutableSet.of(Script.MoveType.GROUND) : ImmutableSet.of(),
+                    eventType == EventType.INTERACT ? ImmutableSet.of(Script.ClickType.ALL) : ImmutableSet.of(),
+                    eventType == EventType.INTERACT ? ImmutableSet.of(Script.PushType.ALL) : ImmutableSet.of(),
+                    ImmutableListMultimap.copyOf(multimap)));
             }
             in.endArray();
 

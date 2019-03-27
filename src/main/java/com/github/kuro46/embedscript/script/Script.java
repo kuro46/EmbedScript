@@ -1,6 +1,10 @@
 package com.github.kuro46.embedscript.script;
 
 import com.github.kuro46.embedscript.GsonHolder;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
@@ -13,95 +17,48 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * unmodifiable class
- */
-@JsonAdapter(Script.Adapter.class)
+@JsonAdapter(Script.ScriptAdapter.class)
 public class Script {
     private final UUID author;
-    private final Set<MoveType> moveTypes;
-    private final Set<ClickType> clickTypes;
-    private final Set<PushType> pushTypes;
-    private final List<String> permissionsToGive;
-    private final List<String> neededPermissions;
-    private final List<String> unneededPermissions;
-    private final List<ActionType> actionTypes;
-    private final List<String> actions;
+    private final ImmutableSet<MoveType> moveTypes;
+    private final ImmutableSet<ClickType> clickTypes;
+    private final ImmutableSet<PushType> pushTypes;
+    private final ImmutableListMultimap<String, String> script;
 
     public Script(UUID author,
-                  MoveType[] moveTypes,
-                  ClickType[] clickTypes,
-                  PushType[] pushTypes,
-                  String[] permissionsToGive,
-                  String[] neededPermissions,
-                  String[] unneededPermissions,
-                  ActionType[] actionTypes,
-                  String[] actions) {
+                  ImmutableSet<MoveType> moveTypes,
+                  ImmutableSet<ClickType> clickTypes,
+                  ImmutableSet<PushType> pushTypes,
+                  ImmutableListMultimap<String, String> script) {
         this.author = author;
-        this.moveTypes = unmodifiableEnumSet(moveTypes);
-        this.clickTypes = unmodifiableEnumSet(clickTypes);
-        this.pushTypes = unmodifiableEnumSet(pushTypes);
-        this.permissionsToGive = unmodifiableList(permissionsToGive);
-        this.neededPermissions = unmodifiableList(neededPermissions);
-        this.unneededPermissions = unmodifiableList(unneededPermissions);
-        this.actionTypes = unmodifiableList(actionTypes);
-        this.actions = unmodifiableList(actions);
-    }
-
-    private <E extends Enum<E>> Set<E> unmodifiableEnumSet(E[] elements) {
-        return elements.length == 0
-            ? Collections.emptySet()
-            : Collections.unmodifiableSet(EnumSet.copyOf(Arrays.asList(elements)));
-    }
-
-    private <E> List<E> unmodifiableList(E[] elements) {
-        return elements.length == 0
-            ? Collections.emptyList()
-            : Collections.unmodifiableList(Arrays.asList(elements));
+        this.moveTypes = moveTypes;
+        this.clickTypes = clickTypes;
+        this.pushTypes = pushTypes;
+        this.script = script;
     }
 
     public UUID getAuthor() {
         return author;
     }
 
-    public Set<MoveType> getMoveTypes() {
+    public ImmutableSet<MoveType> getMoveTypes() {
         return moveTypes;
     }
 
-    public Set<ClickType> getClickTypes() {
+    public ImmutableSet<ClickType> getClickTypes() {
         return clickTypes;
     }
 
-    public Set<PushType> getPushTypes() {
+    public ImmutableSet<PushType> getPushTypes() {
         return pushTypes;
     }
 
-    public List<String> getPermissionsToGive() {
-        return permissionsToGive;
-    }
-
-    public List<String> getNeededPermissions() {
-        return neededPermissions;
-    }
-
-    public List<String> getUnneededPermissions() {
-        return unneededPermissions;
-    }
-
-    public List<ActionType> getActionTypes() {
-        return actionTypes;
-    }
-
-    public List<String> getActions() {
-        return actions;
+    public ImmutableListMultimap<String, String> getScript() {
+        return script;
     }
 
     public enum MoveType {
@@ -150,116 +107,81 @@ public class Script {
         }
     }
 
-    public enum ActionType {
-        COMMAND,
-        SAY,
-        SAY_RAW,
-        BROADCAST,
-        BROADCAST_RAW,
-        PLUGIN,
-        CONSOLE
-    }
-
-    public static class Adapter extends TypeAdapter<Script> {
+    public static class ScriptAdapter extends TypeAdapter<Script> {
         @Override
         public void write(JsonWriter out, Script value) throws IOException {
-            out.beginObject();
             Gson gson = GsonHolder.get();
+            out.beginObject();
             out.name("author").jsonValue(gson.toJson(value.author));
             out.name("moveTypes").jsonValue(gson.toJson(value.moveTypes));
             out.name("clickTypes").jsonValue(gson.toJson(value.clickTypes));
             out.name("pushTypes").jsonValue(gson.toJson(value.pushTypes));
-            out.name("permissionsToGive").jsonValue(gson.toJson(value.permissionsToGive));
-            out.name("neededPermissions").jsonValue(gson.toJson(value.neededPermissions));
-            out.name("unneededPermissions").jsonValue(gson.toJson(value.unneededPermissions));
-            out.name("actionTypes").jsonValue(gson.toJson(value.actionTypes));
-            out.name("actions").jsonValue(gson.toJson(value.actions));
+            out.name("script");
+            writeScript(out, value);
+            out.endObject();
+        }
+
+        private void writeScript(JsonWriter out, Script value) throws IOException {
+            out.beginObject();
+            Gson gson = GsonHolder.get();
+            for (String key : value.script.keySet()) {
+                out.name(key).jsonValue(gson.toJson(value.script.get(key)));
+            }
             out.endObject();
         }
 
         @Override
         public Script read(JsonReader in) throws IOException {
             UUID author = null;
-            MoveType[] moveTypes = null;
-            ClickType[] clickTypes = null;
-            PushType[] pushTypes = null;
-            String[] permissionsToGive = null;
-            String[] neededPermissions = null;
-            String[] unneededPermissions = null;
-            ActionType[] actionTypes = null;
-            String[] actions = null;
+            Set<MoveType> moveTypes = null;
+            Set<ClickType> clickTypes = null;
+            Set<PushType> pushTypes = null;
+            Multimap<String, String> script = null;
 
-            in.beginObject();
             Gson gson = GsonHolder.get();
-            Type stringArrayType = new TypeToken<String[]>() {
-            }.getType();
+            in.beginObject();
             while (in.hasNext()) {
-                String nextName = in.nextName();
-                switch (nextName) {
+                switch (in.nextName()) {
                     case "author":
-                        author = gson.fromJson(in, TypeToken.get(UUID.class).getType());
+                        author = gson.fromJson(in, new TypeToken<UUID>() {
+                        }.getType());
                         break;
                     case "moveTypes":
-                        moveTypes = gson.fromJson(in, new TypeToken<MoveType[]>() {
+                        moveTypes = gson.fromJson(in, new TypeToken<Set<MoveType>>() {
                         }.getType());
                         break;
                     case "clickTypes":
-                        clickTypes = gson.fromJson(in, new TypeToken<ClickType[]>() {
+                        clickTypes = gson.fromJson(in, new TypeToken<Set<ClickType>>() {
                         }.getType());
                         break;
                     case "pushTypes":
-                        pushTypes = gson.fromJson(in, new TypeToken<PushType[]>() {
+                        pushTypes = gson.fromJson(in, new TypeToken<Set<PushType>>() {
                         }.getType());
                         break;
-                    case "permissionsToGive":
-                        permissionsToGive = gson.fromJson(in, stringArrayType);
-                        break;
-                    case "neededPermissions":
-                        neededPermissions = gson.fromJson(in, stringArrayType);
-                        break;
-                    case "unneededPermissions":
-                        unneededPermissions = gson.fromJson(in, stringArrayType);
-                        break;
-                    case "actionTypes":
-                        actionTypes = gson.fromJson(in, new TypeToken<ActionType[]>() {
-                        }.getType());
-                        break;
-                    case "actions":
-                        actions = gson.fromJson(in, stringArrayType);
+                    case "script":
+                        script = ArrayListMultimap.create();
+                        in.beginObject();
+                        while (in.hasNext()) {
+                            script.putAll(in.nextName(), gson.fromJson(in, new TypeToken<List<String>>() {
+                            }.getType()));
+                        }
+                        in.endObject();
                         break;
                     default:
-                        throw new JsonParseException(String.format("'%s' is unknown value!", nextName));
+                        in.skipValue();
                 }
             }
             in.endObject();
 
-            if (moveTypes == null
-                || clickTypes == null
-                || pushTypes == null
-                || permissionsToGive == null
-                || neededPermissions == null
-                || unneededPermissions == null
-                || actionTypes == null
-                || actions == null) {
-                throw new JsonParseException("'moveTypes' or" +
-                    " 'clickTypes' or" +
-                    " 'pushTypes' or" +
-                    " 'permissionsToGive' or" +
-                    " 'neededPermissions' or" +
-                    " 'unneededPermissions' or" +
-                    " 'actionTypes' or" +
-                    " 'actions' not exists!");
+            if (author == null || moveTypes == null || clickTypes == null || pushTypes == null || script == null) {
+                throw new JsonParseException("");
             }
+
             return new Script(author,
-                moveTypes,
-                clickTypes,
-                pushTypes,
-                permissionsToGive,
-                neededPermissions,
-                unneededPermissions,
-                actionTypes,
-                actions);
+                ImmutableSet.copyOf(moveTypes),
+                ImmutableSet.copyOf(clickTypes),
+                ImmutableSet.copyOf(pushTypes),
+                ImmutableListMultimap.copyOf(script));
         }
     }
-
 }
