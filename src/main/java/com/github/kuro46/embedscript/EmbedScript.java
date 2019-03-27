@@ -6,11 +6,10 @@ import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.EventType;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
-import com.github.kuro46.embedscript.script.ScriptPerformer;
 import com.github.kuro46.embedscript.script.ScriptPosition;
 import com.github.kuro46.embedscript.script.ScriptSerializer;
 import com.github.kuro46.embedscript.script.ScriptUI;
-import com.github.kuro46.embedscript.script.parser.ScriptParser;
+import com.github.kuro46.embedscript.script.processor.ScriptProcessor;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
@@ -37,8 +36,7 @@ public class EmbedScript {
     private final Configuration configuration;
     private final ScriptUI scriptUI;
     private final Requests requests;
-    private final ScriptParser scriptParser;
-    private final ScriptPerformer scriptPerformer;
+    private final ScriptProcessor scriptProcessor;
 
     private EmbedScript(Plugin plugin) throws IOException, InvalidConfigurationException {
         this.plugin = plugin;
@@ -51,8 +49,7 @@ public class EmbedScript {
 
         this.scriptUI = new ScriptUI(scriptManager);
         this.requests = new Requests(scriptUI);
-        this.scriptParser = new ScriptParser(configuration);
-        this.scriptPerformer = new ScriptPerformer(logger, plugin, configuration);
+        this.scriptProcessor = new ScriptProcessor(logger, plugin, configuration);
 
         registerCommands();
         registerListeners();
@@ -174,11 +171,7 @@ public class EmbedScript {
         return requests;
     }
 
-    public ScriptParser getScriptParser() {
-        return scriptParser;
-    }
-
-    public ScriptPerformer getScriptPerformer() {
-        return scriptPerformer;
+    public ScriptProcessor getScriptProcessor() {
+        return scriptProcessor;
     }
 }

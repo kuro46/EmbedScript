@@ -4,8 +4,8 @@ import com.github.kuro46.embedscript.EmbedScript;
 import com.github.kuro46.embedscript.request.Requests;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
-import com.github.kuro46.embedscript.script.ScriptPerformer;
 import com.github.kuro46.embedscript.script.ScriptPosition;
+import com.github.kuro46.embedscript.script.processor.ScriptProcessor;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.bukkit.entity.Player;
@@ -27,13 +27,13 @@ public class InteractListener implements Listener {
         .expireAfterWrite(300, TimeUnit.MILLISECONDS)
         .build();
     private final ScriptManager scriptManager;
-    private final ScriptPerformer scriptPerformer;
+    private final ScriptProcessor scriptProcessor;
     private final Requests requests;
 
     public InteractListener(EmbedScript embedScript) {
         this.scriptManager = embedScript.getScriptManager();
         this.requests = embedScript.getRequests();
-        this.scriptPerformer = embedScript.getScriptPerformer();
+        this.scriptProcessor = embedScript.getScriptProcessor();
     }
 
     @EventHandler
@@ -57,7 +57,7 @@ public class InteractListener implements Listener {
 
         for (Script script : scripts) {
             if (validateClickType(script, event.getAction()) || validatePushType(script, event)) {
-                scriptPerformer.perform(position, script, player);
+                scriptProcessor.execute(player, script, position);
                 event.setCancelled(true);
             }
         }
