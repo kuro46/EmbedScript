@@ -33,23 +33,31 @@ public class ScriptProcessor {
         this.logger = logger;
         this.configuration = configuration;
 
-        addProcessor(Processors.LISTEN_CLICK_PROCESSOR);
-        addProcessor(Processors.LISTEN_MOVE_PROCESSOR);
-        addProcessor(Processors.LISTEN_PUSH_PROCESSOR);
-        addProcessor(Processors.BROADCAST_PROCESSOR);
-        addProcessor(Processors.BROADCAST_JSON_PROCESSOR);
-        addProcessor(Processors.SAY_PROCESSOR);
-        addProcessor(Processors.SAY_JSON_PROCESSOR);
-        addProcessor(Processors.NEEDED_PERMISSION_PROCESSOR);
-        addProcessor(Processors.UNNEEDED_PERMISSION_PROCESSOR);
-        addProcessor(Processors.COMMAND_PROCESSOR);
-        addProcessor(Processors.CONSOLE_PROCESSOR);
-        addProcessor(new GivePermissionProcessor(plugin, configuration));
-        addProcessor(new PresetProcessor(configuration));
+        registerProcessor(Processors.LISTEN_CLICK_PROCESSOR);
+        registerProcessor(Processors.LISTEN_MOVE_PROCESSOR);
+        registerProcessor(Processors.LISTEN_PUSH_PROCESSOR);
+        registerProcessor(Processors.BROADCAST_PROCESSOR);
+        registerProcessor(Processors.BROADCAST_JSON_PROCESSOR);
+        registerProcessor(Processors.SAY_PROCESSOR);
+        registerProcessor(Processors.SAY_JSON_PROCESSOR);
+        registerProcessor(Processors.NEEDED_PERMISSION_PROCESSOR);
+        registerProcessor(Processors.UNNEEDED_PERMISSION_PROCESSOR);
+        registerProcessor(Processors.COMMAND_PROCESSOR);
+        registerProcessor(Processors.CONSOLE_PROCESSOR);
+        registerProcessor(new GivePermissionProcessor(plugin, configuration));
+        registerProcessor(new PresetProcessor(configuration));
     }
 
-    public Processor addProcessor(Processor processor) {
+    public Processor registerProcessor(Processor processor) {
         return processors.put(processor.getKey(), processor);
+    }
+
+    public Processor unregisterProcessor(Processor processor) {
+        return processors.remove(processor.getKey());
+    }
+
+    public boolean isProcessorRegistered(Processor processor) {
+        return processors.containsKey(processor.getKey());
     }
 
     // PARSE START
