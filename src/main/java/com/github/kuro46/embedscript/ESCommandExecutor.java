@@ -8,6 +8,7 @@ import com.github.kuro46.embedscript.script.ParseException;
 import com.github.kuro46.embedscript.script.Script;
 import com.github.kuro46.embedscript.script.ScriptManager;
 import com.github.kuro46.embedscript.script.ScriptUI;
+import com.github.kuro46.embedscript.script.ScriptUtil;
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor;
 import com.github.kuro46.embedscript.util.Scheduler;
 import com.github.kuro46.embedscript.util.Util;
@@ -216,7 +217,7 @@ public class ESCommandExecutor implements CommandExecutor {
             filter = null;
         } else {
             try {
-                filter = scriptProcessor.parse(player.getUniqueId(), "@preset " + presetName);
+                filter = scriptProcessor.parse(player.getUniqueId(), "@preset " + ScriptUtil.toString(presetName));
             } catch (ParseException e) {
                 player.sendMessage(Prefix.ERROR_PREFIX +
                     String.format("Failed to filter the scripts. (error: %s)", e.getMessage()));
@@ -245,7 +246,7 @@ public class ESCommandExecutor implements CommandExecutor {
         try {
             String preset = presetName == null
                 ? ""
-                : "@preset " + presetName + " ";
+                : "@preset " + ScriptUtil.toString(presetName) + " ";
             script = scriptProcessor.parse(player.getUniqueId(), preset + stringScript);
         } catch (ParseException e) {
             player.sendMessage(Prefix.ERROR_PREFIX +
