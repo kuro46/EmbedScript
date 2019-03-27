@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript;
 
+import com.github.kuro46.embedscript.api.EmbedScriptAPI;
 import com.github.kuro46.embedscript.listener.InteractListener;
 import com.github.kuro46.embedscript.listener.MoveListener;
 import com.github.kuro46.embedscript.request.Requests;
@@ -14,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.ServicePriority;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -53,6 +55,7 @@ public class EmbedScript {
 
         registerCommands();
         registerListeners();
+        registerESAPI();
     }
 
     public static synchronized void initialize(Plugin plugin)
@@ -141,6 +144,13 @@ public class EmbedScript {
                 .setExecutor(new ESCommandExecutor(this, eventType.getPresetName()));
         }
         Bukkit.getPluginCommand("embedscript").setExecutor(new ESCommandExecutor(this));
+    }
+
+    private void registerESAPI() {
+        Bukkit.getServicesManager().register(EmbedScriptAPI.class,
+            new EmbedScriptAPI(scriptProcessor),
+            plugin,
+            ServicePriority.Normal);
     }
 
     public Plugin getPlugin() {
