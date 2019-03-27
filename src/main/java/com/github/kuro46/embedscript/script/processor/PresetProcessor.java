@@ -67,5 +67,11 @@ public class PresetProcessor implements Processor {
             script.clear();
             mergeTo.getView().forEach(script::add);
         }
+
+        @Override
+        public void build(ScriptBuilder builder, String key, ImmutableList<String> matchedValues) throws ParseException {
+            // do nothing
+            // please do not remove this method because AbstractParser#build does builder.getScript().putAll(key, matchedValues);
+        }
     }
 }
