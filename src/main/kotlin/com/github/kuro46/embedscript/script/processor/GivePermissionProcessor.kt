@@ -48,8 +48,6 @@ class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Pr
     }
 
     private class GivePermissionParser(private val configuration: Configuration) : AbstractParser() {
-
-        @Throws(ParseException::class)
         override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
             if (!matchedValues.isEmpty()) {
                 builder.script.putAll(key, matchedValues)

@@ -41,7 +41,6 @@ object ScriptSerializer {
     }
 
     @Synchronized
-    @Throws(IOException::class)
     fun deserialize(path: Path): Map<ScriptPosition, MutableList<Script>> {
         if (Files.notExists(path)) {
             return HashMap()
@@ -61,7 +60,6 @@ object ScriptSerializer {
     }
 
     @Synchronized
-    @Throws(IOException::class)
     fun serialize(path: Path, scripts: Map<ScriptPosition, MutableList<Script>>) {
         if (Files.notExists(path)) {
             Files.createFile(path)
@@ -98,7 +96,6 @@ object ScriptSerializer {
         return formatterCreator(path)
     }
 
-    @Throws(IOException::class)
     private fun readVersion(path: Path): String {
         if (Files.notExists(path)) {
             return LATEST_VERSION
@@ -136,7 +133,6 @@ object ScriptSerializer {
             return "0.2.0"
         }
 
-        @Throws(IOException::class)
         override fun write(out: JsonWriter, value: Map<ScriptPosition, MutableList<Script>>) {
             out.beginObject()
             out.name("formatVersion").value(version())
@@ -145,7 +141,6 @@ object ScriptSerializer {
             out.endObject()
         }
 
-        @Throws(IOException::class)
         private fun writeCoordinates(out: JsonWriter, value: Map<ScriptPosition, MutableList<Script>>) {
             out.beginArray()
             for ((position, scripts) in value) {
@@ -158,7 +153,6 @@ object ScriptSerializer {
             out.endArray()
         }
 
-        @Throws(IOException::class)
         private fun writeScripts(out: JsonWriter, scripts: List<Script>) {
             out.beginArray()
             for (script in scripts) {
@@ -167,7 +161,6 @@ object ScriptSerializer {
             out.endArray()
         }
 
-        @Throws(IOException::class)
         override fun read(reader: JsonReader): Map<ScriptPosition, MutableList<Script>> {
             var scripts: Map<ScriptPosition, MutableList<Script>>? = null
 
@@ -186,7 +179,6 @@ object ScriptSerializer {
             return scripts
         }
 
-        @Throws(IOException::class)
         private fun readCoordinates(reader: JsonReader): Map<ScriptPosition, MutableList<Script>> {
             val coordinates = HashMap<ScriptPosition, MutableList<Script>>()
 
@@ -229,12 +221,10 @@ object ScriptSerializer {
             return "1.0"
         }
 
-        @Throws(IOException::class)
         override fun write(out: JsonWriter, value: Map<ScriptPosition, MutableList<Script>>) {
             throw UnsupportedOperationException("Outdated formatter.")
         }
 
-        @Throws(IOException::class)
         override fun read(reader: JsonReader): Map<ScriptPosition, MutableList<Script>> {
             var scripts: Map<ScriptPosition, MutableList<Script>>? = null
 
@@ -253,7 +243,6 @@ object ScriptSerializer {
             return scripts
         }
 
-        @Throws(IOException::class)
         private fun readScripts(reader: JsonReader): Map<ScriptPosition, MutableList<Script>> {
             val scripts = HashMap<ScriptPosition, MutableList<Script>>()
 
@@ -267,7 +256,6 @@ object ScriptSerializer {
             return scripts
         }
 
-        @Throws(IOException::class)
         private fun readPair(reader: JsonReader): ScriptBlockScriptPair {
             var position: ScriptPosition? = null
             var scripts: MutableList<Script>? = null
@@ -295,7 +283,6 @@ object ScriptSerializer {
             return ScriptBlockScriptPair(position, scripts)
         }
 
-        @Throws(IOException::class)
         private fun readScript(reader: JsonReader): MutableList<Script> {
             var eventType: EventType? = null
             for (type in EventType.values()) {

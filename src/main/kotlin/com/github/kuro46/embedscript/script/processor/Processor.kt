@@ -16,10 +16,8 @@ interface Processor {
 
     interface Parser {
 
-        @Throws(ParseException::class)
         fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: ImmutableList<String>)
 
-        @Throws(ParseException::class)
         fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>)
     }
 

@@ -53,14 +53,12 @@ class ScriptManager(val scripts: ConcurrentMap<ScriptPosition, MutableList<Scrip
         return scripts.entries
     }
 
-    @Throws(IOException::class)
     fun reload() {
         val scripts = ScriptSerializer.deserialize(path)
         this.scripts.clear()
         this.scripts.putAll(scripts)
     }
 
-    @Throws(IOException::class)
     fun save() {
         ScriptSerializer.serialize(path, scripts)
     }
@@ -70,8 +68,6 @@ class ScriptManager(val scripts: ConcurrentMap<ScriptPosition, MutableList<Scrip
     }
 
     companion object {
-
-        @Throws(IOException::class)
         fun load(filePath: Path): ScriptManager {
             return ScriptManager(ConcurrentHashMap(ScriptSerializer.deserialize(filePath)), filePath)
         }

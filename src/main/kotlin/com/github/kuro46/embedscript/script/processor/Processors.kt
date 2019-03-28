@@ -21,7 +21,6 @@ object Processors {
     // ONLY TO PARSE
     val LISTEN_CLICK_PROCESSOR = newProcessor("listen-click", "lc",
         object : AbstractParser() {
-            @Throws(ParseException::class)
             override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
                 addEnumToCollection(builder.clickTypes, Script.ClickType::class.java, matchedValues)
             }
@@ -29,7 +28,6 @@ object Processors {
         DEFAULT_EXECUTOR)
     val LISTEN_MOVE_PROCESSOR = newProcessor("listen-move", "lm",
         object : AbstractParser() {
-            @Throws(ParseException::class)
             override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
                 addEnumToCollection(builder.moveTypes, Script.MoveType::class.java, matchedValues)
             }
@@ -37,7 +35,6 @@ object Processors {
         DEFAULT_EXECUTOR)
     val LISTEN_PUSH_PROCESSOR = newProcessor("listen-push", "lm",
         object : AbstractParser() {
-            @Throws(ParseException::class)
             override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
                 addEnumToCollection(builder.pushTypes, Script.PushType::class.java, matchedValues)
             }
@@ -157,7 +154,6 @@ object Processors {
         }
     }
 
-    @Throws(ParseException::class)
     private fun <T : Enum<T>> addEnumToCollection(collection: MutableCollection<T>,
                                                   clazz: Class<T>,
                                                   strings: List<String>) {

@@ -60,7 +60,6 @@ class ScriptPosition(val world: String, val x: Int, val y: Int, val z: Int) : Co
     }
 
     class Adapter : TypeAdapter<ScriptPosition>() {
-        @Throws(IOException::class)
         override fun write(writer: JsonWriter, value: ScriptPosition) {
             writer.beginObject()
             writer.name("world").value(value.world)
@@ -70,7 +69,6 @@ class ScriptPosition(val world: String, val x: Int, val y: Int, val z: Int) : Co
             writer.endObject()
         }
 
-        @Throws(IOException::class)
         override fun read(reader: JsonReader): ScriptPosition {
             var world: String? = null
             var x: Int? = null

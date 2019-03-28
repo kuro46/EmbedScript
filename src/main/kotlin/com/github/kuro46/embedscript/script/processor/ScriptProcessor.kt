@@ -48,7 +48,6 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
 
     // PARSE START
 
-    @Throws(ParseException::class)
     fun parse(author: UUID, script: String): Script {
         val mutableScript = MutableScript(script)
         prepareBuild(mutableScript)
@@ -61,7 +60,6 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
      * @param script script that ready to build
      * @throws ParseException If parse failed
      */
-    @Throws(ParseException::class)
     fun prepareBuild(script: MutableScript) {
         canonicalizeBuffer(script)
         val view = script.getView()
@@ -77,7 +75,6 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
      * @param script script to canonicalize
      * @throws ParseException If processor for key not exists
      */
-    @Throws(ParseException::class)
     private fun canonicalizeBuffer(script: MutableScript) {
         // generate lookup table
         val omittedKeys = HashMap<String, String>()
@@ -106,7 +103,6 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
      * @param script modifiable script
      * @return script
      */
-    @Throws(ParseException::class)
     private fun buildScript(author: UUID, script: MutableScript): Script {
         val builder = ScriptBuilder.withAuthor(author)
         val view = script.getView()

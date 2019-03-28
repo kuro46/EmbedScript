@@ -7,7 +7,7 @@ import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
 import java.util.*
 
-class MutableScript @Throws(ParseException::class)
+class MutableScript
 constructor(private var script: String) {
     private val multimap = ArrayListMultimap.create<String, String>()
     private var view: ImmutableListMultimap<String, String>? = null
@@ -89,7 +89,6 @@ constructor(private var script: String) {
      * @param string expects "key [value1][value2]", "key [value]" or "key value"
      * @return KeyValue
      */
-    @Throws(ParseException::class)
     private fun splitToKeyValue(string: String): Pair<String, List<String>> {
         val pair = Util.splitByFirstSpace(string) ?: throw ParseException("Failed to parse '$string' to KeyValue")
         // expect "key"
@@ -102,7 +101,6 @@ constructor(private var script: String) {
         return Pair(key, values)
     }
 
-    @Throws(ParseException::class)
     private fun splitValue(string: String): List<String> {
         var modifiableString = string
         if (modifiableString.isEmpty()) {

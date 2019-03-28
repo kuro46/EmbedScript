@@ -50,7 +50,6 @@ object MojangUtil {
         return null
     }
 
-    @Throws(IOException::class)
     private fun readName(reader: JsonReader): String? {
         var name: String? = null
 
@@ -100,7 +99,6 @@ object MojangUtil {
         return null
     }
 
-    @Throws(IOException::class)
     private fun newReader(urlString: String): JsonReader {
         val url = URL(urlString)
         return JsonReader(BufferedReader(InputStreamReader(url.openStream(), StandardCharsets.UTF_8)))

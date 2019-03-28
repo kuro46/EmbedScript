@@ -21,8 +21,6 @@ class PresetProcessor(configuration: Configuration) : Processor {
     }
 
     private class PresetParser(private val configuration: Configuration) : AbstractParser() {
-
-        @Throws(ParseException::class)
         override fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: ImmutableList<String>) {
             var mergeTo: MutableScript? = null
             val presets = configuration.presets
@@ -48,7 +46,6 @@ class PresetProcessor(configuration: Configuration) : Processor {
             mergeTo.getView().forEach { k, value -> script.add(k, value) }
         }
 
-        @Throws(ParseException::class)
         override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
             // do nothing
             // please do not remove this method because AbstractParser#build does builder.getScript().putAll(key, matchedValues);

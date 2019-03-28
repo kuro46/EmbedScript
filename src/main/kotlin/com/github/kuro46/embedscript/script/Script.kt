@@ -78,7 +78,6 @@ class Script(val author: UUID,
     }
 
     class ScriptAdapter : TypeAdapter<Script>() {
-        @Throws(IOException::class)
         override fun write(out: JsonWriter, value: Script) {
             val gson = GsonHolder.get()
             out.beginObject()
@@ -91,7 +90,6 @@ class Script(val author: UUID,
             out.endObject()
         }
 
-        @Throws(IOException::class)
         private fun writeScript(out: JsonWriter, value: Script) {
             out.beginObject()
             val gson = GsonHolder.get()
@@ -101,7 +99,6 @@ class Script(val author: UUID,
             out.endObject()
         }
 
-        @Throws(IOException::class)
         override fun read(reader: JsonReader): Script {
             var author: UUID? = null
             var moveTypes: Set<MoveType>? = null

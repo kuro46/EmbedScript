@@ -9,8 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 
-class Configuration @Throws(IOException::class, InvalidConfigurationException::class)
-private constructor(dataFolder: Path) {
+class Configuration private constructor(dataFolder: Path) {
 
     private val configPath: Path = dataFolder.resolve("config.yml")
     var presets: Map<String, String>? = null
@@ -27,7 +26,6 @@ private constructor(dataFolder: Path) {
         load()
     }
 
-    @Throws(IOException::class, InvalidConfigurationException::class)
     fun load() {
         val configuration = YamlConfiguration()
         Files.newBufferedReader(configPath).use { reader -> configuration.load(reader) }
@@ -57,7 +55,6 @@ private constructor(dataFolder: Path) {
         this.presets = Collections.unmodifiableMap(presets)
     }
 
-    @Throws(IOException::class)
     private fun loadPermissionsForActions(configuration: FileConfiguration) {
         // load
         val permissionsForActions = HashMap<String, List<String>>()
@@ -105,7 +102,6 @@ private constructor(dataFolder: Path) {
         private const val KEY_PRESETS = "presets"
         private const val KEY_PERMISSIONS_FOR_ACTIONS = "permissions-for-actions"
 
-        @Throws(IOException::class, InvalidConfigurationException::class)
         fun load(dataFolder: Path): Configuration {
             return Configuration(dataFolder)
         }

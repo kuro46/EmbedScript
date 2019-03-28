@@ -17,8 +17,7 @@ import java.nio.file.Path
 import java.util.*
 import java.util.logging.Logger
 
-class EmbedScript @Throws(IOException::class, InvalidConfigurationException::class)
-private constructor(val plugin: Plugin) {
+class EmbedScript private constructor(val plugin: Plugin) {
     val dataFolder: Path = plugin.dataFolder.toPath()
     val logger: Logger = plugin.logger
     val scriptManager: ScriptManager
@@ -42,13 +41,11 @@ private constructor(val plugin: Plugin) {
         registerESAPI()
     }
 
-    @Throws(IOException::class, InvalidConfigurationException::class)
     private fun loadConfiguration(): Configuration {
         plugin.saveDefaultConfig()
         return Configuration.load(dataFolder)
     }
 
-    @Throws(IOException::class)
     private fun loadScripts(): ScriptManager {
         if (Files.notExists(dataFolder)) {
             Files.createDirectory(dataFolder)
@@ -61,7 +58,6 @@ private constructor(val plugin: Plugin) {
         return ScriptManager.load(filePath)
     }
 
-    @Throws(IOException::class)
     private fun migrateFromOldFormatIfNeeded(scriptFilePath: Path) {
         if (Files.exists(scriptFilePath)) {
             return
@@ -126,7 +122,6 @@ private constructor(val plugin: Plugin) {
         private var instance: EmbedScript? = null
 
         @Synchronized
-        @Throws(IOException::class, InvalidConfigurationException::class, IllegalStateException::class)
         fun initialize(plugin: Plugin) {
 
             if (instance != null) {

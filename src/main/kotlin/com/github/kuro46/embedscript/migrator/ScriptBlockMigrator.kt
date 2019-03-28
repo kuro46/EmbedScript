@@ -15,8 +15,7 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.regex.Pattern
 
-class ScriptBlockMigrator @Throws(IOException::class, InvalidConfigurationException::class, ParseException::class)
-private constructor(embedScript: EmbedScript) {
+class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
     private val processor: ScriptProcessor = embedScript.scriptProcessor
     private val mergeTo: ScriptManager = embedScript.scriptManager
 
@@ -35,7 +34,6 @@ private constructor(embedScript: EmbedScript) {
         }
     }
 
-    @Throws(IOException::class, InvalidConfigurationException::class, ParseException::class)
     private fun migrate(eventType: EventType, source: Path) {
         val configuration = loadScriptFile(source)
         for (world in configuration.getKeys(false)) {
@@ -52,7 +50,6 @@ private constructor(embedScript: EmbedScript) {
         }
     }
 
-    @Throws(ParseException::class)
     private fun getAuthorFromData(data: String): UUID? {
         // Author:<MCID>/<Group>
         val matcher = Pattern.compile("Author:(.+)/.+").matcher(data)
@@ -63,7 +60,6 @@ private constructor(embedScript: EmbedScript) {
         return MojangUtil.getUUID(mcid)
     }
 
-    @Throws(IOException::class, InvalidConfigurationException::class)
     private fun loadScriptFile(path: Path): FileConfiguration {
         val configuration = YamlConfiguration()
         Files.newBufferedReader(path).use { reader -> configuration.load(reader) }
@@ -78,7 +74,6 @@ private constructor(embedScript: EmbedScript) {
      * @param legacy legacy format of script
      * @return script
      */
-    @Throws(ParseException::class)
     private fun createScriptFromLegacyFormat(author: UUID?,
                                              eventType: EventType,
                                              legacy: String): Script {
@@ -135,8 +130,6 @@ private constructor(embedScript: EmbedScript) {
     }
 
     companion object {
-
-        @Throws(InvalidConfigurationException::class, ParseException::class, IOException::class)
         fun migrate(embedScript: EmbedScript) {
 
             ScriptBlockMigrator(embedScript)
