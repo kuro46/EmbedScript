@@ -7,7 +7,6 @@ import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtil
 import com.github.kuro46.embedscript.util.Scheduler
 import com.github.kuro46.embedscript.util.Util
-import com.google.common.collect.ImmutableList
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import java.util.*
@@ -163,13 +162,13 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
                 val location = trigger.location
                 val worldName = location.world.name
                 message = replaceAndUnescape(message, "<trigger_world>") { worldName }
-                message = replaceAndUnescape(message, "<trigger_x>") { toString(location.blockX) }
-                message = replaceAndUnescape(message, "<trigger_y>") { toString(location.blockY) }
-                message = replaceAndUnescape(message, "<trigger_z>") { toString(location.blockZ) }
+                message = replaceAndUnescape(message, "<trigger_x>") { location.blockX.toString() }
+                message = replaceAndUnescape(message, "<trigger_y>") { location.blockY.toString() }
+                message = replaceAndUnescape(message, "<trigger_z>") { location.blockZ.toString() }
                 message = replaceAndUnescape(message, "<script_world>") { worldName }
-                message = replaceAndUnescape(message, "<script_x>") { toString(scriptPosition.x) }
-                message = replaceAndUnescape(message, "<script_y>") { toString(scriptPosition.y) }
-                message = replaceAndUnescape(message, "<script_z>") { toString(scriptPosition.z) }
+                message = replaceAndUnescape(message, "<script_x>") { scriptPosition.x.toString() }
+                message = replaceAndUnescape(message, "<script_y>") { scriptPosition.y.toString() }
+                message = replaceAndUnescape(message, "<script_z>") { scriptPosition.z.toString() }
 
                 logger.info(message)
             }
@@ -181,9 +180,5 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
             source
         } else Util.replaceAndUnescape(source, target, messageFactory())
 
-    }
-
-    private fun toString(o: Any): String {
-        return o.toString()
     }
 }
