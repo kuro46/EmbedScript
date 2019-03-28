@@ -4,6 +4,7 @@ import com.github.kuro46.embedscript.GsonHolder
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
 import com.google.common.collect.ImmutableSet
+import com.google.common.collect.ListMultimap
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
 import com.google.gson.TypeAdapter
@@ -40,9 +41,9 @@ object ScriptSerializer {
     }
 
     @Synchronized
-    fun deserialize(path: Path): Map<ScriptPosition, MutableList<Script>> {
+    fun deserialize(path: Path): ListMultimap<ScriptPosition, Script> {
         if (Files.notExists(path)) {
-            return HashMap()
+            return ArrayListMultimap.create()
         } else {
             Files.newBufferedReader(path).use { reader ->
                 val version = readVersion(path)
@@ -59,7 +60,7 @@ object ScriptSerializer {
     }
 
     @Synchronized
-    fun serialize(path: Path, scripts: Map<ScriptPosition, MutableList<Script>>) {
+    fun serialize(path: Path, scripts: ListMultimap<ScriptPosition, Script>) {
         if (Files.notExists(path)) {
             Files.createFile(path)
         }
@@ -71,7 +72,7 @@ object ScriptSerializer {
     }
 
     @Synchronized
-    fun serializeLaterAsync(path: Path, scripts: Map<ScriptPosition, MutableList<Script>>) {
+    fun serializeLaterAsync(path: Path, scripts: ListMultimap<ScriptPosition, Script>) {
         if (executing != null) {
             executing!!.cancel(false)
         }
@@ -121,7 +122,7 @@ object ScriptSerializer {
         }
     }
 
-    private abstract class Formatter(protected val filePath: Path) : TypeAdapter<Map<ScriptPosition, MutableList<Script>>>() {
+    private abstract class Formatter(protected val filePath: Path) : TypeAdapter<ListMultimap<ScriptPosition, Script>>() {
 
         abstract fun version(): String
     }
@@ -132,7 +133,7 @@ object ScriptSerializer {
             return "0.2.0"
         }
 
-        override fun write(out: JsonWriter, value: Map<ScriptPosition, MutableList<Script>>) {
+        override fun write(out: JsonWriter, value: ListMultimap<ScriptPosition, Script>) {
             out.beginObject()
             out.name("formatVersion").value(version())
             out.name("coordinates")
@@ -140,9 +141,10 @@ object ScriptSerializer {
             out.endObject()
         }
 
-        private fun writeCoordinates(out: JsonWriter, value: Map<ScriptPosition, MutableList<Script>>) {
+        private fun writeCoordinates(out: JsonWriter, value: ListMultimap<ScriptPosition, Script>) {
             out.beginArray()
-            for ((position, scripts) in value) {
+            for (position in value.keySet()) {
+                val scripts = value.get(position)
                 out.beginObject()
                 out.name("coordinate").jsonValue(GsonHolder.get().toJson(position))
                 out.name("scripts")
@@ -160,8 +162,8 @@ object ScriptSerializer {
             out.endArray()
         }
 
-        override fun read(reader: JsonReader): Map<ScriptPosition, MutableList<Script>> {
-            var scripts: Map<ScriptPosition, MutableList<Script>>? = null
+        override fun read(reader: JsonReader): ListMultimap<ScriptPosition, Script> {
+            var scripts: ListMultimap<ScriptPosition, Script>? = null
 
             reader.beginObject()
             while (reader.hasNext()) {
@@ -178,8 +180,8 @@ object ScriptSerializer {
             return scripts
         }
 
-        private fun readCoordinates(reader: JsonReader): Map<ScriptPosition, MutableList<Script>> {
-            val coordinates = HashMap<ScriptPosition, MutableList<Script>>()
+        private fun readCoordinates(reader: JsonReader): ListMultimap<ScriptPosition, Script> {
+            val coordinates: ListMultimap<ScriptPosition, Script> = ArrayListMultimap.create()
 
             reader.beginArray()
             while (reader.hasNext()) {
@@ -206,7 +208,7 @@ object ScriptSerializer {
                 }
                 reader.endObject()
 
-                coordinates[position!!] = scripts!!
+                coordinates.putAll(position, scripts!!)
             }
             reader.endArray()
 
@@ -220,12 +222,12 @@ object ScriptSerializer {
             return "1.0"
         }
 
-        override fun write(out: JsonWriter, value: Map<ScriptPosition, MutableList<Script>>) {
+        override fun write(out: JsonWriter, value: ListMultimap<ScriptPosition, Script>) {
             throw UnsupportedOperationException("Outdated formatter.")
         }
 
-        override fun read(reader: JsonReader): Map<ScriptPosition, MutableList<Script>> {
-            var scripts: Map<ScriptPosition, MutableList<Script>>? = null
+        override fun read(reader: JsonReader): ListMultimap<ScriptPosition, Script> {
+            var scripts: ListMultimap<ScriptPosition, Script>? = null
 
             reader.beginObject()
             while (reader.hasNext()) {
@@ -242,13 +244,13 @@ object ScriptSerializer {
             return scripts
         }
 
-        private fun readScripts(reader: JsonReader): Map<ScriptPosition, MutableList<Script>> {
-            val scripts = HashMap<ScriptPosition, MutableList<Script>>()
+        private fun readScripts(reader: JsonReader): ListMultimap<ScriptPosition, Script> {
+            val scripts: ListMultimap<ScriptPosition, Script> = ArrayListMultimap.create()
 
             reader.beginArray()
             while (reader.hasNext()) {
                 val pair = readPair(reader)
-                scripts[pair.position] = pair.scripts
+                scripts.putAll(pair.position, pair.scripts)
             }
             reader.endArray()
 
