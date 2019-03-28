@@ -44,7 +44,7 @@ object MojangUtil {
         }
 
         if (name != null) {
-            NAME_CACHE.put(uniqueId, name)
+            NAME_CACHE.put(uniqueId, name!!)
             return name
         }
         return null
