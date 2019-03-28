@@ -323,22 +323,18 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             return false
         }
 
-        private fun <E> isFilterable(target: Collection<E>, filter: Collection<E>, equals: (E, E) -> Boolean): Boolean {
+        private fun <E> isFilterable(target: Collection<E>, filter: Collection<E>): Boolean {
             for (f in filter) {
                 if (target.isEmpty()) {
                     return true
                 }
                 for (t in target) {
-                    if (!equals(f, t)) {
+                    if (f != t) {
                         return true
                     }
                 }
             }
             return false
-        }
-
-        private fun <E> isFilterable(target: Collection<E>, filter: Collection<E>): Boolean {
-            return isFilterable(target, filter) { obj, obj1 -> obj == obj1 }
         }
     }
 
