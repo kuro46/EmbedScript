@@ -7,7 +7,6 @@ import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.*
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import org.bukkit.Bukkit
-import org.bukkit.configuration.InvalidConfigurationException
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.ServicePriority
 import java.io.IOException

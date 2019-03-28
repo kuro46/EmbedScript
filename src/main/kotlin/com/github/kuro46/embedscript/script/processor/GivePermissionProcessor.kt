@@ -1,7 +1,6 @@
 package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
-import com.github.kuro46.embedscript.script.ParseException
 import com.google.common.collect.ImmutableList
 import org.apache.commons.lang.ArrayUtils
 import org.bukkit.entity.Player

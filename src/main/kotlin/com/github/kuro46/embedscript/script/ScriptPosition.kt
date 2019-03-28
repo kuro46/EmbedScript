@@ -7,7 +7,6 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import org.bukkit.Location
 import org.bukkit.block.Block
-import java.io.IOException
 import java.util.*
 
 /**

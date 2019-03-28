@@ -14,7 +14,6 @@ import com.google.gson.stream.JsonWriter
 import org.bukkit.Material
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
-import java.io.IOException
 import java.util.*
 
 @JsonAdapter(Script.ScriptAdapter::class)
