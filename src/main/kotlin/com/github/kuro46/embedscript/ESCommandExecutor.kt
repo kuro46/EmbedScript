@@ -22,7 +22,7 @@ import java.util.*
 /**
  * @author shirokuro
  */
-class ESCommandExecutor @JvmOverloads constructor(private val embedScript: EmbedScript, private val presetName: String? = null) : CommandExecutor {
+class ESCommandExecutor constructor(private val embedScript: EmbedScript, private val presetName: String? = null) : CommandExecutor {
     private val configuration: Configuration = embedScript.configuration
     private val scriptProcessor: ScriptProcessor = embedScript.scriptProcessor
     private val scriptUI: ScriptUI = embedScript.scriptUI
