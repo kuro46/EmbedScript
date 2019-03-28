@@ -156,7 +156,7 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
                 message = replaceAndUnescape(message, "<script>") {
                     val joiner = StringJoiner(" ")
                     for (key in scriptMap.keySet()) {
-                        joiner.add('@'.toString() + key + ' '.toString() + ScriptUtil.toString(scriptMap.get(key)))
+                        joiner.add("@$key ${ScriptUtil.toString(scriptMap.get(key))}")
                     }
                     joiner.toString()
                 }
