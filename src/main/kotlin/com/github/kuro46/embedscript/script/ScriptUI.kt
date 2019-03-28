@@ -76,13 +76,21 @@ class ScriptUI(private val scriptManager: ScriptManager) {
         Scheduler.execute {
             val messages = ArrayList<Array<BaseComponent>>()
             for (script in scripts) {
-                val author = script.author
-                val player = Bukkit.getPlayer(author)
-                val stringAuthor = if (player == null)
-                    MojangUtil.getName(author)
-                else
+                val authorId = script.author
+                val player = Bukkit.getPlayer(authorId)
+                val author = if (player != null) {
                     player.name
-                messages.add(TextComponent.fromLegacyText("author " + stringAuthor!!))
+                } else {
+                    val result = MojangUtil.getName(authorId)
+                    when (result) {
+                        is MojangUtil.FindNameResult.Found -> result.name
+                        else -> {
+                            sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to find user name")
+                            return@execute
+                        }
+                    }
+                }
+                messages.add(TextComponent.fromLegacyText("author $author"))
                 messages.add(TextComponent.fromLegacyText("@listen-move " + collectionToString(script.moveTypes)))
                 messages.add(TextComponent.fromLegacyText("@listen-click " + collectionToString(script.clickTypes)))
                 messages.add(TextComponent.fromLegacyText("@listen-push " + collectionToString(script.pushTypes)))

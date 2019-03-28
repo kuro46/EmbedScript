@@ -1,9 +1,9 @@
 package com.github.kuro46.embedscript.util
 
+import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import com.google.gson.stream.JsonReader
 import java.io.BufferedReader
-import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
 import java.nio.charset.StandardCharsets
@@ -14,40 +14,34 @@ import java.util.concurrent.TimeUnit
  * @author shirokuro
  */
 object MojangUtil {
-    private val NAME_CACHE = CacheBuilder.newBuilder()
+    private val NAME_CACHE: Cache<UUID, String> = CacheBuilder.newBuilder()
         .expireAfterAccess(1, TimeUnit.HOURS)
-        .build<UUID, String>()
-    private val UUID_CACHE = CacheBuilder.newBuilder()
+        .build()
+    private val UUID_CACHE: Cache<String, UUID> = CacheBuilder.newBuilder()
         .expireAfterAccess(1, TimeUnit.HOURS)
-        .build<String, UUID>()
+        .build()
 
-    fun getName(uniqueId: UUID): String? {
-        val cached = NAME_CACHE.getIfPresent(uniqueId)
-        if (cached != null) {
-            return cached
+    fun getName(uniqueId: UUID): FindNameResult {
+        NAME_CACHE.getIfPresent(uniqueId)?.let {
+            return FindNameResult.Found(it)
         }
 
-        val stringUniqueId = uniqueId.toString().replace("-", "")
-        val urlString = "https://api.mojang.com/user/profiles/$stringUniqueId/names"
+        val url = uniqueId.toString().replace("-", "")
+            .let { "https://api.mojang.com/user/profiles/$it/names" }
         var name: String? = null
 
-        try {
-            newReader(urlString).use { reader ->
-                reader.beginArray()
-                while (reader.hasNext()) {
-                    name = readName(reader)
-                }
-                reader.endArray()
+        newReader(url).use { reader ->
+            reader.beginArray()
+            while (reader.hasNext()) {
+                name = readName(reader)
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
+            reader.endArray()
         }
 
-        if (name != null) {
-            NAME_CACHE.put(uniqueId, name!!)
-            return name
-        }
-        return null
+        return name?.let {
+            NAME_CACHE.put(uniqueId, it)
+            FindNameResult.Found(it)
+        } ?: FindNameResult.NotFound
     }
 
     private fun readName(reader: JsonReader): String? {
@@ -66,37 +60,31 @@ object MojangUtil {
         return name
     }
 
-    fun getUUID(name: String): UUID? {
-        val cache = UUID_CACHE.getIfPresent(name)
-        if (cache != null) {
-            return cache
+    fun getUUID(name: String): FindIdResult {
+        UUID_CACHE.getIfPresent(name)?.let {
+            return FindIdResult.Found(it)
         }
 
-        val stringUrl = "https://api.mojang.com/users/profiles/minecraft/$name"
+        val url = "https://api.mojang.com/users/profiles/minecraft/$name"
         var stringUniqueId: String? = null
 
-        try {
-            newReader(stringUrl).use { reader ->
-                reader.beginObject()
-                while (reader.hasNext()) {
-                    if (reader.nextName() == "id") {
-                        stringUniqueId = reader.nextString()
-                    } else {
-                        reader.skipValue()
-                    }
+        newReader(url).use { reader ->
+            reader.beginObject()
+            while (reader.hasNext()) {
+                if (reader.nextName() == "id") {
+                    stringUniqueId = reader.nextString()
+                } else {
+                    reader.skipValue()
                 }
-                reader.endObject()
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
+            reader.endObject()
         }
 
-        if (stringUniqueId != null) {
-            val uniqueId = toUUID(stringUniqueId!!)
+        return stringUniqueId?.let {
+            val uniqueId = toUUID(it)
             UUID_CACHE.put(name, uniqueId)
-            return uniqueId
-        }
-        return null
+            FindIdResult.Found(uniqueId)
+        } ?: FindIdResult.NotFound
     }
 
     private fun newReader(urlString: String): JsonReader {
@@ -113,5 +101,15 @@ object MojangUtil {
         sb.insert(8, '-')
 
         return UUID.fromString(sb.toString())
+    }
+
+    sealed class FindIdResult {
+        data class Found(val id: UUID) : FindIdResult()
+        object NotFound : FindIdResult()
+    }
+
+    sealed class FindNameResult {
+        data class Found(val name: String) : FindNameResult()
+        object NotFound : FindNameResult()
     }
 }
