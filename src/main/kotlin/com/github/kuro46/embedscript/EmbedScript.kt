@@ -63,31 +63,23 @@ class EmbedScript private constructor(val plugin: Plugin) {
         }
 
         val merged = HashMap<ScriptPosition, MutableList<Script>>()
-        try {
-            Arrays.stream(EventType.values())
-                .map { eventType -> dataFolder.resolve(eventType.fileName) }
-                .filter { path -> Files.exists(path) }
-                .map { path ->
-                    return@map ScriptManager.load(path)
-                }
-                .forEach { scriptManager ->
-                    for (entry in scriptManager.entrySet()) {
-                        val position = entry.key
-                        val scripts = entry.value
-                        val mergeTo = merged.computeIfAbsent(position) { ArrayList() }
+        Arrays.stream(EventType.values())
+            .map { eventType -> dataFolder.resolve(eventType.fileName) }
+            .filter { path -> Files.exists(path) }
+            .map { path ->
+                return@map ScriptManager.load(path)
+            }
+            .forEach { scriptManager ->
+                for (entry in scriptManager.entrySet()) {
+                    val position = entry.key
+                    val scripts = entry.value
+                    val mergeTo = merged.computeIfAbsent(position) { ArrayList() }
 
-                        mergeTo.addAll(scripts)
-                    }
-
-                    try {
-                        Files.delete(scriptManager.path)
-                    } catch (e: IOException) {
-                        throw UncheckedIOException(e)
-                    }
+                    mergeTo.addAll(scripts)
                 }
-        } catch (e: UncheckedIOException) {
-            throw e.cause!!
-        }
+
+                Files.delete(scriptManager.path)
+            }
 
         if (merged.isEmpty()) {
             return
