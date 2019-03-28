@@ -108,7 +108,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     private fun collectionToString(collection: Collection<*>): String {
         return when {
             collection.isEmpty() -> "NONE"
-            collection.size == 1 -> collection.iterator().next().toString()
+            collection.size == 1 -> ScriptUtil.toString(collection.iterator().next().toString())
             else -> collection.stream()
                 .map { it.toString() }
                 .map { s -> s + ChatColor.RESET }
