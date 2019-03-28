@@ -3,6 +3,7 @@ package com.github.kuro46.embedscript.script
 import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.util.MojangUtil
 import com.github.kuro46.embedscript.util.Scheduler
+import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import net.md_5.bungee.api.chat.*
 import org.apache.commons.lang.StringUtils
@@ -24,10 +25,10 @@ import java.util.stream.Collectors
  * @author shirokuro
  */
 class ScriptUI(private val scriptManager: ScriptManager) {
-    private val pageManager = CacheBuilder.newBuilder()
+    private val pageManager: Cache<CommandSender, (Int) -> Unit> = CacheBuilder.newBuilder()
         .expireAfterAccess(5, TimeUnit.MINUTES)
         .weakKeys()
-        .build<CommandSender, (Int) -> Unit>()
+        .build()
 
     fun embed(sender: CommandSender,
               position: ScriptPosition,
@@ -124,7 +125,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
      */
     fun list(player: Player, world: String?, filter: Script?, pageIndex: Int) {
         Scheduler.execute {
-            val messages = scriptManager.scripts.entries.stream()
+            val messages = scriptManager.scripts.asMap().entries.stream()
                 .filter { entry ->
                     world == null ||
                         world == "all" ||
@@ -160,7 +161,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
 
     private fun sendPage(title: String,
                          sender: CommandSender,
-                         messages: List<Array<BaseComponent>>,
+                         messages: Collection<Array<BaseComponent>>,
                          pageIndex: Int,
                          chatHeight: Int = UNFOCUSED_CHAT_HEIGHT) {
         val availableMessageHeight = chatHeight - 3
@@ -204,7 +205,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
         return separatorString + decorated + separatorString
     }
 
-    private fun splitMessages(messages: List<Array<BaseComponent>>, maximumLines: Int): List<List<Array<BaseComponent>>> {
+    private fun splitMessages(messages: Collection<Array<BaseComponent>>, maximumLines: Int): List<List<Array<BaseComponent>>> {
         val pages = ArrayList<List<Array<BaseComponent>>>()
         val buffer = ArrayList<Array<BaseComponent>>()
         for (message in messages) {
@@ -226,9 +227,9 @@ class ScriptUI(private val scriptManager: ScriptManager) {
         return pages
     }
 
-    private class ScriptPositionComparator : Comparator<MutableMap.MutableEntry<ScriptPosition, MutableList<Script>>>, Serializable {
-        override fun compare(entry: MutableMap.MutableEntry<ScriptPosition, MutableList<Script>>,
-                             entry1: MutableMap.MutableEntry<ScriptPosition, MutableList<Script>>): Int {
+    private class ScriptPositionComparator : Comparator<MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>>, Serializable {
+        override fun compare(entry: MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>,
+                             entry1: MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>): Int {
             val position = entry.key
             val position1 = entry1.key
 
@@ -248,13 +249,16 @@ class ScriptUI(private val scriptManager: ScriptManager) {
         }
     }
 
-    private class ScriptCollector(private val filter: Script?) : Collector<MutableMap.MutableEntry<ScriptPosition, MutableList<Script>>, MutableList<Array<BaseComponent>>, MutableList<Array<BaseComponent>>> {
+    private class ScriptCollector(private val filter: Script?)
+        : Collector<MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>,
+        MutableCollection<Array<BaseComponent>>,
+        MutableCollection<Array<BaseComponent>>> {
 
-        override fun supplier(): Supplier<MutableList<Array<BaseComponent>>> {
+        override fun supplier(): Supplier<MutableCollection<Array<BaseComponent>>> {
             return Supplier { ArrayList<Array<BaseComponent>>() }
         }
 
-        override fun accumulator(): BiConsumer<MutableList<Array<BaseComponent>>, MutableMap.MutableEntry<ScriptPosition, MutableList<Script>>> {
+        override fun accumulator(): BiConsumer<MutableCollection<Array<BaseComponent>>, MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>> {
             return BiConsumer { messages, entry ->
                 val position = entry.key
                 val scripts = entry.value
@@ -278,7 +282,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             }
         }
 
-        override fun combiner(): BinaryOperator<MutableList<Array<BaseComponent>>> {
+        override fun combiner(): BinaryOperator<MutableCollection<Array<BaseComponent>>> {
             return BinaryOperator { messages, messages1 ->
                 val result = ArrayList<Array<BaseComponent>>()
                 result.addAll(messages)
@@ -287,7 +291,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             }
         }
 
-        override fun finisher(): Function<MutableList<Array<BaseComponent>>, MutableList<Array<BaseComponent>>> {
+        override fun finisher(): Function<MutableCollection<Array<BaseComponent>>, MutableCollection<Array<BaseComponent>>> {
             return Function { message -> message }
         }
 

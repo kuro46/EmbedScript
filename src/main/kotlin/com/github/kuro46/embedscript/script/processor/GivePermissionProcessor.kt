@@ -1,13 +1,13 @@
 package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
-import com.github.kuro46.embedscript.script.ParseException
 import com.google.common.collect.ImmutableList
 import org.apache.commons.lang.ArrayUtils
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin
 import java.util.*
+import java.util.stream.Collectors
 
 class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Processor {
     override val executor: Processor.Executor
@@ -60,15 +60,17 @@ class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Pr
                     if (permissionsForAction == null) {
                         var skipElement = 1
                         while (permissionsForAction == null) {
-                            val split = action.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                            ArrayUtils.reverse(split)
-                            val skipped = Arrays.stream(split)
+                            val split = action.split(' ')
+                                .dropLastWhile { it.isEmpty() }
+                                .toMutableList()
+                            split.reverse()
+                            val skipped = split.stream()
                                 .skip(skipElement.toLong())
-                                .toArray()
+                                .collect(Collectors.toList())
                             if (skipped.isEmpty()) {
                                 break
                             }
-                            ArrayUtils.reverse(skipped)
+                            skipped.reverse()
                             permissionsForAction = permissionsForActions[skipped.joinToString(" ")]
 
                             skipElement++

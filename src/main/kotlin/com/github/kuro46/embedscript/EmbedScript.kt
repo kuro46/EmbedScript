@@ -6,12 +6,11 @@ import com.github.kuro46.embedscript.listener.MoveListener
 import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.*
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
+import com.google.common.collect.ArrayListMultimap
+import com.google.common.collect.ListMultimap
 import org.bukkit.Bukkit
-import org.bukkit.configuration.InvalidConfigurationException
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.ServicePriority
-import java.io.IOException
-import java.io.UncheckedIOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
@@ -63,34 +62,23 @@ class EmbedScript private constructor(val plugin: Plugin) {
             return
         }
 
-        val merged = HashMap<ScriptPosition, MutableList<Script>>()
-        try {
-            Arrays.stream(EventType.values())
-                .map { eventType -> dataFolder.resolve(eventType.fileName) }
-                .filter { path -> Files.exists(path) }
-                .map { path ->
-                    return@map ScriptManager.load(path)
+        val merged: ListMultimap<ScriptPosition, Script> = ArrayListMultimap.create()
+        Arrays.stream(EventType.values())
+            .map { eventType -> dataFolder.resolve(eventType.fileName) }
+            .filter { path -> Files.exists(path) }
+            .map { path -> ScriptManager.load(path) }
+            .forEach { scriptManager ->
+                for (position in scriptManager.keySet()) {
+                    val scripts = scriptManager[position]
+                    val mergeTo = merged.get(position)
+
+                    mergeTo.addAll(scripts)
                 }
-                .forEach { scriptManager ->
-                    for (entry in scriptManager.entrySet()) {
-                        val position = entry.key
-                        val scripts = entry.value
-                        val mergeTo = merged.computeIfAbsent(position) { ArrayList() }
 
-                        mergeTo.addAll(scripts)
-                    }
+                Files.delete(scriptManager.path)
+            }
 
-                    try {
-                        Files.delete(scriptManager.path)
-                    } catch (e: IOException) {
-                        throw UncheckedIOException(e)
-                    }
-                }
-        } catch (e: UncheckedIOException) {
-            throw e.cause!!
-        }
-
-        if (merged.isEmpty()) {
+        if (merged.isEmpty) {
             return
         }
 
