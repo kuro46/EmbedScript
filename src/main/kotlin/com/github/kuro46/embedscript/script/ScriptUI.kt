@@ -98,7 +98,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                 val scriptMap = script.script
                 for (key in scriptMap.keySet()) {
                     val value = scriptMap.get(key)
-                    messages.add(TextComponent.fromLegacyText('@'.toString() + key + ' '.toString() + collectionToString(value)))
+                    messages.add(TextComponent.fromLegacyText("@$key ${ScriptUtil.toString(value)}"))
                 }
             }
             sendPage("Script information", sender, messages, 0, 12)
@@ -140,7 +140,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                 world
 
             if (messages.isEmpty()) {
-                player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in " + target)
+                player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in $target")
             } else {
                 sendPage("List of scripts in $target",
                     player,
@@ -268,12 +268,10 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                         continue
                     }
 
-                    val tpCommand = ("/embedscript teleport " + position.world + " " + position.x + " "
-                        + position.y + " " + position.z)
+                    val tpCommand = "/embedscript teleport ${position.world} ${position.x} ${position.y} ${position.z}"
                     val message = ComponentBuilder("")
-                        .append("[" + (messages.size + 1) + "] ")
-                        .append("World: " + position.world + " X: " + position.x
-                            + " Y: " + position.y + " Z: " + position.z + " (click here)")
+                        .append("[${messages.size + 1}] ")
+                        .append("World: ${position.world} X: ${position.x} Y: ${position.y} Z: ${position.z} (click here)")
                         .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
                         .event(HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
                         .create()
