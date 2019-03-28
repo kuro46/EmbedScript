@@ -13,6 +13,7 @@ import org.bukkit.plugin.Plugin
 import java.util.*
 import java.util.logging.Logger
 import java.util.stream.Collectors
+import kotlin.collections.ArrayList
 
 class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val configuration: Configuration) {
     private val processors = HashMap<String, Processor>()
@@ -117,14 +118,10 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
     // EXECUTE START
 
     fun execute(trigger: Player, script: Script, scriptPosition: ScriptPosition) {
-        val executors = HashMap<Processor.Executor, ImmutableList<String>>()
+        val executors: MutableList<Pair<Processor.Executor, List<String>>> = ArrayList()
         val scriptMap = script.script
-        for (processor in processors.values) {
-            if (!scriptMap.containsKey(processor.key)) {
-                continue
-            }
-
-            val value = scriptMap.get(processor.key).stream()
+        for (key in scriptMap.keySet()) {
+            val value = scriptMap.get(key).stream()
                 .map { string ->
                     var s = string
                     s = replaceAndUnescape(s, "<player>") { trigger.name }
@@ -132,7 +129,7 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
                     s
                 }
                 .collect(Collectors.toList())
-            executors[processor.executor] = ImmutableList.copyOf<String>(value)
+            executors.add(Pair(processors[key]!!.executor, value))
         }
 
         try {
@@ -144,13 +141,12 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
             }
 
             // prepare phase
-            executors.forEach { executor, matchedValues -> executor.prepareExecute(trigger, matchedValues) }
-
+            executors.forEach { (executor, matchedValues) -> executor.prepareExecute(trigger, matchedValues)}
             // execute start
-            executors.forEach { executor, matchedValues -> executor.beginExecute(trigger, matchedValues) }
+            executors.forEach { (executor, matchedValues) -> executor.beginExecute(trigger, matchedValues)}
         } finally {
             // execute end
-            executors.forEach { executor, matchedValues -> executor.endExecute(trigger, matchedValues) }
+            executors.forEach { (executor, matchedValues) -> executor.endExecute(trigger, matchedValues)}
         }
 
         if (configuration.isLogEnabled) {
