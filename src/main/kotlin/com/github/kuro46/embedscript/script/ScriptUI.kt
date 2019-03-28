@@ -33,8 +33,6 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     fun embed(sender: CommandSender,
               position: ScriptPosition,
               script: Script) {
-        Objects.requireNonNull(script)
-
         if (scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.")
             return
@@ -48,8 +46,6 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     fun add(sender: CommandSender,
             position: ScriptPosition,
             script: Script) {
-        Objects.requireNonNull(script)
-
         if (!scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
             return
