@@ -88,8 +88,8 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
          */
 
         val pair = Util.splitByFirstSpace(legacy) ?: throw ParseException("Illegal script")
-        val key = pair.key
-        val value = '['.toString() + pair.value + ']'.toString()
+        val key = pair.first
+        val value = "[${pair.second}]"
 
         val formatBuilder = HashMap<String, String>()
 
