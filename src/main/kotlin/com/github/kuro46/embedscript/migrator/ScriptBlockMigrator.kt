@@ -40,7 +40,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
                 val dataList = worldSection.getStringList(coordinate)
 
                 val authorResult = getAuthorFromData(dataList[0])
-                val author = when(authorResult) {
+                val author = when (authorResult) {
                     is MojangUtil.FindIdResult.Found -> authorResult.id
                     else -> throw ParseException("Failed to find author")
                 }
