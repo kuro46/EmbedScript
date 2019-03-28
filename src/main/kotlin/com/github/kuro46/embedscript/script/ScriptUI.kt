@@ -3,6 +3,7 @@ package com.github.kuro46.embedscript.script
 import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.util.MojangUtil
 import com.github.kuro46.embedscript.util.Scheduler
+import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import net.md_5.bungee.api.chat.*
 import org.apache.commons.lang.StringUtils
@@ -24,10 +25,10 @@ import java.util.stream.Collectors
  * @author shirokuro
  */
 class ScriptUI(private val scriptManager: ScriptManager) {
-    private val pageManager = CacheBuilder.newBuilder()
+    private val pageManager: Cache<CommandSender, (Int) -> Unit> = CacheBuilder.newBuilder()
         .expireAfterAccess(5, TimeUnit.MINUTES)
         .weakKeys()
-        .build<CommandSender, (Int) -> Unit>()
+        .build()
 
     fun embed(sender: CommandSender,
               position: ScriptPosition,
