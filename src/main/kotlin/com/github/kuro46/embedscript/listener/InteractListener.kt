@@ -40,12 +40,11 @@ class InteractListener(embedScript: EmbedScript) : Listener {
             return
         }
 
-        val scripts = scriptManager[position]
-        if (scripts.isEmpty()) {
+        if (!scriptManager.contains(position)) {
             return
         }
 
-        for (script in scripts) {
+        for (script in scriptManager[position]) {
             if (validateClickType(script, event.action) || validatePushType(script, event)) {
                 scriptProcessor.execute(player, script, position)
                 event.isCancelled = true

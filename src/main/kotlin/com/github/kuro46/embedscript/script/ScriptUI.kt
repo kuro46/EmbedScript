@@ -35,7 +35,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
               script: Script) {
         Objects.requireNonNull(script)
 
-        if (!scriptManager[position].isEmpty()) {
+        if (scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.")
             return
         }
@@ -50,7 +50,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             script: Script) {
         Objects.requireNonNull(script)
 
-        if (scriptManager[position].isEmpty()) {
+        if (!scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
             return
         }
@@ -69,11 +69,11 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     }
 
     fun view(sender: CommandSender, position: ScriptPosition) {
-        val scripts = scriptManager[position]
-        if (scripts.isEmpty()) {
+        if (!scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
             return
         }
+        val scripts = scriptManager[position]
         Scheduler.execute {
             val messages = ArrayList<Array<BaseComponent>>()
             for (script in scripts) {
