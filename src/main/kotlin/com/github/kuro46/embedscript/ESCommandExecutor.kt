@@ -2,7 +2,6 @@ package com.github.kuro46.embedscript
 
 import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
 import com.github.kuro46.embedscript.request.Request
-import com.github.kuro46.embedscript.request.RequestType
 import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.*
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
@@ -82,8 +81,8 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
                 remove(player)
                 return HandleResult.COLLECT_USE
             }
-            "embed" -> return HandleResult.getByBoolean(modifyAction(player, args, RequestType.EMBED))
-            "add" -> return HandleResult.getByBoolean(modifyAction(player, args, RequestType.ADD))
+            "embed" -> return HandleResult.getByBoolean(modifyAction(player, args, false))
+            "add" -> return HandleResult.getByBoolean(modifyAction(player, args, true))
             else -> return HandleResult.UNMATCH
         }
     }
@@ -212,15 +211,15 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
 
     private fun view(player: Player) {
         player.sendMessage(Prefix.PREFIX + "Click the block to view the script.")
-        requests.putRequest(player, Request(RequestType.VIEW))
+        requests.putRequest(player, Request.View)
     }
 
     private fun remove(player: Player) {
         player.sendMessage(Prefix.PREFIX + "Click the block to remove the script.")
-        requests.putRequest(player, Request(RequestType.REMOVE))
+        requests.putRequest(player, Request.Remove)
     }
 
-    private fun modifyAction(player: Player, args: Array<String>, requestType: RequestType): Boolean {
+    private fun modifyAction(player: Player, args: Array<String>, add: Boolean): Boolean {
         if (args.size < 2) {
             return false
         }
@@ -238,7 +237,8 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
         }
 
         player.sendMessage(Prefix.PREFIX + "Click the block to add a script.")
-        requests.putRequest(player, Request(requestType, script))
+        val request = if (add) Request.Add(script) else Request.Embed(script)
+        requests.putRequest(player, request)
 
         return true
     }
