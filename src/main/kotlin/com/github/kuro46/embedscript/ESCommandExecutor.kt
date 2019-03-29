@@ -120,26 +120,14 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
     private fun migrate(sender: CommandSender) {
         Scheduler.execute {
             sender.sendMessage("Migrating data of ScriptBlock...")
-            try {
-                ScriptBlockMigrator.migrate(embedScript)
-            } catch (e: InvalidConfigurationException) {
+            val migrationResult = runCatching { ScriptBlockMigrator.migrate(embedScript) }
+            migrationResult.exceptionOrNull()?.also {
                 sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to migrate data of ScriptBlock!")
                 System.err.println("Failed to migrate data of ScriptBlock!")
-                e.printStackTrace()
-                return@execute
-            } catch (e: ParseException) {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to migrate data of ScriptBlock!")
-                System.err.println("Failed to migrate data of ScriptBlock!")
-                e.printStackTrace()
-                return@execute
-            } catch (e: IOException) {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to migrate data of ScriptBlock!")
-                System.err.println("Failed to migrate data of ScriptBlock!")
-                e.printStackTrace()
-                return@execute
+                it.printStackTrace()
+            } ?: run {
+                sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!")
             }
-
-            sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!")
         }
     }
 
