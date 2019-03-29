@@ -1,10 +1,10 @@
 package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.script.ParseException
-import com.github.kuro46.embedscript.util.Pair
 import com.github.kuro46.embedscript.util.Util
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
+import kotlin.Pair
 import java.util.*
 
 class MutableScript
@@ -21,9 +21,9 @@ constructor(private var script: String) {
             if (trimmedKeyValue.isEmpty()) {
                 continue
             }
-            val pair = splitToKeyValue(trimmedKeyValue)
-            for (value in pair.value) {
-                add(pair.key, value)
+            val (key, values) = splitToKeyValue(trimmedKeyValue)
+            for (value in values) {
+                add(key, value)
             }
         }
     }
@@ -92,9 +92,9 @@ constructor(private var script: String) {
     private fun splitToKeyValue(string: String): Pair<String, List<String>> {
         val pair = Util.splitByFirstSpace(string) ?: throw ParseException("Failed to parse '$string' to KeyValue")
         // expect "key"
-        val key = pair.key.toLowerCase(Locale.ENGLISH)
+        val key = pair.first.toLowerCase(Locale.ENGLISH)
         // expect "[value]", or "[value1][value2]"
-        val value = pair.value
+        val value = pair.second
 
         val values = splitValue(value)
 

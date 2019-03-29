@@ -49,7 +49,7 @@ object Processors {
     val UNNEEDED_PERMISSION_PROCESSOR = newProcessor("unneeded-permission", "up",
         DEFAULT_PARSER,
         object : NeededPermissionExecutor() {
-            override fun check(trigger: Player, matchedValues: ImmutableList<String>): Boolean {
+            override fun check(trigger: Player, matchedValues: List<String>): Boolean {
                 // invert
                 return !super.check(trigger, matchedValues)
             }
@@ -88,35 +88,35 @@ object Processors {
     val COMMAND_PROCESSOR = newProcessor("command", "c",
         COMMAND_PARSER,
         object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: ImmutableList<String>) {
+            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                 matchedValues.forEach { trigger.performCommand(it) }
             }
         })
     val CONSOLE_PROCESSOR = newProcessor("console", "con",
         COMMAND_PARSER,
         object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: ImmutableList<String>) {
+            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                 matchedValues.forEach { string -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), string) }
             }
         })
     val SAY_PROCESSOR = newProcessor("say", "s",
         DEFAULT_PARSER,
         object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: ImmutableList<String>) {
+            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                 matchedValues.forEach { trigger.sendMessage(it) }
             }
         })
     val SAY_JSON_PROCESSOR = newProcessor("say-json", "sj",
         DEFAULT_PARSER,
         object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: ImmutableList<String>) {
+            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                 matchedValues.forEach { string -> trigger.spigot().sendMessage(*ComponentSerializer.parse(string)) }
             }
         })
     val BROADCAST_PROCESSOR = newProcessor("broadcast", "b",
         DEFAULT_PARSER,
         object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: ImmutableList<String>) {
+            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                 Bukkit.getOnlinePlayers().forEach { player ->
                     for (string in matchedValues) {
                         player.sendMessage(string)
@@ -127,7 +127,7 @@ object Processors {
     val BROADCAST_JSON_PROCESSOR = newProcessor("broadcast-json", "bj",
         DEFAULT_PARSER,
         object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: ImmutableList<String>) {
+            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                 val jsonMessages: List<Array<BaseComponent>> = matchedValues.stream()
                     .map { json -> ComponentSerializer.parse(json) }
                     .collect(Collectors.toList())
@@ -168,7 +168,7 @@ object Processors {
     }
 
     private open class NeededPermissionExecutor : AbstractExecutor() {
-        override fun check(trigger: Player, matchedValues: ImmutableList<String>): Boolean {
+        override fun check(trigger: Player, matchedValues: List<String>): Boolean {
             for (matchedValue in matchedValues) {
                 if (!trigger.hasPermission(matchedValue)) {
                     return false

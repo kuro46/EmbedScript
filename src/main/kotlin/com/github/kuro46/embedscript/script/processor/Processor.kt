@@ -22,12 +22,12 @@ interface Processor {
 
     interface Executor {
 
-        fun check(trigger: Player, matchedValues: ImmutableList<String>): Boolean
+        fun check(trigger: Player, matchedValues: List<String>): Boolean
 
-        fun prepareExecute(trigger: Player, matchedValues: ImmutableList<String>)
+        fun prepareExecute(trigger: Player, matchedValues: List<String>)
 
-        fun beginExecute(trigger: Player, matchedValues: ImmutableList<String>)
+        fun beginExecute(trigger: Player, matchedValues: List<String>)
 
-        fun endExecute(trigger: Player, matchedValues: ImmutableList<String>)
+        fun endExecute(trigger: Player, matchedValues: List<String>)
     }
 }

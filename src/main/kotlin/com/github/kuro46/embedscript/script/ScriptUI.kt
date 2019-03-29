@@ -33,9 +33,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     fun embed(sender: CommandSender,
               position: ScriptPosition,
               script: Script) {
-        Objects.requireNonNull(script)
-
-        if (!scriptManager[position].isEmpty()) {
+        if (scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.")
             return
         }
@@ -48,9 +46,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     fun add(sender: CommandSender,
             position: ScriptPosition,
             script: Script) {
-        Objects.requireNonNull(script)
-
-        if (scriptManager[position].isEmpty()) {
+        if (!scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
             return
         }
@@ -69,11 +65,11 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     }
 
     fun view(sender: CommandSender, position: ScriptPosition) {
-        val scripts = scriptManager[position]
-        if (scripts.isEmpty()) {
+        if (!scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
             return
         }
+        val scripts = scriptManager[position]
         Scheduler.execute {
             val messages = ArrayList<Array<BaseComponent>>()
             for (script in scripts) {
@@ -98,7 +94,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                 val scriptMap = script.script
                 for (key in scriptMap.keySet()) {
                     val value = scriptMap.get(key)
-                    messages.add(TextComponent.fromLegacyText('@'.toString() + key + ' '.toString() + collectionToString(value)))
+                    messages.add(TextComponent.fromLegacyText("@$key ${ScriptUtil.toString(value)}"))
                 }
             }
             sendPage("Script information", sender, messages, 0, 12)
@@ -108,7 +104,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     private fun collectionToString(collection: Collection<*>): String {
         return when {
             collection.isEmpty() -> "NONE"
-            collection.size == 1 -> collection.iterator().next().toString()
+            collection.size == 1 -> ScriptUtil.toString(collection.iterator().next().toString())
             else -> collection.stream()
                 .map { it.toString() }
                 .map { s -> s + ChatColor.RESET }
@@ -140,7 +136,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                 world
 
             if (messages.isEmpty()) {
-                player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in " + target)
+                player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in $target")
             } else {
                 sendPage("List of scripts in $target",
                     player,
@@ -268,12 +264,10 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                         continue
                     }
 
-                    val tpCommand = ("/embedscript teleport " + position.world + " " + position.x + " "
-                        + position.y + " " + position.z)
+                    val tpCommand = "/embedscript teleport ${position.world} ${position.x} ${position.y} ${position.z}"
                     val message = ComponentBuilder("")
-                        .append("[" + (messages.size + 1) + "] ")
-                        .append("World: " + position.world + " X: " + position.x
-                            + " Y: " + position.y + " Z: " + position.z + " (click here)")
+                        .append("[${messages.size + 1}] ")
+                        .append("World: ${position.world} X: ${position.x} Y: ${position.y} Z: ${position.z} (click here)")
                         .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
                         .event(HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
                         .create()
@@ -323,22 +317,18 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             return false
         }
 
-        private fun <E> isFilterable(target: Collection<E>, filter: Collection<E>, equals: (E, E) -> Boolean): Boolean {
+        private fun <E> isFilterable(target: Collection<E>, filter: Collection<E>): Boolean {
             for (f in filter) {
                 if (target.isEmpty()) {
                     return true
                 }
                 for (t in target) {
-                    if (!equals(f, t)) {
+                    if (f != t) {
                         return true
                     }
                 }
             }
             return false
-        }
-
-        private fun <E> isFilterable(target: Collection<E>, filter: Collection<E>): Boolean {
-            return isFilterable(target, filter) { obj, obj1 -> obj == obj1 }
         }
     }
 

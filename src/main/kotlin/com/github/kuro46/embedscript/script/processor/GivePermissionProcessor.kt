@@ -27,7 +27,7 @@ class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Pr
     private class GivePermissionExecutor(private val plugin: Plugin) : AbstractExecutor() {
         private val attachments = HashMap<Player, PermissionAttachment>()
 
-        override fun prepareExecute(trigger: Player, matchedValues: ImmutableList<String>) {
+        override fun prepareExecute(trigger: Player, matchedValues: List<String>) {
             val attachment = if (matchedValues.isEmpty()) null else trigger.addAttachment(plugin)
             for (matchedValue in matchedValues) {
                 if (trigger.hasPermission(matchedValue)) {
@@ -41,7 +41,7 @@ class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Pr
             }
         }
 
-        override fun endExecute(trigger: Player, matchedValues: ImmutableList<String>) {
+        override fun endExecute(trigger: Player, matchedValues: List<String>) {
             val attachment = attachments[trigger]
             attachment?.remove()
         }

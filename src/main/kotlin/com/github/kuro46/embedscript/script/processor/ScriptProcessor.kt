@@ -7,12 +7,12 @@ import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtil
 import com.github.kuro46.embedscript.util.Scheduler
 import com.github.kuro46.embedscript.util.Util
-import com.google.common.collect.ImmutableList
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import java.util.*
 import java.util.logging.Logger
 import java.util.stream.Collectors
+import kotlin.collections.ArrayList
 
 class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val configuration: Configuration) {
     private val processors = HashMap<String, Processor>()
@@ -117,14 +117,10 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
     // EXECUTE START
 
     fun execute(trigger: Player, script: Script, scriptPosition: ScriptPosition) {
-        val executors = HashMap<Processor.Executor, ImmutableList<String>>()
+        val executors: MutableList<Pair<Processor.Executor, List<String>>> = ArrayList()
         val scriptMap = script.script
-        for (processor in processors.values) {
-            if (!scriptMap.containsKey(processor.key)) {
-                continue
-            }
-
-            val value = scriptMap.get(processor.key).stream()
+        for (key in scriptMap.keySet()) {
+            val value = scriptMap.get(key).stream()
                 .map { string ->
                     var s = string
                     s = replaceAndUnescape(s, "<player>") { trigger.name }
@@ -132,7 +128,7 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
                     s
                 }
                 .collect(Collectors.toList())
-            executors[processor.executor] = ImmutableList.copyOf<String>(value)
+            executors.add(Pair(processors[key]!!.executor, value))
         }
 
         try {
@@ -144,13 +140,12 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
             }
 
             // prepare phase
-            executors.forEach { executor, matchedValues -> executor.prepareExecute(trigger, matchedValues) }
-
+            executors.forEach { (executor, matchedValues) -> executor.prepareExecute(trigger, matchedValues)}
             // execute start
-            executors.forEach { executor, matchedValues -> executor.beginExecute(trigger, matchedValues) }
+            executors.forEach { (executor, matchedValues) -> executor.beginExecute(trigger, matchedValues)}
         } finally {
             // execute end
-            executors.forEach { executor, matchedValues -> executor.endExecute(trigger, matchedValues) }
+            executors.forEach { (executor, matchedValues) -> executor.endExecute(trigger, matchedValues)}
         }
 
         if (configuration.isLogEnabled) {
@@ -160,20 +155,20 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
                 message = replaceAndUnescape(message, "<script>") {
                     val joiner = StringJoiner(" ")
                     for (key in scriptMap.keySet()) {
-                        joiner.add('@'.toString() + key + ' '.toString() + ScriptUtil.toString(scriptMap.get(key)))
+                        joiner.add("@$key ${ScriptUtil.toString(scriptMap.get(key))}")
                     }
                     joiner.toString()
                 }
                 val location = trigger.location
                 val worldName = location.world.name
                 message = replaceAndUnescape(message, "<trigger_world>") { worldName }
-                message = replaceAndUnescape(message, "<trigger_x>") { toString(location.blockX) }
-                message = replaceAndUnescape(message, "<trigger_y>") { toString(location.blockY) }
-                message = replaceAndUnescape(message, "<trigger_z>") { toString(location.blockZ) }
+                message = replaceAndUnescape(message, "<trigger_x>") { location.blockX.toString() }
+                message = replaceAndUnescape(message, "<trigger_y>") { location.blockY.toString() }
+                message = replaceAndUnescape(message, "<trigger_z>") { location.blockZ.toString() }
                 message = replaceAndUnescape(message, "<script_world>") { worldName }
-                message = replaceAndUnescape(message, "<script_x>") { toString(scriptPosition.x) }
-                message = replaceAndUnescape(message, "<script_y>") { toString(scriptPosition.y) }
-                message = replaceAndUnescape(message, "<script_z>") { toString(scriptPosition.z) }
+                message = replaceAndUnescape(message, "<script_x>") { scriptPosition.x.toString() }
+                message = replaceAndUnescape(message, "<script_y>") { scriptPosition.y.toString() }
+                message = replaceAndUnescape(message, "<script_z>") { scriptPosition.z.toString() }
 
                 logger.info(message)
             }
@@ -185,9 +180,5 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
             source
         } else Util.replaceAndUnescape(source, target, messageFactory())
 
-    }
-
-    private fun toString(o: Any): String {
-        return o.toString()
     }
 }

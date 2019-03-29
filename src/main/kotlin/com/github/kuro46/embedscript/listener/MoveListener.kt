@@ -31,10 +31,12 @@ class MoveListener(embedScript: EmbedScript) : Listener {
             to.blockX,
             to.blockY - 1,
             to.blockZ)
-        val scripts = scriptManager[scriptPosition]
-        if (scripts.isEmpty()) {
+
+        if (!scriptManager.contains(scriptPosition)) {
             return
         }
+
+        val scripts = scriptManager[scriptPosition]
 
         scripts.forEach { script ->
             if (validateMoveType(script, event)) {
