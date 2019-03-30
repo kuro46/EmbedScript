@@ -18,6 +18,7 @@ import java.util.*
 
 @JsonAdapter(Script.ScriptAdapter::class)
 class Script(val author: UUID,
+             val createdAt: Long,
              val moveTypes: ImmutableSet<MoveType>,
              val clickTypes: ImmutableSet<ClickType>,
              val pushTypes: ImmutableSet<PushType>,
@@ -81,6 +82,7 @@ class Script(val author: UUID,
             val gson = GsonHolder.get()
             out.beginObject()
             out.name("author").jsonValue(gson.toJson(value.author))
+            out.name("createdAt").value(value.createdAt)
             out.name("moveTypes").jsonValue(gson.toJson(value.moveTypes))
             out.name("clickTypes").jsonValue(gson.toJson(value.clickTypes))
             out.name("pushTypes").jsonValue(gson.toJson(value.pushTypes))
@@ -100,6 +102,7 @@ class Script(val author: UUID,
 
         override fun read(reader: JsonReader): Script {
             var author: UUID? = null
+            var createdAt: Long? = null
             var moveTypes: Set<MoveType>? = null
             var clickTypes: Set<ClickType>? = null
             var pushTypes: Set<PushType>? = null
@@ -112,6 +115,7 @@ class Script(val author: UUID,
                     "author" -> author = gson.fromJson<UUID>(reader, object : TypeToken<UUID>() {
 
                     }.type)
+                    "createdAt" -> createdAt = reader.nextLong()
                     "moveTypes" -> moveTypes = gson.fromJson<Set<MoveType>>(reader, object : TypeToken<Set<MoveType>>() {
 
                     }.type)
@@ -135,15 +139,16 @@ class Script(val author: UUID,
             }
             reader.endObject()
 
-            if (author == null || moveTypes == null || clickTypes == null || pushTypes == null || script == null) {
+            if (createdAt == null || author == null || moveTypes == null || clickTypes == null || pushTypes == null || script == null) {
                 throw JsonParseException("")
             }
 
             return Script(author,
-                ImmutableSet.copyOf(moveTypes),
-                ImmutableSet.copyOf(clickTypes),
-                ImmutableSet.copyOf(pushTypes),
-                ImmutableListMultimap.copyOf(script))
+                    createdAt,
+                    ImmutableSet.copyOf(moveTypes),
+                    ImmutableSet.copyOf(clickTypes),
+                    ImmutableSet.copyOf(pushTypes),
+                    ImmutableListMultimap.copyOf(script))
         }
     }
 }

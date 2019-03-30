@@ -111,7 +111,7 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
             processor.parser.build(builder, key, view.get(key))
         }
 
-        return builder.build()
+        return builder.build(System.currentTimeMillis())
     }
 
     // EXECUTE START

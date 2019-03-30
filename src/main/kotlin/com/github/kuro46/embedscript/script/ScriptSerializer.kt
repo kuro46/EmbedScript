@@ -339,7 +339,7 @@ object ScriptSerializer {
                     multimap.put(key, command)
                 }
 
-                scripts.add(Script(author!!,
+                scripts.add(Script(author!!, System.currentTimeMillis(),
                     if (eventType == EventType.WALK) ImmutableSet.of(Script.MoveType.GROUND) else ImmutableSet.of(),
                     if (eventType == EventType.INTERACT) ImmutableSet.of(Script.ClickType.ALL) else ImmutableSet.of(),
                     if (eventType == EventType.INTERACT) ImmutableSet.of(Script.PushType.ALL) else ImmutableSet.of(),
