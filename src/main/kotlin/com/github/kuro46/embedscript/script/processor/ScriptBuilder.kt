@@ -13,8 +13,8 @@ class ScriptBuilder private constructor(val author: UUID) {
     val pushTypes: MutableSet<Script.PushType> = HashSet()
     val script: ListMultimap<String, String> = ArrayListMultimap.create()
 
-    fun build(): Script {
-        return Script(author,
+    fun build(createdAt: Long): Script {
+        return Script(author, createdAt,
             ImmutableSet.copyOf<Script.MoveType>(moveTypes),
             ImmutableSet.copyOf<Script.ClickType>(clickTypes),
             ImmutableSet.copyOf<Script.PushType>(pushTypes),

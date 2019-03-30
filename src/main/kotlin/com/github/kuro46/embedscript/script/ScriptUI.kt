@@ -12,6 +12,9 @@ import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.io.Serializable
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.BiConsumer
@@ -87,7 +90,10 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                         }
                     }
                 }
-                messages.add(TextComponent.fromLegacyText("author $author"))
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+                        .withZone(ZoneId.systemDefault())
+                val formatted = dateTimeFormatter.format(Instant.ofEpochMilli(script.createdAt))
+                messages.add(TextComponent.fromLegacyText("$author created at $formatted"))
                 messages.add(TextComponent.fromLegacyText("@listen-move " + collectionToString(script.moveTypes)))
                 messages.add(TextComponent.fromLegacyText("@listen-click " + collectionToString(script.clickTypes)))
                 messages.add(TextComponent.fromLegacyText("@listen-push " + collectionToString(script.pushTypes)))
