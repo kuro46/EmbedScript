@@ -5,20 +5,13 @@ import com.github.kuro46.embedscript.script.ParseException
 import com.google.common.collect.ImmutableList
 
 class PresetProcessor(configuration: Configuration) : Processor {
-    override val parser: Processor.Parser
+    override val parser: Processor.Parser = PresetParser(configuration)
 
-    override val key: String
-        get() = "preset"
+    override val key = "preset"
 
-    override val omittedKey: String
-        get() = "p"
+    override val omittedKey = "p"
 
-    override val executor: Processor.Executor
-        get() = Processors.DEFAULT_EXECUTOR
-
-    init {
-        this.parser = PresetParser(configuration)
-    }
+    override val executor: Processor.Executor = Processors.DEFAULT_EXECUTOR
 
     private class PresetParser(private val configuration: Configuration) : AbstractParser() {
         override fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: ImmutableList<String>) {

@@ -15,7 +15,7 @@ import java.util.stream.Collectors
 import kotlin.collections.ArrayList
 
 class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val configuration: Configuration) {
-    private val processors = HashMap<String, Processor>()
+    private val processors: MutableMap<String, Processor> = HashMap()
 
     init {
 

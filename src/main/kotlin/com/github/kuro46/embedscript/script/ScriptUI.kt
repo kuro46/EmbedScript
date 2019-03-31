@@ -74,7 +74,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
         }
         val scripts = scriptManager[position]
         Scheduler.execute {
-            val messages = ArrayList<Array<BaseComponent>>()
+            val messages: MutableList<Array<BaseComponent>> = ArrayList()
             for (script in scripts) {
                 val authorId = script.author
                 val player = Bukkit.getPlayer(authorId)
@@ -208,8 +208,8 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     }
 
     private fun splitMessages(messages: Collection<Array<BaseComponent>>, maximumLines: Int): List<List<Array<BaseComponent>>> {
-        val pages = ArrayList<List<Array<BaseComponent>>>()
-        val buffer = ArrayList<Array<BaseComponent>>()
+        val pages: MutableList<List<Array<BaseComponent>>> = ArrayList()
+        val buffer: MutableList<Array<BaseComponent>> = ArrayList()
         for (message in messages) {
             buffer.add(message)
             if (buffer.size >= maximumLines) {

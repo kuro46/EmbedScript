@@ -2,9 +2,7 @@ package com.github.kuro46.embedscript.listener
 
 import com.github.kuro46.embedscript.EmbedScript
 import com.github.kuro46.embedscript.script.Script
-import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
-import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -16,8 +14,8 @@ import org.bukkit.event.player.PlayerMoveEvent
  * @author shirokuro
  */
 class MoveListener(embedScript: EmbedScript) : Listener {
-    private val scriptProcessor: ScriptProcessor = embedScript.scriptProcessor
-    private val scriptManager: ScriptManager = embedScript.scriptManager
+    private val scriptProcessor = embedScript.scriptProcessor
+    private val scriptManager = embedScript.scriptManager
 
     @EventHandler
     fun onMove(event: PlayerMoveEvent) {
@@ -36,9 +34,7 @@ class MoveListener(embedScript: EmbedScript) : Listener {
             return
         }
 
-        val scripts = scriptManager[scriptPosition]
-
-        scripts.forEach { script ->
+        for (script in scriptManager[scriptPosition]) {
             if (validateMoveType(script, event)) {
                 scriptProcessor.execute(player, script, scriptPosition)
             }

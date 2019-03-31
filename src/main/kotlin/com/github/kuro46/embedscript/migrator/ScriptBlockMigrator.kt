@@ -1,8 +1,10 @@
 package com.github.kuro46.embedscript.migrator
 
 import com.github.kuro46.embedscript.EmbedScript
-import com.github.kuro46.embedscript.script.*
-import com.github.kuro46.embedscript.script.processor.ScriptProcessor
+import com.github.kuro46.embedscript.script.EventType
+import com.github.kuro46.embedscript.script.ParseException
+import com.github.kuro46.embedscript.script.Script
+import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.util.MojangUtil
 import com.github.kuro46.embedscript.util.Util
 import org.bukkit.configuration.file.FileConfiguration
@@ -14,11 +16,10 @@ import java.util.*
 import java.util.regex.Pattern
 
 class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
-    private val processor: ScriptProcessor = embedScript.scriptProcessor
-    private val mergeTo: ScriptManager = embedScript.scriptManager
+    private val processor = embedScript.scriptProcessor
+    private val mergeTo = embedScript.scriptManager
 
     init {
-
         val sbDataFolder = embedScript.dataFolder.resolve(Paths.get("..", "ScriptBlock", "BlocksData"))
         for (eventType in EventType.values()) {
             migrate(eventType, sbDataFolder.resolve(getSBFileName(eventType)))

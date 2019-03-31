@@ -1,11 +1,9 @@
 package com.github.kuro46.embedscript.listener
 
 import com.github.kuro46.embedscript.EmbedScript
-import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.Script
-import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
-import com.github.kuro46.embedscript.script.processor.ScriptProcessor
+import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -19,12 +17,12 @@ import java.util.concurrent.TimeUnit
  * @author shirokuro
  */
 class InteractListener(embedScript: EmbedScript) : Listener {
-    private val coolTime = CacheBuilder.newBuilder()
+    private val coolTime: Cache<UUID, Boolean> = CacheBuilder.newBuilder()
         .expireAfterWrite(300, TimeUnit.MILLISECONDS)
-        .build<UUID, Boolean>()
-    private val scriptManager: ScriptManager = embedScript.scriptManager
-    private val scriptProcessor: ScriptProcessor = embedScript.scriptProcessor
-    private val requests: Requests = embedScript.requests
+        .build()
+    private val scriptManager = embedScript.scriptManager
+    private val scriptProcessor = embedScript.scriptProcessor
+    private val requests = embedScript.requests
 
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
@@ -93,6 +91,6 @@ class InteractListener(embedScript: EmbedScript) : Listener {
     }
 
     private fun updateCoolTime(player: Player) {
-        coolTime.put(player.uniqueId, java.lang.Boolean.TRUE)
+        coolTime.put(player.uniqueId, true)
     }
 }

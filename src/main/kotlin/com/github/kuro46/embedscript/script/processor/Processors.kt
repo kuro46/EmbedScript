@@ -3,7 +3,6 @@ package com.github.kuro46.embedscript.script.processor
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.google.common.collect.ImmutableList
-import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.chat.ComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -128,10 +127,11 @@ object Processors {
         DEFAULT_PARSER,
         object : AbstractExecutor() {
             override fun beginExecute(trigger: Player, matchedValues: List<String>) {
-                val jsonMessages: List<Array<BaseComponent>> = matchedValues.stream()
-                    .map { json -> ComponentSerializer.parse(json) }
-                    .collect(Collectors.toList())
-                Bukkit.getOnlinePlayers().forEach { player -> jsonMessages.forEach { baseComponents -> player.spigot().sendMessage(*baseComponents) } }
+                matchedValues.stream()
+                        .map { json -> ComponentSerializer.parse(json) }
+                        .forEach {
+                            Bukkit.getOnlinePlayers().forEach { player -> player.spigot().sendMessage(*it) }
+                        }
             }
         })
 
@@ -140,17 +140,13 @@ object Processors {
                      parser: Processor.Parser,
                      executor: Processor.Executor): Processor {
         return object : Processor {
-            override val key: String
-                get() = key
+            override val key = key
 
-            override val omittedKey: String
-                get() = omittedKey
+            override val omittedKey = omittedKey
 
-            override val parser: Processor.Parser
-                get() = parser
+            override val parser = parser
 
-            override val executor: Processor.Executor
-                get() = executor
+            override val executor = executor
         }
     }
 
