@@ -121,21 +121,19 @@ class ScriptUI(private val scriptManager: ScriptManager) {
      * @param world     World (Nullable)
      * @param pageIndex page index
      */
-    fun list(player: Player, world: String?, filter: Script?, pageIndex: Int) {
+    fun list(player: Player, scope: ListScope, filter: Script?, pageIndex: Int) {
         Scheduler.execute {
             val messages = scriptManager.scripts.asMap().entries.stream()
                 .filter { entry ->
-                    world == null ||
-                        world == "all" ||
-                        world.equals(entry.key.world, ignoreCase = true)
+                    when(scope) {
+                        is ListScope.Server -> true
+                        is ListScope.World -> scope.name.equals(entry.key.world, true)
+                    }
                 }
                 .sorted(ScriptPositionComparator())
                 .collect(ScriptCollector(filter))
 
-            val target = if (world == null || world == "all")
-                "this server"
-            else
-                world
+            val target = if (scope is ListScope.World) scope.name else "this server"
 
             if (messages.isEmpty()) {
                 player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in $target")
@@ -146,6 +144,11 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                     pageIndex)
             }
         }
+    }
+
+    sealed class ListScope {
+        object Server : ListScope()
+        data class World(val name: String) : ListScope()
     }
 
     fun changePage(player: Player, pageIndex: Int) {

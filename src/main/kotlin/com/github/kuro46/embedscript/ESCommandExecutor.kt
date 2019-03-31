@@ -194,7 +194,8 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
                 return
             }
         }
-        scriptUI.list(player, world, filter, pageIndex)
+        val scope = if (world == "all") ScriptUI.ListScope.Server else ScriptUI.ListScope.World(world)
+        scriptUI.list(player, scope, filter, pageIndex)
     }
 
     private fun view(player: Player) {
