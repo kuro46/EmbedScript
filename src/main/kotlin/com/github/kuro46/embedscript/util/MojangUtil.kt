@@ -21,9 +21,9 @@ object MojangUtil {
         .expireAfterAccess(1, TimeUnit.HOURS)
         .build()
 
-    fun getName(uniqueId: UUID): FindNameResult {
+    fun getName(uniqueId: UUID): String? {
         NAME_CACHE.getIfPresent(uniqueId)?.let {
-            return FindNameResult.Found(it)
+            return it
         }
 
         val url = uniqueId.toString().replace("-", "")
@@ -40,8 +40,8 @@ object MojangUtil {
 
         return name?.let {
             NAME_CACHE.put(uniqueId, it)
-            FindNameResult.Found(it)
-        } ?: FindNameResult.NotFound
+            return it
+        }
     }
 
     private fun readName(reader: JsonReader): String? {
@@ -60,10 +60,8 @@ object MojangUtil {
         return name
     }
 
-    fun getUUID(name: String): FindIdResult {
-        UUID_CACHE.getIfPresent(name)?.let {
-            return FindIdResult.Found(it)
-        }
+    fun getUUID(name: String): UUID? {
+        UUID_CACHE.getIfPresent(name)?.let { return it }
 
         val url = "https://api.mojang.com/users/profiles/minecraft/$name"
         var stringUniqueId: String? = null
@@ -83,8 +81,8 @@ object MojangUtil {
         return stringUniqueId?.let {
             val uniqueId = toUUID(it)
             UUID_CACHE.put(name, uniqueId)
-            FindIdResult.Found(uniqueId)
-        } ?: FindIdResult.NotFound
+            uniqueId
+        }
     }
 
     private fun newReader(urlString: String): JsonReader {
@@ -101,15 +99,5 @@ object MojangUtil {
         sb.insert(8, '-')
 
         return UUID.fromString(sb.toString())
-    }
-
-    sealed class FindIdResult {
-        data class Found(val id: UUID) : FindIdResult()
-        object NotFound : FindIdResult()
-    }
-
-    sealed class FindNameResult {
-        data class Found(val name: String) : FindNameResult()
-        object NotFound : FindNameResult()
     }
 }

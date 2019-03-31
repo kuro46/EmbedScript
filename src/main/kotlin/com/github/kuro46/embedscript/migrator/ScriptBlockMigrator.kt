@@ -40,11 +40,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
             for (coordinate in worldSection.getKeys(false)) {
                 val dataList = worldSection.getStringList(coordinate)
 
-                val authorResult = getAuthorFromData(dataList[0])
-                val author = when (authorResult) {
-                    is MojangUtil.FindIdResult.Found -> authorResult.id
-                    else -> throw ParseException("Failed to find author")
-                }
+                val author = getAuthorFromData(dataList[0]) ?: throw ParseException("Failed to find author")
                 val script = createScriptFromLegacyFormat(author, eventType, dataList[1])
                 val position = createPositionFromRawLocation(world, coordinate)
 
@@ -53,7 +49,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
         }
     }
 
-    private fun getAuthorFromData(data: String): MojangUtil.FindIdResult {
+    private fun getAuthorFromData(data: String): UUID? {
         // Author:<MCID>/<Group>
         val matcher = Pattern.compile("Author:(.+)/.+").matcher(data)
         if (!matcher.find()) {

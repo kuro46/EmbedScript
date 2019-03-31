@@ -77,17 +77,13 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             val messages: MutableList<Array<BaseComponent>> = ArrayList()
             for (script in scripts) {
                 val authorId = script.author
-                val player = Bukkit.getPlayer(authorId)
-                val author = if (player != null) {
-                    player.name
-                } else {
+                val author = Bukkit.getPlayer(authorId)?.name ?: run {
                     val result = MojangUtil.getName(authorId)
-                    when (result) {
-                        is MojangUtil.FindNameResult.Found -> result.name
-                        else -> {
-                            sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to find user name")
-                            return@execute
-                        }
+                    if (result == null) {
+                        sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to find user name")
+                        return@execute
+                    } else {
+                        result
                     }
                 }
                 val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
