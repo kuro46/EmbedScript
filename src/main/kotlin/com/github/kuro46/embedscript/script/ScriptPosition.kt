@@ -7,7 +7,6 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import org.bukkit.Location
 import org.bukkit.block.Block
-import java.util.*
 
 /**
  * @author shirokuro
@@ -20,21 +19,11 @@ class ScriptPosition(val world: String, val x: Int, val y: Int, val z: Int) : Co
     constructor(location: Location) : this(location.world.name, location.blockX, location.blockY, location.blockZ)
 
     override fun compareTo(other: ScriptPosition): Int {
-        val xCompareTo = Integer.compare(x, other.x)
-        if (xCompareTo != 0) {
-            return xCompareTo
-        }
-        val yCompareTo = Integer.compare(y, other.y)
-        if (yCompareTo != 0) {
-            return yCompareTo
-        }
-        val zCompareTo = Integer.compare(z, other.z)
-        return if (zCompareTo != 0) {
-            zCompareTo
-        } else world.compareTo(other.world)
-
+        x.compareTo(other.x).let { if (it != 0) return it }
+        y.compareTo(other.y).let { if (it != 0) return it }
+        z.compareTo(other.z).let { if (it != 0) return it }
+        return world.compareTo(other.world)
     }
-
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

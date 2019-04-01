@@ -234,19 +234,10 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             val position = entry.key
             val position1 = entry1.key
 
-            val worldCompareTo = position.world.compareTo(position1.world)
-            if (worldCompareTo != 0) {
-                return worldCompareTo
-            }
-            val yCompareTo = Integer.compare(position.y, position1.y)
-            if (yCompareTo != 0) {
-                return yCompareTo
-            }
-            val xCompareTo = Integer.compare(position.x, position1.x)
-            return if (xCompareTo != 0) {
-                xCompareTo
-            } else Integer.compare(position.z, position1.z)
-
+            position.world.compareTo(position1.world).let { if (it != 0) return it }
+            position.y.compareTo(position1.y).let { if (it != 0) return it }
+            position.x.compareTo(position1.x).let { if (it != 0) return it }
+            return position.z.compareTo(position1.z)
         }
     }
 
