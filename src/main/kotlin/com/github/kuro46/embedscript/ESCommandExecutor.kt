@@ -2,9 +2,10 @@ package com.github.kuro46.embedscript
 
 import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
 import com.github.kuro46.embedscript.request.Request
-import com.github.kuro46.embedscript.request.Requests
-import com.github.kuro46.embedscript.script.*
-import com.github.kuro46.embedscript.script.processor.ScriptProcessor
+import com.github.kuro46.embedscript.script.ParseException
+import com.github.kuro46.embedscript.script.Script
+import com.github.kuro46.embedscript.script.ScriptUI
+import com.github.kuro46.embedscript.script.ScriptUtil
 import com.github.kuro46.embedscript.util.Scheduler
 import com.github.kuro46.embedscript.util.Util
 import org.apache.commons.lang.math.NumberUtils
@@ -23,11 +24,11 @@ import java.util.logging.Level
  * @author shirokuro
  */
 class ESCommandExecutor constructor(private val embedScript: EmbedScript, private val presetName: String? = null) : CommandExecutor {
-    private val configuration: Configuration = embedScript.configuration
-    private val scriptProcessor: ScriptProcessor = embedScript.scriptProcessor
-    private val scriptUI: ScriptUI = embedScript.scriptUI
-    private val requests: Requests = embedScript.requests
-    private val scriptManager: ScriptManager = embedScript.scriptManager
+    private val configuration = embedScript.configuration
+    private val scriptProcessor = embedScript.scriptProcessor
+    private val scriptUI = embedScript.scriptUI
+    private val requests = embedScript.requests
+    private val scriptManager = embedScript.scriptManager
     private val scriptExporter = embedScript.scriptExporter
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
