@@ -24,6 +24,7 @@ class EmbedScript private constructor(val plugin: Plugin) {
     val scriptUI: ScriptUI
     val requests: Requests
     val scriptProcessor: ScriptProcessor
+    val scriptExporter: ScriptExporter
 
     init {
 
@@ -32,6 +33,7 @@ class EmbedScript private constructor(val plugin: Plugin) {
         this.configuration = loadConfiguration()
 
         this.scriptUI = ScriptUI(scriptManager)
+        this.scriptExporter = ScriptExporter(dataFolder, scriptManager)
         this.requests = Requests(scriptUI)
         this.scriptProcessor = ScriptProcessor(logger, plugin, configuration)
 
