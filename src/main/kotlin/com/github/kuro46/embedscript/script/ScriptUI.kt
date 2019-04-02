@@ -74,20 +74,16 @@ class ScriptUI(private val scriptManager: ScriptManager) {
         }
         val scripts = scriptManager[position]
         Scheduler.execute {
-            val messages = ArrayList<Array<BaseComponent>>()
+            val messages: MutableList<Array<BaseComponent>> = ArrayList()
             for (script in scripts) {
                 val authorId = script.author
-                val player = Bukkit.getPlayer(authorId)
-                val author = if (player != null) {
-                    player.name
-                } else {
+                val author = Bukkit.getPlayer(authorId)?.name ?: run {
                     val result = MojangUtil.getName(authorId)
-                    when (result) {
-                        is MojangUtil.FindNameResult.Found -> result.name
-                        else -> {
-                            sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to find user name")
-                            return@execute
-                        }
+                    if (result == null) {
+                        sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to find user name")
+                        return@execute
+                    } else {
+                        result
                     }
                 }
                 val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
@@ -125,21 +121,19 @@ class ScriptUI(private val scriptManager: ScriptManager) {
      * @param world     World (Nullable)
      * @param pageIndex page index
      */
-    fun list(player: Player, world: String?, filter: Script?, pageIndex: Int) {
+    fun list(player: Player, scope: ListScope, filter: Script?, pageIndex: Int) {
         Scheduler.execute {
             val messages = scriptManager.scripts.asMap().entries.stream()
                 .filter { entry ->
-                    world == null ||
-                        world == "all" ||
-                        world.equals(entry.key.world, ignoreCase = true)
+                    when(scope) {
+                        is ListScope.Server -> true
+                        is ListScope.World -> scope.name.equals(entry.key.world, true)
+                    }
                 }
                 .sorted(ScriptPositionComparator())
                 .collect(ScriptCollector(filter))
 
-            val target = if (world == null || world == "all")
-                "this server"
-            else
-                world
+            val target = if (scope is ListScope.World) scope.name else "this server"
 
             if (messages.isEmpty()) {
                 player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in $target")
@@ -150,6 +144,11 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                     pageIndex)
             }
         }
+    }
+
+    sealed class ListScope {
+        object Server : ListScope()
+        data class World(val name: String) : ListScope()
     }
 
     fun changePage(player: Player, pageIndex: Int) {
@@ -208,8 +207,8 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     }
 
     private fun splitMessages(messages: Collection<Array<BaseComponent>>, maximumLines: Int): List<List<Array<BaseComponent>>> {
-        val pages = ArrayList<List<Array<BaseComponent>>>()
-        val buffer = ArrayList<Array<BaseComponent>>()
+        val pages: MutableList<List<Array<BaseComponent>>> = ArrayList()
+        val buffer: MutableList<Array<BaseComponent>> = ArrayList()
         for (message in messages) {
             buffer.add(message)
             if (buffer.size >= maximumLines) {
@@ -235,19 +234,10 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             val position = entry.key
             val position1 = entry1.key
 
-            val worldCompareTo = position.world.compareTo(position1.world)
-            if (worldCompareTo != 0) {
-                return worldCompareTo
-            }
-            val yCompareTo = Integer.compare(position.y, position1.y)
-            if (yCompareTo != 0) {
-                return yCompareTo
-            }
-            val xCompareTo = Integer.compare(position.x, position1.x)
-            return if (xCompareTo != 0) {
-                xCompareTo
-            } else Integer.compare(position.z, position1.z)
-
+            position.world.compareTo(position1.world).let { if (it != 0) return it }
+            position.y.compareTo(position1.y).let { if (it != 0) return it }
+            position.x.compareTo(position1.x).let { if (it != 0) return it }
+            return position.z.compareTo(position1.z)
         }
     }
 

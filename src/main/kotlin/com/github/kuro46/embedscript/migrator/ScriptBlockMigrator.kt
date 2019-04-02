@@ -1,8 +1,10 @@
 package com.github.kuro46.embedscript.migrator
 
 import com.github.kuro46.embedscript.EmbedScript
-import com.github.kuro46.embedscript.script.*
-import com.github.kuro46.embedscript.script.processor.ScriptProcessor
+import com.github.kuro46.embedscript.script.EventType
+import com.github.kuro46.embedscript.script.ParseException
+import com.github.kuro46.embedscript.script.Script
+import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.util.MojangUtil
 import com.github.kuro46.embedscript.util.Util
 import org.bukkit.configuration.file.FileConfiguration
@@ -14,11 +16,10 @@ import java.util.*
 import java.util.regex.Pattern
 
 class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
-    private val processor: ScriptProcessor = embedScript.scriptProcessor
-    private val mergeTo: ScriptManager = embedScript.scriptManager
+    private val processor = embedScript.scriptProcessor
+    private val mergeTo = embedScript.scriptManager
 
     init {
-
         val sbDataFolder = embedScript.dataFolder.resolve(Paths.get("..", "ScriptBlock", "BlocksData"))
         for (eventType in EventType.values()) {
             migrate(eventType, sbDataFolder.resolve(getSBFileName(eventType)))
@@ -39,11 +40,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
             for (coordinate in worldSection.getKeys(false)) {
                 val dataList = worldSection.getStringList(coordinate)
 
-                val authorResult = getAuthorFromData(dataList[0])
-                val author = when (authorResult) {
-                    is MojangUtil.FindIdResult.Found -> authorResult.id
-                    else -> throw ParseException("Failed to find author")
-                }
+                val author = getAuthorFromData(dataList[0]) ?: throw ParseException("Failed to find author")
                 val script = createScriptFromLegacyFormat(author, eventType, dataList[1])
                 val position = createPositionFromRawLocation(world, coordinate)
 
@@ -52,7 +49,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
         }
     }
 
-    private fun getAuthorFromData(data: String): MojangUtil.FindIdResult {
+    private fun getAuthorFromData(data: String): UUID? {
         // Author:<MCID>/<Group>
         val matcher = Pattern.compile("Author:(.+)/.+").matcher(data)
         if (!matcher.find()) {

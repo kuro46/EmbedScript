@@ -191,7 +191,7 @@ object ScriptSerializer {
                 reader.beginObject()
                 while (reader.hasNext()) {
                     when (reader.nextName()) {
-                        "coordinate" -> position = GsonHolder.get().fromJson<ScriptPosition>(reader, object : TypeToken<ScriptPosition>() {
+                        "coordinate" -> position = GsonHolder.get().fromJson(reader, object : TypeToken<ScriptPosition>() {
 
                         }.type)
                         "scripts" -> {
@@ -245,19 +245,19 @@ object ScriptSerializer {
         }
 
         private fun readScripts(reader: JsonReader): ListMultimap<ScriptPosition, Script> {
-            val scripts: ListMultimap<ScriptPosition, Script> = ArrayListMultimap.create()
+            val multimap: ListMultimap<ScriptPosition, Script> = ArrayListMultimap.create()
 
             reader.beginArray()
             while (reader.hasNext()) {
-                val pair = readPair(reader)
-                scripts.putAll(pair.position, pair.scripts)
+                val (position, scripts) = readPair(reader)
+                multimap.putAll(position, scripts)
             }
             reader.endArray()
 
-            return scripts
+            return multimap
         }
 
-        private fun readPair(reader: JsonReader): ScriptBlockScriptPair {
+        private fun readPair(reader: JsonReader): Pair<ScriptPosition, MutableList<Script>> {
             var position: ScriptPosition? = null
             var scripts: MutableList<Script>? = null
 
@@ -265,7 +265,7 @@ object ScriptSerializer {
             while (reader.hasNext()) {
                 when (reader.nextName()) {
                     "coordinate" -> {
-                        position = GsonHolder.get().fromJson<ScriptPosition>(reader, object : TypeToken<ScriptPosition>() {
+                        position = GsonHolder.get().fromJson(reader, object : TypeToken<ScriptPosition>() {
 
                         }.type)
                     }
@@ -281,7 +281,7 @@ object ScriptSerializer {
 
             if (position == null || scripts == null)
                 throw JsonSyntaxException("Illegal syntax.")
-            return ScriptBlockScriptPair(position, scripts)
+            return Pair(position, scripts)
         }
 
         private fun readScript(reader: JsonReader): MutableList<Script> {
@@ -301,8 +301,8 @@ object ScriptSerializer {
             while (reader.hasNext()) {
                 var author: UUID? = null
                 var command: String? = null
-                val multimap = ArrayListMultimap.create<String, String>()
-                val keys = ArrayList<String>()
+                val multimap: ListMultimap<String, String> = ArrayListMultimap.create()
+                val keys: MutableList<String> = ArrayList()
 
                 reader.beginObject()
                 while (reader.hasNext()) {
@@ -348,20 +348,6 @@ object ScriptSerializer {
             reader.endArray()
 
             return scripts
-        }
-
-        private class ScriptBlockScriptPair internal constructor(val position: ScriptPosition, val scripts: MutableList<Script>) {
-
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other == null || javaClass != other.javaClass) return false
-                val that = other as ScriptBlockScriptPair?
-                return position == that!!.position && scripts == that.scripts
-            }
-
-            override fun hashCode(): Int {
-                return Objects.hash(position, scripts)
-            }
         }
     }
 }

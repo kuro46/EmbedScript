@@ -4,12 +4,13 @@ import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.util.Util
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
+import com.google.common.collect.ListMultimap
 import kotlin.Pair
 import java.util.*
 
 class MutableScript
 constructor(private var script: String) {
-    private val multimap = ArrayListMultimap.create<String, String>()
+    private val multimap: ListMultimap<String, String> = ArrayListMultimap.create()
     private var view: ImmutableListMultimap<String, String>? = null
 
     init {

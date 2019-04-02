@@ -10,19 +10,12 @@ import java.util.*
 import java.util.stream.Collectors
 
 class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Processor {
-    override val executor: Processor.Executor
-    override val parser: Processor.Parser
+    override val executor: Processor.Executor = GivePermissionExecutor(plugin)
+    override val parser: Processor.Parser = GivePermissionParser(configuration)
 
-    override val key: String
-        get() = "give-permission"
+    override val key = "give-permission"
 
-    override val omittedKey: String
-        get() = "gp"
-
-    init {
-        this.executor = GivePermissionExecutor(plugin)
-        this.parser = GivePermissionParser(configuration)
-    }
+    override val omittedKey = "gp"
 
     private class GivePermissionExecutor(private val plugin: Plugin) : AbstractExecutor() {
         private val attachments = HashMap<Player, PermissionAttachment>()
@@ -42,8 +35,7 @@ class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Pr
         }
 
         override fun endExecute(trigger: Player, matchedValues: List<String>) {
-            val attachment = attachments[trigger]
-            attachment?.remove()
+            attachments[trigger]?.remove()
         }
     }
 

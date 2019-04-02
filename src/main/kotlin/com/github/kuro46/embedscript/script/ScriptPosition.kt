@@ -7,7 +7,6 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import org.bukkit.Location
 import org.bukkit.block.Block
-import java.util.*
 
 /**
  * @author shirokuro
@@ -19,43 +18,37 @@ class ScriptPosition(val world: String, val x: Int, val y: Int, val z: Int) : Co
 
     constructor(location: Location) : this(location.world.name, location.blockX, location.blockY, location.blockZ)
 
+    override fun compareTo(other: ScriptPosition): Int {
+        x.compareTo(other.x).let { if (it != 0) return it }
+        y.compareTo(other.y).let { if (it != 0) return it }
+        z.compareTo(other.z).let { if (it != 0) return it }
+        return world.compareTo(other.world)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other == null || javaClass != other.javaClass) return false
-        val that = other as ScriptPosition?
-        return x == that!!.x &&
-            y == that.y &&
-            z == that.z &&
-            world == that.world
+        if (javaClass != other?.javaClass) return false
+
+        other as ScriptPosition
+
+        if (x != other.x) return false
+        if (y != other.y) return false
+        if (z != other.z) return false
+        if (world != other.world) return false
+
+        return true
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(world, x, y, z)
-    }
-
-    override fun compareTo(other: ScriptPosition): Int {
-        val xCompareTo = Integer.compare(x, other.x)
-        if (xCompareTo != 0) {
-            return xCompareTo
-        }
-        val yCompareTo = Integer.compare(y, other.y)
-        if (yCompareTo != 0) {
-            return yCompareTo
-        }
-        val zCompareTo = Integer.compare(z, other.z)
-        return if (zCompareTo != 0) {
-            zCompareTo
-        } else world.compareTo(other.world)
-
+        var result = x
+        result = 31 * result + y
+        result = 31 * result + z
+        result = 31 * result + world.hashCode()
+        return result
     }
 
     override fun toString(): String {
-        return "ScriptBlock{" +
-            "world=" + world +
-            ", x=" + x +
-            ", y=" + y +
-            ", z=" + z +
-            '}'.toString()
+        return "ScriptPosition(world='$world', x=$x, y=$y, z=$z)"
     }
 
     class Adapter : TypeAdapter<ScriptPosition>() {
