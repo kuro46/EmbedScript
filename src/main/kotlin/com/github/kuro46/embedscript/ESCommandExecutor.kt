@@ -17,6 +17,7 @@ import org.bukkit.configuration.InvalidConfigurationException
 import org.bukkit.entity.Player
 import java.io.IOException
 import java.util.*
+import java.util.logging.Level
 
 /**
  * @author shirokuro
@@ -27,6 +28,7 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
     private val scriptUI: ScriptUI = embedScript.scriptUI
     private val requests: Requests = embedScript.requests
     private val scriptManager: ScriptManager = embedScript.scriptManager
+    private val scriptExporter = embedScript.scriptExporter
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         if (args.isEmpty()) {
@@ -60,6 +62,12 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
                 migrate(sender)
                 HandleResult.COLLECT_USE
             }
+            "export" -> {
+                HandleResult.getByBoolean(export(sender, args))
+            }
+            "import" -> {
+                HandleResult.getByBoolean(import(sender, args))
+            }
             else -> HandleResult.UNMATCH
         }
     }
@@ -88,7 +96,16 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
     }
 
     private fun help(sender: CommandSender) {
-        sender.sendMessage(arrayOf("/es help - displays this message", "/es reload - reloads configuration and scripts", "/es migrate - migrates from ScriptBlock", "/es list [world] [page] - displays list of scripts", "/es view - displays information of the script in the clicked block", "/es remove - removes the script in the clicked block", "/es embed <script> - embeds a script to the clicked block", "/es add <script> - adds a script to the clicked block"))
+        sender.sendMessage(arrayOf("/es help - displays this message",
+                "/es reload - reloads configuration and scripts",
+                "/es migrate - migrates from ScriptBlock",
+                "/es list [world] [page] - displays list of scripts",
+                "/es view - displays information of the script in the clicked block",
+                "/es remove - removes the script in the clicked block",
+                "/es embed <script> - embeds a script to the clicked block",
+                "/es add <script> - adds a script to the clicked block",
+                "/es export <world> <fileName> - exports all scripts in the <world> to <fileName>",
+                "/es import <fileName> imports all scripts in the specified file"))
     }
 
     private fun reload(sender: CommandSender) {
@@ -129,6 +146,50 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
                 sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!")
             }
         }
+    }
+
+    private fun export(sender: CommandSender, args: Array<String>): Boolean {
+        if (args.size <= 2) {
+            return false
+        }
+
+        Scheduler.execute {
+            sender.sendMessage("Exporting...")
+            val world = args[1]
+            val result = runCatching { scriptExporter.export(world, args[2]) }
+
+            if (result.isSuccess) {
+                sender.sendMessage("All scripts in the '$world' " +
+                        "was successfully exported to '${result.getOrNull()!!}'!")
+            } else {
+                val message = "Failed to export the scripts in the '$world'!"
+                embedScript.logger.log(Level.SEVERE, message, result.exceptionOrNull()!!)
+                sender.sendMessage("$message Please see the console log")
+            }
+        }
+        return true
+    }
+
+    private fun import(sender: CommandSender, args: Array<String>): Boolean {
+        if (args.size <= 1) {
+            return false
+        }
+
+        Scheduler.execute {
+            sender.sendMessage("Importing...")
+            val fileName = args[1]
+            val result = runCatching { scriptExporter.import(fileName) }
+
+            if (result.isSuccess) {
+                sender.sendMessage("Scripts were successfully imported from '$fileName'!")
+            } else {
+                val message = "Failed to import the scripts from '$fileName'!"
+                embedScript.logger.log(Level.SEVERE, message, result.exceptionOrNull()!!)
+                sender.sendMessage("$message Please see the console log")
+            }
+        }
+
+        return true
     }
 
     private fun teleport(player: Player, args: Array<String>): Boolean {
