@@ -97,16 +97,15 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
     }
 
     private fun help(sender: CommandSender) {
-        sender.sendMessage(arrayOf("/es help - displays this message",
-                "/es reload - reloads configuration and scripts",
-                "/es migrate - migrates from ScriptBlock",
-                "/es list [world] [page] - displays list of scripts",
-                "/es view - displays information of the script in the clicked block",
-                "/es remove - removes the script in the clicked block",
-                "/es embed <script> - embeds a script to the clicked block",
-                "/es add <script> - adds a script to the clicked block",
-                "/es export <world> <fileName> - exports all scripts in the <world> to <fileName>",
-                "/es import <fileName> imports all scripts in the specified file"))
+        sender.sendMessage("""/es reload - reloads configuration and scripts
+            |/es migrate - migrates from ScriptBlock
+            |/es list [world] [page] - displays list of scripts
+            |/es view - displays information of the script in the clicked block
+            |/es remove - removes the script in the clicked block
+            |/es embed <script> - embeds a script to the clicked block
+            |/es add <script> - adds a script to the clicked block
+            |/es export <world> <fileName> - exports all scripts in the <world> to <fileName>
+            |/es import <fileName> imports all scripts in the specified file""".trimMargin())
     }
 
     private fun reload(sender: CommandSender) {
