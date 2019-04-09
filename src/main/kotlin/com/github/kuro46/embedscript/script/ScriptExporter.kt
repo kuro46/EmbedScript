@@ -5,15 +5,15 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 class ScriptExporter(dataFolder: Path, private val scriptManager: ScriptManager) {
-    private val dataFolder: Path = dataFolder.resolve("export")
+    private val exportFolder: Path = dataFolder.resolve("export")
 
     init {
-        if (Files.notExists(this.dataFolder)) {
-            Files.createDirectory(this.dataFolder)
-        }
+        createDirectoryIfNotExists()
     }
 
     fun export(world: String, filePath: Path) {
+        createDirectoryIfNotExists()
+
         val exportTo = ScriptManager.load(filePath)
 
         for ((position, script) in scriptManager.entries()) {
@@ -24,16 +24,24 @@ class ScriptExporter(dataFolder: Path, private val scriptManager: ScriptManager)
     }
 
     fun resolveByExportFolder(other: String): Path {
-        return dataFolder.resolve(other)
+        return exportFolder.resolve(other)
     }
 
     fun import(filePath: Path) {
+        createDirectoryIfNotExists()
+
         if (Files.notExists(filePath)) {
             throw IOException("'$filePath' not exists!")
         }
         val importFrom = ScriptManager.load(filePath)
         for ((position, script) in importFrom.entries()) {
             scriptManager.put(position, script)
+        }
+    }
+
+    private fun createDirectoryIfNotExists() {
+        if (Files.notExists(exportFolder)) {
+            Files.createDirectory(exportFolder)
         }
     }
 
