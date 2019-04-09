@@ -2,10 +2,7 @@ package com.github.kuro46.embedscript
 
 import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
 import com.github.kuro46.embedscript.request.Request
-import com.github.kuro46.embedscript.script.ParseException
-import com.github.kuro46.embedscript.script.Script
-import com.github.kuro46.embedscript.script.ScriptUI
-import com.github.kuro46.embedscript.script.ScriptUtil
+import com.github.kuro46.embedscript.script.*
 import com.github.kuro46.embedscript.util.Scheduler
 import com.github.kuro46.embedscript.util.Util
 import org.apache.commons.lang.math.NumberUtils
@@ -17,8 +14,8 @@ import org.bukkit.command.CommandSender
 import org.bukkit.configuration.InvalidConfigurationException
 import org.bukkit.entity.Player
 import java.io.IOException
+import java.nio.file.Files
 import java.util.*
-import java.util.logging.Level
 
 /**
  * @author shirokuro
@@ -105,7 +102,7 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
                 "/es remove - removes the script in the clicked block",
                 "/es embed <script> - embeds a script to the clicked block",
                 "/es add <script> - adds a script to the clicked block",
-                "/es export <world> <fileName> - exports all scripts in the <world> to <fileName>",
+                "/es export <world> [fileName] - exports all scripts in the <world> to [fileName] or <world>.json",
                 "/es import <fileName> imports all scripts in the specified file"))
     }
 
@@ -150,23 +147,19 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
     }
 
     private fun export(sender: CommandSender, args: Array<String>): Boolean {
-        if (args.size <= 2) {
-            return false
-        }
-
         Scheduler.execute {
             sender.sendMessage("Exporting...")
             val world = args[1]
-            val result = runCatching { scriptExporter.export(world, args[2]) }
+            val fileName = ScriptExporter.appendJsonExtensionIfNeeded(args.getOrElse(2) { world })
+            val filePath = scriptExporter.resolveByExportFolder(fileName)
 
-            if (result.isSuccess) {
-                sender.sendMessage("All scripts in the '$world' " +
-                        "was successfully exported to '${result.getOrNull()!!}'!")
-            } else {
-                val message = "Failed to export the scripts in the '$world'!"
-                embedScript.logger.log(Level.SEVERE, message, result.exceptionOrNull()!!)
-                sender.sendMessage("$message Please see the console log")
+            if (Files.exists(filePath)) {
+                sender.sendMessage("File: '$fileName' already exists!")
+                return@execute
             }
+
+            scriptExporter.export(world, filePath)
+            sender.sendMessage("All scripts in the '$world' was successfully exported to '$fileName'!")
         }
         return true
     }
@@ -179,15 +172,14 @@ class ESCommandExecutor constructor(private val embedScript: EmbedScript, privat
         Scheduler.execute {
             sender.sendMessage("Importing...")
             val fileName = args[1]
-            val result = runCatching { scriptExporter.import(fileName) }
-
-            if (result.isSuccess) {
-                sender.sendMessage("Scripts were successfully imported from '$fileName'!")
-            } else {
-                val message = "Failed to import the scripts from '$fileName'!"
-                embedScript.logger.log(Level.SEVERE, message, result.exceptionOrNull()!!)
-                sender.sendMessage("$message Please see the console log")
+            val filePath = scriptExporter.resolveByExportFolder(fileName)
+            if (Files.notExists(filePath)) {
+                sender.sendMessage("File: '$fileName' not exists!")
+                return@execute
             }
+
+            scriptExporter.import(filePath)
+            sender.sendMessage("Scripts were successfully imported from '$fileName'!")
         }
 
         return true
