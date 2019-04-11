@@ -1,18 +1,23 @@
 package com.github.kuro46.embedscript.command
 
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
-import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import kotlin.streams.toList
+import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 
-abstract class CommandExecutor(private val senderType: SenderType = SenderType.All) {
-    private val childExecutors: MutableMap<String, CommandExecutor> = HashMap()
+abstract class CommandExecutor(private val senderType: SenderType = SenderType.All, private val async: Boolean = true) {
+    private val childExecutors: ConcurrentMap<String, CommandExecutor> = ConcurrentHashMap()
 
     protected abstract fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean
 
-    fun handleCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+    protected fun handleCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
         when (senderType) {
             is SenderType.Console -> {
                 if (sender !is ConsoleCommandSender) {
@@ -35,11 +40,33 @@ abstract class CommandExecutor(private val senderType: SenderType = SenderType.A
             }
         }
 
-        return onCommand(sender, command, args)
+        return if (async) {
+            onCommand(sender, command, args)
+        } else {
+            Bukkit.getScheduler().callSyncMethod(Bukkit.getPluginManager().getPlugin("EmbedScript")) {
+                onCommand(sender, command, args)
+            }.get()
+        }
+    }
+
+    fun handleCommandAsRoot(sender: CommandSender, command: String, args: List<String>): Future<*> {
+        return commandHandleThread.submit {
+            if (!handleCommand(sender, command, args)) {
+                sender.sendMessage("Incorrect usage!")
+            }
+        }
     }
 
     fun registerChildExecutor(command: String, executor: CommandExecutor) {
         childExecutors[command.toLowerCase(Locale.ENGLISH)] = executor
+    }
+
+    companion object {
+        private val commandHandleThread = Executors.newCachedThreadPool { r ->
+            val thread = Thread(r, "EmbedScript-Command-Handling-Thread")
+            thread.isDaemon = true
+            thread
+        }
     }
 
     sealed class SenderType {

@@ -102,16 +102,14 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
 
     private class MigrateExecutor(val embedScript: EmbedScript) : CommandExecutor() {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
-            Scheduler.execute {
-                sender.sendMessage("Migrating data of ScriptBlock...")
-                val migrationResult = runCatching { ScriptBlockMigrator.migrate(embedScript) }
-                migrationResult.exceptionOrNull()?.also {
-                    sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to migrate data of ScriptBlock!")
-                    System.err.println("Failed to migrate data of ScriptBlock!")
-                    it.printStackTrace()
-                } ?: run {
-                    sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!")
-                }
+            sender.sendMessage("Migrating data of ScriptBlock...")
+            val migrationResult = runCatching { ScriptBlockMigrator.migrate(embedScript) }
+            migrationResult.exceptionOrNull()?.also {
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to migrate data of ScriptBlock!")
+                System.err.println("Failed to migrate data of ScriptBlock!")
+                it.printStackTrace()
+            } ?: run {
+                sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!")
             }
             return true
         }
@@ -123,17 +121,14 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
                 return false
             }
 
-            Scheduler.execute {
-                sender.sendMessage("Exporting...")
-                val world = args[0]
-                val fileName = ScriptExporter.appendJsonExtensionIfNeeded(args.getOrElse(1) { world })
-                val filePath = scriptExporter.resolveByExportFolder(fileName)
+            sender.sendMessage("Exporting...")
+            val world = args[0]
+            val fileName = ScriptExporter.appendJsonExtensionIfNeeded(args.getOrElse(1) { world })
+            val filePath = scriptExporter.resolveByExportFolder(fileName)
 
-                if (Files.exists(filePath)) {
-                    sender.sendMessage("File: '$fileName' already exists!")
-                    return@execute
-                }
-
+            if (Files.exists(filePath)) {
+                sender.sendMessage("File: '$fileName' already exists!")
+            } else {
                 scriptExporter.export(world, filePath)
                 sender.sendMessage("All scripts in the '$world' was successfully exported to '$fileName'!")
             }
@@ -147,15 +142,12 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
                 return false
             }
 
-            Scheduler.execute {
-                sender.sendMessage("Importing...")
-                val fileName = args[0]
-                val filePath = scriptExporter.resolveByExportFolder(fileName)
-                if (Files.notExists(filePath)) {
-                    sender.sendMessage("File: '$fileName' not exists!")
-                    return@execute
-                }
-
+            sender.sendMessage("Importing...")
+            val fileName = args[0]
+            val filePath = scriptExporter.resolveByExportFolder(fileName)
+            if (Files.notExists(filePath)) {
+                sender.sendMessage("File: '$fileName' not exists!")
+            } else {
                 scriptExporter.import(filePath)
                 sender.sendMessage("Scripts were successfully imported from '$fileName'!")
             }
@@ -166,34 +158,32 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
 
     private class ReloadExecutor(val configuration: Configuration, val scriptManager: ScriptManager) : CommandExecutor() {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
-            Scheduler.execute {
-                sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...")
-                try {
-                    configuration.load()
-                } catch (e: IOException) {
-                    sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + e.message + ")")
-                    e.printStackTrace()
-                    return@execute
-                } catch (e: InvalidConfigurationException) {
-                    sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + e.message + ")")
-                    e.printStackTrace()
-                    return@execute
-                }
-
-                try {
-                    scriptManager.reload()
-                } catch (e: IOException) {
-                    sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload scripts! (error: " + e.message + ")")
-                    e.printStackTrace()
-                }
-
-                sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!")
+            sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...")
+            try {
+                configuration.load()
+            } catch (e: IOException) {
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + e.message + ")")
+                e.printStackTrace()
+                return true
+            } catch (e: InvalidConfigurationException) {
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + e.message + ")")
+                e.printStackTrace()
+                return true
             }
+
+            try {
+                scriptManager.reload()
+            } catch (e: IOException) {
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload scripts! (error: " + e.message + ")")
+                e.printStackTrace()
+            }
+
+            sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!")
             return true
         }
     }
 
-    private class TeleportExecutor : CommandExecutor(SenderType.Player()) {
+    private class TeleportExecutor : CommandExecutor(SenderType.Player(), false) {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             val player = sender as Player
             if (args.size < 4) {
@@ -222,7 +212,7 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
         }
     }
 
-    private class PageExecutor(val scriptUI: ScriptUI) : CommandExecutor(SenderType.Player()) {
+    private class PageExecutor(val scriptUI: ScriptUI) : CommandExecutor(SenderType.Player(), false) {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             val player = sender as Player
             if (args.isEmpty()) {
@@ -244,7 +234,7 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
 
     private class ListExecutor(val presetName: String?,
                                val scriptProcessor: ScriptProcessor,
-                               val scriptUI: ScriptUI) : CommandExecutor(SenderType.Player()) {
+                               val scriptUI: ScriptUI) : CommandExecutor(SenderType.Player(), false) {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             val player = sender as Player
             val world = if (args.isEmpty())

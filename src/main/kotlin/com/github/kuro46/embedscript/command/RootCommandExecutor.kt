@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 
 abstract class RootCommandExecutor : CommandExecutor(), BukkitCommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
-        return super.handleCommand(sender, command.name, args.toList())
+        super.handleCommandAsRoot(sender, command.name, args.toList())
+        return true
     }
 }
