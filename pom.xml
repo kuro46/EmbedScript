@@ -59,23 +59,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--SpotBugs-Maven-Plugin-->
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>3.1.10</version>
-                <configuration>
-                    <effort>max</effort>
-                </configuration>
-                <dependencies>
-                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
-                    <dependency>
-                        <groupId>com.github.spotbugs</groupId>
-                        <artifactId>spotbugs</artifactId>
-                        <version>3.1.11</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
             <!--Maven-Shade-Plugin-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
