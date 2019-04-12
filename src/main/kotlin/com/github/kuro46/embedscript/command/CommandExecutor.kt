@@ -17,7 +17,7 @@ abstract class CommandExecutor(private val senderType: SenderType = SenderType.A
 
     protected abstract fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean
 
-    protected fun handleCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+    private fun handleCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
         when (senderType) {
             is SenderType.Console -> {
                 if (sender !is ConsoleCommandSender) {
