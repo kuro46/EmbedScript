@@ -17,7 +17,7 @@ import java.io.IOException
 import java.nio.file.Files
 import kotlin.streams.toList
 
-class ESCommandExecutor constructor(embedScript: EmbedScript, private val presetName: String? = null) : RootCommandExecutor() {
+class ESCommandHandler constructor(embedScript: EmbedScript, private val presetName: String? = null) : RootCommandHandler() {
     private val configuration = embedScript.configuration
     private val scriptProcessor = embedScript.scriptProcessor
     private val scriptUI = embedScript.scriptUI
@@ -26,31 +26,31 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
     private val scriptExporter = embedScript.scriptExporter
 
     init {
-        registerChildExecutor("help", HelpExecutor())
-        registerChildExecutor("migrate", MigrateExecutor(embedScript))
-        registerChildExecutor("export", ExportExecutor(scriptExporter))
-        registerChildExecutor("import", ImportExecutor(scriptExporter))
-        registerChildExecutor("reload", ReloadExecutor(configuration, scriptManager))
-        registerChildExecutor("teleport", TeleportExecutor())
-        registerChildExecutor("page", PageExecutor(scriptUI))
-        registerChildExecutor("list", ListExecutor(presetName, scriptProcessor, scriptUI))
-        registerChildExecutor("view", CommandExecutorUtil.newExecutor(SenderType.Player()) { sender, _, _ ->
+        registerChildHandler("help", HelpHandler())
+        registerChildHandler("migrate", MigrateHandler(embedScript))
+        registerChildHandler("export", ExportHandler(scriptExporter))
+        registerChildHandler("import", ImportHandler(scriptExporter))
+        registerChildHandler("reload", ReloadHandler(configuration, scriptManager))
+        registerChildHandler("teleport", TeleportHandler())
+        registerChildHandler("page", PageHandler(scriptUI))
+        registerChildHandler("list", ListHandler(presetName, scriptProcessor, scriptUI))
+        registerChildHandler("view", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
             player.sendMessage(Prefix.PREFIX + "Click the block to view the script.")
             requests.putRequest(player, Request.View)
             true
         })
-        registerChildExecutor("remove", CommandExecutorUtil.newExecutor(SenderType.Player()) { sender, _, _ ->
+        registerChildHandler("remove", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
             player.sendMessage(Prefix.PREFIX + "Click the block to remove the script.")
             requests.putRequest(player, Request.Remove)
             true
         })
-        registerChildExecutor("embed", CommandExecutorUtil.newExecutor(SenderType.Player()) { sender, _, args ->
+        registerChildHandler("embed", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, args ->
             val player = sender as Player
             modifyAction(player, args, false)
         })
-        registerChildExecutor("add", CommandExecutorUtil.newExecutor(SenderType.Player()) { sender, _, args ->
+        registerChildHandler("add", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, args ->
             val player = sender as Player
             modifyAction(player, args, true)
         })
@@ -60,7 +60,7 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
         return false
     }
 
-    override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
         return emptyList()
     }
 
@@ -88,7 +88,7 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
         return true
     }
 
-    private class HelpExecutor : CommandExecutor() {
+    private class HelpHandler : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             sender.sendMessage("""/es help - displays this message
                     |/es reload - reloads configuration and scripts
@@ -103,12 +103,12 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
             return emptyList()
         }
     }
 
-    private class MigrateExecutor(val embedScript: EmbedScript) : CommandExecutor() {
+    private class MigrateHandler(val embedScript: EmbedScript) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             sender.sendMessage("Migrating data of ScriptBlock...")
             val migrationResult = runCatching { ScriptBlockMigrator.migrate(embedScript) }
@@ -122,12 +122,12 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
             return emptyList()
         }
     }
 
-    private class ExportExecutor(val scriptExporter: ScriptExporter) : CommandExecutor() {
+    private class ExportHandler(val scriptExporter: ScriptExporter) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             if (args.isEmpty()) {
                 return false
@@ -147,8 +147,8 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
-            return if (args.isEmpty()) {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
+            return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()
                         .map { it.name }
@@ -159,7 +159,7 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
         }
     }
 
-    private class ImportExecutor(val scriptExporter: ScriptExporter) : CommandExecutor() {
+    private class ImportHandler(val scriptExporter: ScriptExporter) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             if (args.isEmpty()) {
                 return false
@@ -178,13 +178,13 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
             // TODO: Returns list of files in the EmbedScript/export
             return emptyList()
         }
     }
 
-    private class ReloadExecutor(val configuration: Configuration, val scriptManager: ScriptManager) : CommandExecutor() {
+    private class ReloadHandler(val configuration: Configuration, val scriptManager: ScriptManager) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...")
             try {
@@ -210,12 +210,12 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
             return emptyList()
         }
     }
 
-    private class TeleportExecutor : CommandExecutor(SenderType.Player(), false) {
+    private class TeleportHandler : CommandHandler(SenderType.Player(), false) {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             val player = sender as Player
             if (args.size < 4) {
@@ -243,13 +243,13 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
             // This is internal command!
             return emptyList()
         }
     }
 
-    private class PageExecutor(val scriptUI: ScriptUI) : CommandExecutor(SenderType.Player(), false) {
+    private class PageHandler(val scriptUI: ScriptUI) : CommandHandler(SenderType.Player(), false) {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             val player = sender as Player
             if (args.isEmpty()) {
@@ -268,15 +268,15 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
             // This is internal command!
             return emptyList()
         }
     }
 
-    private class ListExecutor(val presetName: String?,
-                               val scriptProcessor: ScriptProcessor,
-                               val scriptUI: ScriptUI) : CommandExecutor(SenderType.Player(), false) {
+    private class ListHandler(val presetName: String?,
+                              val scriptProcessor: ScriptProcessor,
+                              val scriptUI: ScriptUI) : CommandHandler(SenderType.Player(), false) {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             val player = sender as Player
             val world = if (args.isEmpty())
@@ -303,8 +303,8 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
-            return if (args.isEmpty()) {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
+            return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()
                         .map { it.name }

@@ -12,11 +12,11 @@ import java.util.concurrent.Future
 import kotlin.streams.toList
 import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 
-abstract class CommandExecutor(private val senderType: SenderType = SenderType.All, private val async: Boolean = true) {
-    private val childExecutors: ConcurrentMap<String, CommandExecutor> = ConcurrentHashMap()
+abstract class CommandHandler(private val senderType: SenderType = SenderType.All, private val async: Boolean = true) {
+    private val childHandlers: ConcurrentMap<String, CommandHandler> = ConcurrentHashMap()
 
-    fun registerChildExecutor(command: String, executor: CommandExecutor) {
-        childExecutors[command.toLowerCase(Locale.ENGLISH)] = executor
+    fun registerChildHandler(command: String, handler: CommandHandler) {
+        childHandlers[command.toLowerCase(Locale.ENGLISH)] = handler
     }
 
     // ----------------
@@ -43,8 +43,8 @@ abstract class CommandExecutor(private val senderType: SenderType = SenderType.A
 
         // find child executors and execute if contains
         args.getOrNull(0)?.let { firstArg ->
-            childExecutors[firstArg.toLowerCase(Locale.ENGLISH)]?.let { childExecutor ->
-                return childExecutor.handleCommand(sender, command, args.stream().skip(1).toList())
+            childHandlers[firstArg.toLowerCase(Locale.ENGLISH)]?.let { childHandler ->
+                return childHandler.handleCommand(sender, command, args.stream().skip(1).toList())
             }
         }
 
@@ -69,9 +69,9 @@ abstract class CommandExecutor(private val senderType: SenderType = SenderType.A
     // Tab Completion Handling
     // -----------------------
 
-    protected abstract fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String>
+    protected abstract fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String>
 
-    private fun handleTabComplete(sender: CommandSender, needComplete: String, completedArgs: List<String>): List<String> {
+    private fun handleTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
         when (senderType) {
             is SenderType.Console -> {
                 if (sender !is ConsoleCommandSender) {
@@ -89,23 +89,23 @@ abstract class CommandExecutor(private val senderType: SenderType = SenderType.A
 
         // find child executors and execute if contains
         completedArgs.getOrNull(0)?.let { firstArg ->
-            childExecutors[firstArg.toLowerCase(Locale.ENGLISH)]?.let { childExecutor ->
-                return childExecutor.handleTabComplete(sender, needComplete, completedArgs.stream().skip(1).toList())
+            childHandlers[firstArg.toLowerCase(Locale.ENGLISH)]?.let { childHandler ->
+                return childHandler.handleTabComplete(sender, uncompletedArg, completedArgs.stream().skip(1).toList())
             }
         }
 
-        val suggestions = onTabComplete(sender, needComplete, completedArgs).toMutableList()
-        suggestions.addAll(childExecutors.keys)
-        return suggestions.filter { it.startsWith(needComplete, true) }
+        val suggestions = onTabComplete(sender, uncompletedArg, completedArgs).toMutableList()
+        suggestions.addAll(childHandlers.keys)
+        return suggestions.filter { it.startsWith(uncompletedArg, true) }
     }
 
     fun handleTabCompleteAsRoot(sender: CommandSender, args: List<String>): List<String> {
-        val (needComplete, completedArgs) = if (args.isEmpty()) {
+        val (uncompletedArg, completedArgs) = if (args.isEmpty()) {
             Pair("", args)
         } else {
             Pair(args.last(), args.dropLast(1))
         }
-        return handleTabComplete(sender, needComplete, completedArgs.stream().filter { it.isNotEmpty() }.toList())
+        return handleTabComplete(sender, uncompletedArg, completedArgs.stream().filter { it.isNotEmpty() }.toList())
     }
 
     companion object {
