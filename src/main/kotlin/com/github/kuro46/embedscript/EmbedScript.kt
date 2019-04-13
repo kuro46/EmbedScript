@@ -96,9 +96,15 @@ class EmbedScript private constructor(val plugin: Plugin) {
 
     private fun registerCommands() {
         for (eventType in EventType.values()) {
-            Bukkit.getPluginCommand(eventType.commandName).executor = ESCommandExecutor(this, eventType.presetName)
+            val executor = ESCommandExecutor(this, eventType.presetName)
+            val pluginCommand = Bukkit.getPluginCommand(eventType.commandName)
+            pluginCommand.executor = executor
+            pluginCommand.tabCompleter = executor
         }
-        Bukkit.getPluginCommand("embedscript").executor = ESCommandExecutor(this)
+        val pluginCommand = Bukkit.getPluginCommand("embedscript")
+        val esCommandExecutor = ESCommandExecutor(this)
+        pluginCommand.executor = esCommandExecutor
+        pluginCommand.tabCompleter = esCommandExecutor
     }
 
     private fun registerESAPI() {

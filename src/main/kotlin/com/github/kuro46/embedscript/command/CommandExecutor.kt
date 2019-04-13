@@ -65,6 +65,49 @@ abstract class CommandExecutor(private val senderType: SenderType = SenderType.A
         }
     }
 
+    // -----------------------
+    // Tab Completion Handling
+    // -----------------------
+
+    protected abstract fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String>
+
+    private fun handleTabComplete(sender: CommandSender, needComplete: String, completedArgs: List<String>): List<String> {
+        when (senderType) {
+            is SenderType.Console -> {
+                if (sender !is ConsoleCommandSender) {
+                    sender.sendMessage(senderType.errorMessage)
+                    return emptyList()
+                }
+            }
+            is SenderType.Player -> {
+                if (sender !is Player) {
+                    sender.sendMessage(senderType.errorMessage)
+                    return emptyList()
+                }
+            }
+        }
+
+        // find child executors and execute if contains
+        completedArgs.getOrNull(0)?.let { firstArg ->
+            childExecutors[firstArg.toLowerCase(Locale.ENGLISH)]?.let { childExecutor ->
+                return childExecutor.handleTabComplete(sender, needComplete, completedArgs.stream().skip(1).toList())
+            }
+        }
+
+        val suggestions = onTabComplete(sender, needComplete, completedArgs).toMutableList()
+        suggestions.addAll(childExecutors.keys)
+        return suggestions.filter { it.startsWith(needComplete, true) }
+    }
+
+    fun handleTabCompleteAsRoot(sender: CommandSender, args: List<String>): List<String> {
+        val (needComplete, completedArgs) = if (args.isEmpty()) {
+            Pair("", args)
+        } else {
+            Pair(args.last(), args.dropLast(1))
+        }
+        return handleTabComplete(sender, needComplete, completedArgs.stream().filter { it.isNotEmpty() }.toList())
+    }
+
     companion object {
         private val commandHandleThread = Executors.newCachedThreadPool { r ->
             val thread = Thread(r, "EmbedScript-Command-Handling-Thread")

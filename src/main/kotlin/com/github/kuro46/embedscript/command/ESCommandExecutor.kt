@@ -7,7 +7,6 @@ import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
 import com.github.kuro46.embedscript.request.Request
 import com.github.kuro46.embedscript.script.*
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
-import com.github.kuro46.embedscript.util.Scheduler
 import org.apache.commons.lang.math.NumberUtils
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -16,6 +15,7 @@ import org.bukkit.configuration.InvalidConfigurationException
 import org.bukkit.entity.Player
 import java.io.IOException
 import java.nio.file.Files
+import kotlin.streams.toList
 
 class ESCommandExecutor constructor(embedScript: EmbedScript, private val presetName: String? = null) : RootCommandExecutor() {
     private val configuration = embedScript.configuration
@@ -60,6 +60,10 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
         return false
     }
 
+    override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+        return emptyList()
+    }
+
     private fun modifyAction(player: Player, args: List<String>, add: Boolean): Boolean {
         if (args.isEmpty()) {
             return false
@@ -98,6 +102,10 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
                     |/es import <fileName> imports all scripts in the specified file""".trimMargin())
             return true
         }
+
+        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+            return emptyList()
+        }
     }
 
     private class MigrateExecutor(val embedScript: EmbedScript) : CommandExecutor() {
@@ -112,6 +120,10 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
                 sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!")
             }
             return true
+        }
+
+        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+            return emptyList()
         }
     }
 
@@ -134,6 +146,17 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             }
             return true
         }
+
+        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+            return if (args.isEmpty()) {
+                // player wants world list
+                Bukkit.getWorlds().stream()
+                        .map { it.name }
+                        .toList()
+            } else {
+                emptyList()
+            }
+        }
     }
 
     private class ImportExecutor(val scriptExporter: ScriptExporter) : CommandExecutor() {
@@ -153,6 +176,11 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             }
 
             return true
+        }
+
+        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+            // TODO: Returns list of files in the EmbedScript/export
+            return emptyList()
         }
     }
 
@@ -180,6 +208,10 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
 
             sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!")
             return true
+        }
+
+        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+            return emptyList()
         }
     }
 
@@ -210,6 +242,11 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.")
             return true
         }
+
+        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+            // This is internal command!
+            return emptyList()
+        }
     }
 
     private class PageExecutor(val scriptUI: ScriptUI) : CommandExecutor(SenderType.Player(), false) {
@@ -229,6 +266,11 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
 
             scriptUI.changePage(player, parsed)
             return true
+        }
+
+        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+            // This is internal command!
+            return emptyList()
         }
     }
 
@@ -259,6 +301,17 @@ class ESCommandExecutor constructor(embedScript: EmbedScript, private val preset
             val scope = if (world == "all") ScriptUI.ListScope.Server else ScriptUI.ListScope.World(world)
             scriptUI.list(player, scope, filter, pageIndex)
             return true
+        }
+
+        override fun onTabComplete(sender: CommandSender, completedArgs: String, args: List<String>): List<String> {
+            return if (args.isEmpty()) {
+                // player wants world list
+                Bukkit.getWorlds().stream()
+                        .map { it.name }
+                        .toList()
+            } else {
+                emptyList()
+            }
         }
     }
 }
