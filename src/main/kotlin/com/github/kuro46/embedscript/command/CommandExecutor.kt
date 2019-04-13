@@ -15,6 +15,14 @@ import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 abstract class CommandExecutor(private val senderType: SenderType = SenderType.All, private val async: Boolean = true) {
     private val childExecutors: ConcurrentMap<String, CommandExecutor> = ConcurrentHashMap()
 
+    fun registerChildExecutor(command: String, executor: CommandExecutor) {
+        childExecutors[command.toLowerCase(Locale.ENGLISH)] = executor
+    }
+
+    // ----------------
+    // Command Handling
+    // ----------------
+
     protected abstract fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean
 
     private fun handleCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
@@ -55,10 +63,6 @@ abstract class CommandExecutor(private val senderType: SenderType = SenderType.A
                 sender.sendMessage("Incorrect usage!")
             }
         }
-    }
-
-    fun registerChildExecutor(command: String, executor: CommandExecutor) {
-        childExecutors[command.toLowerCase(Locale.ENGLISH)] = executor
     }
 
     companion object {
