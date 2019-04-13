@@ -46,14 +46,15 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             requests.putRequest(player, Request.Remove)
             true
         })
+        val scriptTabCompleter = ScriptTabCompleter(scriptProcessor)
         registerChildHandler("embed", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, args ->
             val player = sender as Player
             modifyAction(player, args, false)
-        })
+        }.apply { this.tabCompleter = scriptTabCompleter })
         registerChildHandler("add", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, args ->
             val player = sender as Player
             modifyAction(player, args, true)
-        })
+        }.apply { this.tabCompleter = scriptTabCompleter })
     }
 
     override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
