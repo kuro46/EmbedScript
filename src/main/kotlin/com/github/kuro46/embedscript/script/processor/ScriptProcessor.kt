@@ -46,6 +46,10 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
         return processors.containsKey(processor.key)
     }
 
+    fun getProcessors(): Map<String, Processor> {
+        return processors
+    }
+
     // PARSE START
 
     fun parse(author: UUID, script: String): Script {
