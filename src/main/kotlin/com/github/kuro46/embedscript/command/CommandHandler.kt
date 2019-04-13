@@ -12,8 +12,10 @@ import java.util.concurrent.Future
 import kotlin.streams.toList
 import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 
-abstract class CommandHandler(private val senderType: SenderType = SenderType.All, private val async: Boolean = true) {
+abstract class CommandHandler(private val senderType: SenderType = SenderType.All, private val async: Boolean = true): CommandExecutor, TabCompleter {
     private val childHandlers: ConcurrentMap<String, CommandHandler> = ConcurrentHashMap()
+    var commandExecutor: CommandExecutor? = null
+    var tabCompleter: TabCompleter? = null
 
     fun registerChildHandler(command: String, handler: CommandHandler) {
         childHandlers[command.toLowerCase(Locale.ENGLISH)] = handler
@@ -23,7 +25,7 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
     // Command Handling
     // ----------------
 
-    protected abstract fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean
+    abstract override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean
 
     private fun handleCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
         when (senderType) {
@@ -48,11 +50,13 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
             }
         }
 
+        val commandExecutor = this.commandExecutor ?: this
+
         return if (async) {
-            onCommand(sender, command, args)
+            commandExecutor.onCommand(sender, command, args)
         } else {
             Bukkit.getScheduler().callSyncMethod(Bukkit.getPluginManager().getPlugin("EmbedScript")) {
-                onCommand(sender, command, args)
+                commandExecutor.onCommand(sender, command, args)
             }.get()
         }
     }
@@ -69,7 +73,9 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
     // Tab Completion Handling
     // -----------------------
 
-    protected abstract fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String>
+    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
+        return emptyList()
+    }
 
     private fun handleTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
         when (senderType) {
@@ -94,7 +100,9 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
             }
         }
 
-        val suggestions = onTabComplete(sender, uncompletedArg, completedArgs).toMutableList()
+        val tabCompleter = this.tabCompleter ?: this
+
+        val suggestions = tabCompleter.onTabComplete(sender, uncompletedArg, completedArgs).toMutableList()
         suggestions.addAll(childHandlers.keys)
         return suggestions.filter { it.startsWith(uncompletedArg, true) }
     }

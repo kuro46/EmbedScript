@@ -60,10 +60,6 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         return false
     }
 
-    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
-        return emptyList()
-    }
-
     private fun modifyAction(player: Player, args: List<String>, add: Boolean): Boolean {
         if (args.isEmpty()) {
             return false
@@ -102,10 +98,6 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
                     |/es import <fileName> imports all scripts in the specified file""".trimMargin())
             return true
         }
-
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
-            return emptyList()
-        }
     }
 
     private class MigrateHandler(val embedScript: EmbedScript) : CommandHandler() {
@@ -120,10 +112,6 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
                 sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!")
             }
             return true
-        }
-
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
-            return emptyList()
         }
     }
 
@@ -209,10 +197,6 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!")
             return true
         }
-
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
-            return emptyList()
-        }
     }
 
     private class TeleportHandler : CommandHandler(SenderType.Player(), false) {
@@ -242,11 +226,6 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.")
             return true
         }
-
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
-            // This is internal command!
-            return emptyList()
-        }
     }
 
     private class PageHandler(val scriptUI: ScriptUI) : CommandHandler(SenderType.Player(), false) {
@@ -266,11 +245,6 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
 
             scriptUI.changePage(player, parsed)
             return true
-        }
-
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
-            // This is internal command!
-            return emptyList()
         }
     }
 
