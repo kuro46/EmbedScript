@@ -11,9 +11,7 @@ import org.apache.commons.lang.math.NumberUtils
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.command.CommandSender
-import org.bukkit.configuration.InvalidConfigurationException
 import org.bukkit.entity.Player
-import java.io.IOException
 import java.nio.file.Files
 import kotlin.streams.toList
 
@@ -176,23 +174,19 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     private class ReloadHandler(val configuration: Configuration, val scriptManager: ScriptManager) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...")
-            try {
-                configuration.load()
-            } catch (e: IOException) {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + e.message + ")")
-                e.printStackTrace()
-                return true
-            } catch (e: InvalidConfigurationException) {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + e.message + ")")
-                e.printStackTrace()
+
+            val cfgReloadResult = runCatching { configuration.load() }
+            cfgReloadResult.exceptionOrNull()?.let {
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + it.message + ")")
+                it.printStackTrace()
                 return true
             }
 
-            try {
-                scriptManager.reload()
-            } catch (e: IOException) {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload scripts! (error: " + e.message + ")")
-                e.printStackTrace()
+            val scriptReloadResult = runCatching { scriptManager.reload() }
+            scriptReloadResult.exceptionOrNull()?.let {
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload scripts! (error: " + it.message + ")")
+                it.printStackTrace()
+                return true
             }
 
             sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!")
