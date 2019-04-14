@@ -315,8 +315,7 @@ object ScriptSerializer {
                             while (reader.hasNext()) {
                                 when (reader.nextName()) {
                                     "type" -> {
-                                        val nextString = reader.nextString()
-                                        when (nextString) {
+                                        when (val nextString = reader.nextString()) {
                                             "BYPASS_PERMISSION", "COMMAND" -> keys.add("command")
                                             "CONSOLE" -> keys.add("console")
                                             "PLAYER" -> keys.add("say")

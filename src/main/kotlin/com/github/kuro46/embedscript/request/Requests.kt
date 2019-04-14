@@ -24,9 +24,7 @@ class Requests(private val scriptUI: ScriptUI) {
     }
 
     fun executeRequest(player: Player, position: ScriptPosition): Boolean {
-        val request = removeRequest(player) ?: return false
-
-        when (request) {
+        when (val request = removeRequest(player) ?: return false) {
             is Request.View-> scriptUI.view(player, position)
             is Request.Remove -> scriptUI.remove(player, position)
             is Request.Embed -> scriptUI.embed(player, position, request.script)
