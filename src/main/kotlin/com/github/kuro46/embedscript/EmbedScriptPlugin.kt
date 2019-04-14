@@ -1,10 +1,7 @@
 package com.github.kuro46.embedscript
 
 import org.bukkit.Bukkit
-import org.bukkit.configuration.InvalidConfigurationException
 import org.bukkit.plugin.java.JavaPlugin
-
-import java.io.IOException
 import java.util.logging.Level
 
 /**

@@ -2,7 +2,6 @@ package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
 import com.google.common.collect.ImmutableList
-import org.apache.commons.lang.ArrayUtils
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin
