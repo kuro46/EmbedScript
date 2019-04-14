@@ -4,68 +4,60 @@ import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.stream.Collectors
-import kotlin.Pair
 
 /**
  * @author shirokuro
  */
-class Util private constructor() {
+object Util {
+    private val PATTERN_SPLIT_BY_FIRST_SPACE = Pattern.compile("(?<left>[^ ]+) (?<right>.+)")
 
-    init {
-        throw UnsupportedOperationException("Utility class")
+    private class Patterns(val pattern: Pattern, val escapedPattern: Pattern)
+
+    fun splitByFirstSpace(string: String): Pair<String, String>? {
+        val splitMatcher = PATTERN_SPLIT_BY_FIRST_SPACE.matcher(string)
+        return if (!splitMatcher.find()) {
+            null
+        } else Pair(splitMatcher.group("left"), splitMatcher.group("right"))
+
     }
 
-    private class Patterns internal constructor(val pattern: Pattern, val escapedPattern: Pattern)
+    fun replaceAndUnescape(source: String, target: String, replacement: String): String {
+        return replaceAndUnescape(source, target, target, replacement, true)
+    }
 
-    companion object {
-        private val PATTERN_SPLIT_BY_FIRST_SPACE = Pattern.compile("(?<left>[^ ]+) (?<right>.+)")
+    fun replaceAndUnescape(source: String, target: String, escapeTo: String, replacement: String, quote: Boolean): String {
+        var source = source
+        val patterns = createPatterns(target, quote)
+        val pattern = patterns.pattern
+        val escapedPattern = patterns.escapedPattern
 
-        fun splitByFirstSpace(string: String): Pair<String, String>? {
-            val splitMatcher = PATTERN_SPLIT_BY_FIRST_SPACE.matcher(string)
-            return if (!splitMatcher.find()) {
-                null
-            } else Pair(splitMatcher.group("left"), splitMatcher.group("right"))
+        source = pattern.matcher(source).replaceAll("$1$replacement")
+        source = escapedPattern.matcher(source).replaceAll(escapeTo)
 
-        }
+        return source
+    }
 
-        fun replaceAndUnescape(source: String, target: String, replacement: String): String {
-            return replaceAndUnescape(source, target, target, replacement, true)
-        }
+    fun splitAndUnescape(source: String, target: String): List<String> {
+        var source = source
+        val patterns = createPatterns(target, true)
+        val pattern = patterns.pattern
+        val escapedPattern = patterns.escapedPattern
 
-        fun replaceAndUnescape(source: String, target: String, escapeTo: String, replacement: String, quote: Boolean): String {
-            var source = source
-            val patterns = createPatterns(target, quote)
-            val pattern = patterns.pattern
-            val escapedPattern = patterns.escapedPattern
-
-            source = pattern.matcher(source).replaceAll("$1$replacement")
-            source = escapedPattern.matcher(source).replaceAll(escapeTo)
-
-            return source
-        }
-
-        fun splitAndUnescape(source: String, target: String): List<String> {
-            var source = source
-            val patterns = createPatterns(target, true)
-            val pattern = patterns.pattern
-            val escapedPattern = patterns.escapedPattern
-
-            val quoteReplacementTarget = Matcher.quoteReplacement(target)
-            source = pattern.matcher(source).replaceAll("$1 $quoteReplacementTarget")
-            return Arrays.stream(pattern.split(source))
+        val quoteReplacementTarget = Matcher.quoteReplacement(target)
+        source = pattern.matcher(source).replaceAll("$1 $quoteReplacementTarget")
+        return Arrays.stream(pattern.split(source))
                 .map { s -> escapedPattern.matcher(s).replaceAll(quoteReplacementTarget) }
                 .collect(Collectors.toList())
-        }
+    }
 
-        private fun createPatterns(target: String, quote: Boolean): Patterns {
-            var target = target
-            if (quote) {
-                target = Pattern.quote(target)
-            }
-            val pattern = Pattern.compile("(^|[^\\\\])$target")
-            val escapedPattern = Pattern.compile("\\\\" + target)
-
-            return Patterns(pattern, escapedPattern)
+    private fun createPatterns(target: String, quote: Boolean): Patterns {
+        var target = target
+        if (quote) {
+            target = Pattern.quote(target)
         }
+        val pattern = Pattern.compile("(^|[^\\\\])$target")
+        val escapedPattern = Pattern.compile("\\\\" + target)
+
+        return Patterns(pattern, escapedPattern)
     }
 }
