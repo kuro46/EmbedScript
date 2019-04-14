@@ -28,12 +28,6 @@ class Util private constructor() {
 
         }
 
-        fun joinStringSpaceDelimiter(startIndex: Int, strings: Array<String>): String {
-            return Arrays.stream(strings)
-                .skip(startIndex.toLong())
-                .collect(Collectors.joining(" "))
-        }
-
         fun replaceAndUnescape(source: String, target: String, replacement: String): String {
             return replaceAndUnescape(source, target, target, replacement, true)
         }
