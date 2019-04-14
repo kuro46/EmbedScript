@@ -118,7 +118,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
      * Send list of scripts to player
      *
      * @param player    Player
-     * @param world     World (Nullable)
+     * @param scope     Scope
      * @param pageIndex page index
      */
     fun list(player: Player, scope: ListScope, filter: Script?, pageIndex: Int) {
