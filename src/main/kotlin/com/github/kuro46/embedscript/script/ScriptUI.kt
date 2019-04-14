@@ -216,7 +216,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                 buffer.clear()
             }
         }
-        if (!buffer.isEmpty()) {
+        if (buffer.isNotEmpty()) {
             val lastPage = ArrayList(buffer)
             //last page pad with space
             val padLines = maximumLines - lastPage.size
