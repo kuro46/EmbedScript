@@ -248,24 +248,10 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
                               val scriptUI: ScriptUI) : CommandHandler(SenderType.Player(), false) {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             val player = sender as Player
-            val world = if (args.isEmpty())
-                player.world.name
-            else
-                args[0]
-            val pageIndex = if (args.size >= 2 && NumberUtils.isNumber(args[2]))
-                Integer.parseInt(args[1]) - 1
-            else
-                0
-            val filter: Script?
-            if (presetName == null) {
-                filter = null
-            } else {
-                try {
-                    filter = scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(presetName))
-                } catch (e: ParseException) {
-                    player.sendMessage(Prefix.ERROR_PREFIX + "Failed to filter the scripts. (error: ${e.message})")
-                    return true
-                }
+            val world = args.getOrElse(0) { player.world.name }
+            val pageIndex = if (args.size >= 2 && NumberUtils.isNumber(args[2])) Integer.parseInt(args[1]) - 1 else 0
+            val filter = presetName?.let {
+                scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
             }
             val scope = if (world == "all") ScriptUI.ListScope.Server else ScriptUI.ListScope.World(world)
             scriptUI.list(player, scope, filter, pageIndex)
