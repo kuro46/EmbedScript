@@ -114,9 +114,9 @@ constructor(private var script: String) {
 
         // translate color codes
         modifiableString = Util.replaceAndUnescape(modifiableString, "&(?<code>[0123456789AaBbCcDdEeFfKkLlMmNnOoRr])",
-            "&\${code}",
-            "§\${code}",
-            false)
+                "&\${code}",
+                "§\${code}",
+                false)
 
         return Util.splitAndUnescape(modifiableString, "][")
     }

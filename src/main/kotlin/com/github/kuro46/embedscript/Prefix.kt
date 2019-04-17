@@ -13,7 +13,7 @@ class Prefix private constructor() {
 
     companion object {
         val PREFIX = (ChatColor.GRAY.toString() + "<"
-            + ChatColor.DARK_GREEN + "E" + ChatColor.GREEN + "S" + ChatColor.GRAY + "> ")
+                + ChatColor.DARK_GREEN + "E" + ChatColor.GREEN + "S" + ChatColor.GRAY + "> ")
         val WARN_PREFIX = PREFIX + ChatColor.GOLD
         val ERROR_PREFIX = PREFIX + ChatColor.RED
         val SUCCESS_PREFIX = PREFIX + ChatColor.GREEN

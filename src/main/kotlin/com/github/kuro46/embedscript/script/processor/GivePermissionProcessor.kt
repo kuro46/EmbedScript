@@ -53,12 +53,12 @@ class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Pr
                         var skipElement = 1
                         while (permissionsForAction == null) {
                             val split = action.split(' ')
-                                .dropLastWhile { it.isEmpty() }
-                                .toMutableList()
+                                    .dropLastWhile { it.isEmpty() }
+                                    .toMutableList()
                             split.reverse()
                             val skipped = split.stream()
-                                .skip(skipElement.toLong())
-                                .collect(Collectors.toList())
+                                    .skip(skipElement.toLong())
+                                    .collect(Collectors.toList())
                             if (skipped.isEmpty()) {
                                 break
                             }

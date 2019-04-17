@@ -77,7 +77,7 @@ class Configuration private constructor(dataFolder: Path) {
                 }
 
                 val permissions = permission?.let { listOf(it) }
-                    ?: Collections.unmodifiableList(ArrayList<String>(0))
+                        ?: Collections.unmodifiableList(ArrayList<String>(0))
                 // note:
                 // please don't replace with Collections.emptyList()
                 // because SnakeYaml cannot serialize Collections.emptyList()

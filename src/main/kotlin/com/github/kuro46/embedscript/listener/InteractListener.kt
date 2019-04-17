@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit
  */
 class InteractListener(embedScript: EmbedScript) : Listener {
     private val coolTime: Cache<UUID, Boolean> = CacheBuilder.newBuilder()
-        .expireAfterWrite(300, TimeUnit.MILLISECONDS)
-        .build()
+            .expireAfterWrite(300, TimeUnit.MILLISECONDS)
+            .build()
     private val scriptManager = embedScript.scriptManager
     private val scriptProcessor = embedScript.scriptProcessor
     private val requests = embedScript.requests

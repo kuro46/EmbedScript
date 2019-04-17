@@ -12,7 +12,7 @@ import java.util.concurrent.Future
 import kotlin.streams.toList
 import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 
-abstract class CommandHandler(private val senderType: SenderType = SenderType.All, private val async: Boolean = true): CommandExecutor, TabCompleter {
+abstract class CommandHandler(private val senderType: SenderType = SenderType.All, private val async: Boolean = true) : CommandExecutor, TabCompleter {
     private val childHandlers: ConcurrentMap<String, CommandHandler> = ConcurrentHashMap()
     var commandExecutor: CommandExecutor? = null
     var tabCompleter: TabCompleter? = null

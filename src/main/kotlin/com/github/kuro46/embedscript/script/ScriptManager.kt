@@ -66,8 +66,8 @@ private constructor(val scripts: ListMultimap<ScriptPosition, Script>, val path:
     companion object {
         fun load(filePath: Path): ScriptManager {
             val multimap =
-                Multimaps.newListMultimap(ConcurrentHashMap<ScriptPosition, CopyOnWriteArrayList<Script>>()
-                    as Map<ScriptPosition, MutableCollection<Script>>) { CopyOnWriteArrayList() }
+                    Multimaps.newListMultimap(ConcurrentHashMap<ScriptPosition, CopyOnWriteArrayList<Script>>()
+                            as Map<ScriptPosition, MutableCollection<Script>>) { CopyOnWriteArrayList() }
             multimap.putAll(ScriptSerializer.deserialize(filePath))
             return ScriptManager(multimap, filePath)
         }

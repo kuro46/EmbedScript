@@ -66,9 +66,9 @@ class Script(val author: UUID,
                 return if (clickedBlockType == Material.STONE_BUTTON || clickedBlockType == Material.WOOD_BUTTON) {
                     BUTTON
                 } else if (clickedBlockType == Material.GOLD_PLATE ||
-                    clickedBlockType == Material.IRON_PLATE ||
-                    clickedBlockType == Material.STONE_PLATE ||
-                    clickedBlockType == Material.WOOD_PLATE) {
+                        clickedBlockType == Material.IRON_PLATE ||
+                        clickedBlockType == Material.STONE_PLATE ||
+                        clickedBlockType == Material.WOOD_PLATE) {
                     PLATE
                 } else {
                     null

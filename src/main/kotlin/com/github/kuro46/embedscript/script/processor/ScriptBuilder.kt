@@ -16,10 +16,10 @@ class ScriptBuilder private constructor(val author: UUID) {
 
     fun build(createdAt: Long): Script {
         return Script(author, createdAt,
-            ImmutableSet.copyOf<Script.MoveType>(moveTypes),
-            ImmutableSet.copyOf<Script.ClickType>(clickTypes),
-            ImmutableSet.copyOf<Script.PushType>(pushTypes),
-            ImmutableListMultimap.copyOf(script))
+                ImmutableSet.copyOf<Script.MoveType>(moveTypes),
+                ImmutableSet.copyOf<Script.ClickType>(clickTypes),
+                ImmutableSet.copyOf<Script.PushType>(pushTypes),
+                ImmutableListMultimap.copyOf(script))
     }
 
     companion object {

@@ -73,19 +73,19 @@ class EmbedScript private constructor(val plugin: Plugin) {
 
         val merged: ListMultimap<ScriptPosition, Script> = ArrayListMultimap.create()
         Arrays.stream(EventType.values())
-            .map { eventType -> dataFolder.resolve(eventType.fileName) }
-            .filter { path -> Files.exists(path) }
-            .map { path -> ScriptManager.load(path) }
-            .forEach { scriptManager ->
-                for (position in scriptManager.keySet()) {
-                    val scripts = scriptManager[position]
-                    val mergeTo = merged.get(position)
+                .map { eventType -> dataFolder.resolve(eventType.fileName) }
+                .filter { path -> Files.exists(path) }
+                .map { path -> ScriptManager.load(path) }
+                .forEach { scriptManager ->
+                    for (position in scriptManager.keySet()) {
+                        val scripts = scriptManager[position]
+                        val mergeTo = merged.get(position)
 
-                    mergeTo.addAll(scripts)
+                        mergeTo.addAll(scripts)
+                    }
+
+                    Files.delete(scriptManager.path)
                 }
-
-                Files.delete(scriptManager.path)
-            }
 
         if (merged.isEmpty) {
             return
@@ -115,9 +115,9 @@ class EmbedScript private constructor(val plugin: Plugin) {
 
     private fun registerESAPI() {
         Bukkit.getServicesManager().register(EmbedScriptAPI::class.java,
-            EmbedScriptAPI(scriptProcessor),
-            plugin,
-            ServicePriority.Normal)
+                EmbedScriptAPI(scriptProcessor),
+                plugin,
+                ServicePriority.Normal)
     }
 
     companion object {

@@ -34,9 +34,9 @@ import java.util.stream.Collectors
  */
 class ScriptUI(private val scriptManager: ScriptManager) {
     private val pageManager: Cache<CommandSender, (Int) -> Unit> = CacheBuilder.newBuilder()
-        .expireAfterAccess(5, TimeUnit.MINUTES)
-        .weakKeys()
-        .build()
+            .expireAfterAccess(5, TimeUnit.MINUTES)
+            .weakKeys()
+            .build()
 
     fun embed(sender: CommandSender,
               position: ScriptPosition,
@@ -113,9 +113,9 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             collection.isEmpty() -> "NONE"
             collection.size == 1 -> ScriptUtil.toString(collection.iterator().next().toString())
             else -> collection.stream()
-                .map { it.toString() }
-                .map { s -> s + ChatColor.RESET }
-                .collect(Collectors.joining("][", "[", "]"))
+                    .map { it.toString() }
+                    .map { s -> s + ChatColor.RESET }
+                    .collect(Collectors.joining("][", "[", "]"))
         }
     }
 
@@ -129,14 +129,14 @@ class ScriptUI(private val scriptManager: ScriptManager) {
     fun list(player: Player, scope: ListScope, filter: Script?, pageIndex: Int) {
         Scheduler.execute {
             val messages = scriptManager.scripts.asMap().entries.stream()
-                .filter { entry ->
-                    when(scope) {
-                        is ListScope.Server -> true
-                        is ListScope.World -> scope.name.equals(entry.key.world, true)
+                    .filter { entry ->
+                        when (scope) {
+                            is ListScope.Server -> true
+                            is ListScope.World -> scope.name.equals(entry.key.world, true)
+                        }
                     }
-                }
-                .sorted(ScriptPositionComparator())
-                .collect(ScriptCollector(filter))
+                    .sorted(ScriptPositionComparator())
+                    .collect(ScriptCollector(filter))
 
             val target = if (scope is ListScope.World) scope.name else "this server"
 
@@ -144,9 +144,9 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                 player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in $target")
             } else {
                 sendPage("List of scripts in $target",
-                    player,
-                    messages,
-                    pageIndex)
+                        player,
+                        messages,
+                        pageIndex)
             }
         }
     }
@@ -187,18 +187,18 @@ class ScriptUI(private val scriptManager: ScriptManager) {
         val nextPageIndex = if (pageIndex + 1 >= pages.size) 0 else pageIndex + 1
 
         sender.spigot().sendMessage(*ComponentBuilder("")
-            .append(ComponentBuilder("<<Previous>>")
-                .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/embedscript page $previousPageIndex"))
+                .append(ComponentBuilder("<<Previous>>")
+                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/embedscript page $previousPageIndex"))
+                        .create())
+                .append("   ")
+                .append(ComponentBuilder("<<Next>>")
+                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/embedscript page $nextPageIndex"))
+                        .create())
+                .append("   ")
+                .append(ComponentBuilder("<<Page ${pageIndex + 1} of ${pages.size}>>")
+                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, ""))
+                        .create())
                 .create())
-            .append("   ")
-            .append(ComponentBuilder("<<Next>>")
-                .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/embedscript page $nextPageIndex"))
-                .create())
-            .append("   ")
-            .append(ComponentBuilder("<<Page ${pageIndex + 1} of ${pages.size}>>")
-                .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, ""))
-                .create())
-            .create())
         sender.sendMessage(separator)
 
         pageManager.put(sender) { value -> sendPage(title, sender, messages, value, chatHeight) }
@@ -248,8 +248,8 @@ class ScriptUI(private val scriptManager: ScriptManager) {
 
     private class ScriptCollector(private val filter: Script?)
         : Collector<MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>,
-        MutableCollection<Array<BaseComponent>>,
-        MutableCollection<Array<BaseComponent>>> {
+            MutableCollection<Array<BaseComponent>>,
+            MutableCollection<Array<BaseComponent>>> {
 
         override fun supplier(): Supplier<MutableCollection<Array<BaseComponent>>> {
             return Supplier { ArrayList<Array<BaseComponent>>() }
@@ -267,11 +267,11 @@ class ScriptUI(private val scriptManager: ScriptManager) {
 
                     val tpCommand = "/embedscript teleport ${position.world} ${position.x} ${position.y} ${position.z}"
                     val message = ComponentBuilder("")
-                        .append("[${messages.size + 1}] ")
-                        .append("World: ${position.world} X: ${position.x} Y: ${position.y} Z: ${position.z} (click here)")
-                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
-                        .event(HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
-                        .create()
+                            .append("[${messages.size + 1}] ")
+                            .append("World: ${position.world} X: ${position.x} Y: ${position.y} Z: ${position.z} (click here)")
+                            .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
+                            .event(HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
+                            .create()
                     messages.add(message)
                 }
             }

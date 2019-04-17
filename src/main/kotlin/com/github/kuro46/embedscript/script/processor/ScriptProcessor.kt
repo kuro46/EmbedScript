@@ -127,13 +127,13 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
         val scriptMap = script.script
         for (key in scriptMap.keySet()) {
             val value = scriptMap.get(key).stream()
-                .map { string ->
-                    var s = string
-                    s = replaceAndUnescape(s, "<player>") { trigger.name }
-                    s = replaceAndUnescape(s, "<world>") { trigger.world.name }
-                    s
-                }
-                .collect(Collectors.toList())
+                    .map { string ->
+                        var s = string
+                        s = replaceAndUnescape(s, "<player>") { trigger.name }
+                        s = replaceAndUnescape(s, "<world>") { trigger.world.name }
+                        s
+                    }
+                    .collect(Collectors.toList())
             executors.add(Pair(processors[key]!!.executor, value))
         }
 
@@ -146,12 +146,12 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
             }
 
             // prepare phase
-            executors.forEach { (executor, matchedValues) -> executor.prepareExecute(trigger, matchedValues)}
+            executors.forEach { (executor, matchedValues) -> executor.prepareExecute(trigger, matchedValues) }
             // execute start
-            executors.forEach { (executor, matchedValues) -> executor.beginExecute(trigger, matchedValues)}
+            executors.forEach { (executor, matchedValues) -> executor.beginExecute(trigger, matchedValues) }
         } finally {
             // execute end
-            executors.forEach { (executor, matchedValues) -> executor.endExecute(trigger, matchedValues)}
+            executors.forEach { (executor, matchedValues) -> executor.endExecute(trigger, matchedValues) }
         }
 
         if (configuration.isLogEnabled) {
