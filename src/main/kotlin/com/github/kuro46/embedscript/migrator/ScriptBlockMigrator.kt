@@ -12,7 +12,9 @@ import org.bukkit.configuration.file.YamlConfiguration
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
+import java.util.HashMap
+import java.util.Locale
+import java.util.UUID
 import java.util.regex.Pattern
 
 class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {

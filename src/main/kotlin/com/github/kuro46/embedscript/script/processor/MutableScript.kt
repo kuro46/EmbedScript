@@ -5,8 +5,7 @@ import com.github.kuro46.embedscript.util.Util
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
 import com.google.common.collect.ListMultimap
-import kotlin.Pair
-import java.util.*
+import java.util.Locale
 
 class MutableScript
 constructor(private var script: String) {

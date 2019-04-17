@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableList
 import net.md_5.bungee.chat.ComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import java.util.*
+import java.util.Locale
 import java.util.stream.Collectors
 
 object Processors {

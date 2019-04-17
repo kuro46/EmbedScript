@@ -9,10 +9,12 @@ import com.github.kuro46.embedscript.util.Scheduler
 import com.github.kuro46.embedscript.util.Util
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
-import java.util.*
+import java.util.HashMap
+import java.util.HashSet
+import java.util.StringJoiner
+import java.util.UUID
 import java.util.logging.Logger
 import java.util.stream.Collectors
-import kotlin.collections.ArrayList
 
 class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val configuration: Configuration) {
     private val processors: MutableMap<String, Processor> = HashMap()

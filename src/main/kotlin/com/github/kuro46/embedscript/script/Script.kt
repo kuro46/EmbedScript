@@ -14,7 +14,7 @@ import com.google.gson.stream.JsonWriter
 import org.bukkit.Material
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
-import java.util.*
+import java.util.UUID
 
 @JsonAdapter(Script.ScriptAdapter::class)
 class Script(val author: UUID,

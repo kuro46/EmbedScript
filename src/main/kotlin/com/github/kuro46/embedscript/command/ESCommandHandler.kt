@@ -5,7 +5,12 @@ import com.github.kuro46.embedscript.EmbedScript
 import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
 import com.github.kuro46.embedscript.request.Request
-import com.github.kuro46.embedscript.script.*
+import com.github.kuro46.embedscript.script.ParseException
+import com.github.kuro46.embedscript.script.Script
+import com.github.kuro46.embedscript.script.ScriptExporter
+import com.github.kuro46.embedscript.script.ScriptManager
+import com.github.kuro46.embedscript.script.ScriptUI
+import com.github.kuro46.embedscript.script.ScriptUtil
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import org.apache.commons.lang.math.NumberUtils
 import org.bukkit.Bukkit

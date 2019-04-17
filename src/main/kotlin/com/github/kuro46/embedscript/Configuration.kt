@@ -5,7 +5,9 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
+import java.util.ArrayList
+import java.util.Collections
+import java.util.HashMap
 
 class Configuration private constructor(dataFolder: Path) {
 

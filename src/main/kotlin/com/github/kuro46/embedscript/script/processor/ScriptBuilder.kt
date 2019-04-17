@@ -5,7 +5,8 @@ import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ListMultimap
-import java.util.*
+import java.util.HashSet
+import java.util.UUID
 
 class ScriptBuilder private constructor(val author: UUID) {
     val moveTypes: MutableSet<Script.MoveType> = HashSet()

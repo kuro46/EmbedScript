@@ -5,7 +5,8 @@ import com.google.common.collect.ImmutableList
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin
-import java.util.*
+import java.util.HashMap
+import java.util.HashSet
 import java.util.stream.Collectors
 
 class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Processor {

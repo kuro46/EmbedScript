@@ -5,7 +5,11 @@ import com.github.kuro46.embedscript.util.MojangUtil
 import com.github.kuro46.embedscript.util.Scheduler
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
-import net.md_5.bungee.api.chat.*
+import net.md_5.bungee.api.chat.BaseComponent
+import net.md_5.bungee.api.chat.ClickEvent
+import net.md_5.bungee.api.chat.ComponentBuilder
+import net.md_5.bungee.api.chat.HoverEvent
+import net.md_5.bungee.api.chat.TextComponent
 import org.apache.commons.lang.StringUtils
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
@@ -15,7 +19,8 @@ import java.io.Serializable
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.ArrayList
+import java.util.Comparator
 import java.util.concurrent.TimeUnit
 import java.util.function.BiConsumer
 import java.util.function.BinaryOperator

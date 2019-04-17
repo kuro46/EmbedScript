@@ -5,7 +5,13 @@ import com.github.kuro46.embedscript.command.ESCommandHandler
 import com.github.kuro46.embedscript.listener.InteractListener
 import com.github.kuro46.embedscript.listener.MoveListener
 import com.github.kuro46.embedscript.request.Requests
-import com.github.kuro46.embedscript.script.*
+import com.github.kuro46.embedscript.script.EventType
+import com.github.kuro46.embedscript.script.Script
+import com.github.kuro46.embedscript.script.ScriptExporter
+import com.github.kuro46.embedscript.script.ScriptManager
+import com.github.kuro46.embedscript.script.ScriptPosition
+import com.github.kuro46.embedscript.script.ScriptSerializer
+import com.github.kuro46.embedscript.script.ScriptUI
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
@@ -14,7 +20,7 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.ServicePriority
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
+import java.util.Arrays
 import java.util.logging.Logger
 
 class EmbedScript private constructor(val plugin: Plugin) {
