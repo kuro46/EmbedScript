@@ -34,13 +34,13 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         registerChildHandler("list", ListHandler(presetName, scriptProcessor, scriptUI))
         registerChildHandler("view", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
-            player.sendMessage(Prefix.PREFIX + "Click the block to view the script.")
+            player.sendMessage(Prefix.PREFIX + "Please click any block...")
             requests.putRequest(player, Request.View)
             true
         })
         registerChildHandler("remove", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
-            player.sendMessage(Prefix.PREFIX + "Click the block to remove the script.")
+            player.sendMessage(Prefix.PREFIX + "Please click any block...")
             requests.putRequest(player, Request.Remove)
             true
         })
@@ -76,7 +76,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        player.sendMessage(Prefix.PREFIX + "Click the block to add a script.")
+        player.sendMessage(Prefix.PREFIX + "Please click any block...")
         val request = if (add) Request.Add(script) else Request.Embed(script)
         requests.putRequest(player, request)
 
@@ -85,16 +85,16 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
 
     private class HelpHandler : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
-            sender.sendMessage("""/es help - displays this message
-                    |/es reload - reloads configuration and scripts
-                    |/es migrate - migrates from ScriptBlock
-                    |/es list [world] [page] - displays list of scripts
-                    |/es view - displays information of the script in the clicked block
-                    |/es remove - removes the script in the clicked block
-                    |/es embed <script> - embeds a script to the clicked block
-                    |/es add <script> - adds a script to the clicked block
-                    |/es export <world> [fileName] - exports all scripts in the <world> to [fileName] or <world>.json
-                    |/es import <fileName> imports all scripts in the specified file""".trimMargin())
+            sender.sendMessage("""/es help - Displays this message.
+                    |/es reload - Reloads configuration and scripts
+                    |/es migrate - Migrates from ScriptBlock to this plugin.
+                    |/es list [world] [page] - Displays list of scripts in the [world] or current world if world is not specified.
+                    |/es view - Displays information about script in the clicked block.
+                    |/es remove - Removes all scripts in the clicked block.
+                    |/es embed <script> - Embeds a script to the clicked block.
+                    |/es add <script> - Adds a script to the clicked block
+                    |/es export <world> [fileName] - Exports all scripts in the <world> to [fileName] or <world>.
+                    |/es import <fileName> Imports all scripts in the <fileName>.""".trimMargin())
             return true
         }
     }
@@ -104,8 +104,8 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             sender.sendMessage("Migrating data of ScriptBlock...")
             val migrationResult = runCatching { ScriptBlockMigrator.migrate(embedScript) }
             migrationResult.exceptionOrNull()?.also {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to migrate data of ScriptBlock!")
-                System.err.println("Failed to migrate data of ScriptBlock!")
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Migration failed!")
+                System.err.println("Migration failed!")
                 it.printStackTrace()
             } ?: run {
                 sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!")
@@ -177,14 +177,14 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
 
             val cfgReloadResult = runCatching { configuration.load() }
             cfgReloadResult.exceptionOrNull()?.let {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload configuration! (error: " + it.message + ")")
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Reload failed! (error: " + it.message + ")")
                 it.printStackTrace()
                 return true
             }
 
             val scriptReloadResult = runCatching { scriptManager.reload() }
             scriptReloadResult.exceptionOrNull()?.let {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to reload scripts! (error: " + it.message + ")")
+                sender.sendMessage(Prefix.ERROR_PREFIX + "Reload failed! (error: " + it.message + ")")
                 it.printStackTrace()
                 return true
             }
