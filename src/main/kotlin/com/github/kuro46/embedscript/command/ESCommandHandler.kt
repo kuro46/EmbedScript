@@ -256,7 +256,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             val player = sender as Player
             val world = args.getOrElse(0) { player.world.name }
-            val pageIndex = if (args.size >= 2 && NumberUtils.isNumber(args[2])) Integer.parseInt(args[1]) - 1 else 0
+            val pageIndex = if (args.size >= 2 && NumberUtils.isNumber(args[1])) Integer.parseInt(args[1]) - 1 else 0
             val filter = presetName?.let {
                 scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
             }
@@ -282,7 +282,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
                                  val scriptUI: ScriptUI) : CommandHandler(SenderType.Player()) {
         override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
             val player = sender as Player
-            val pageIndex = if (args.size >= 2 && NumberUtils.isNumber(args[2])) Integer.parseInt(args[1]) - 1 else 0
+            val pageIndex = if (args.isNotEmpty() && NumberUtils.isNumber(args[0])) Integer.parseInt(args[0]) - 1 else 0
             val filter = presetName?.let {
                 scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
             }
