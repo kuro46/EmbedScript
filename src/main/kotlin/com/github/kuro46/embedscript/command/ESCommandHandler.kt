@@ -37,6 +37,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         registerChildHandler("teleport", TeleportHandler())
         registerChildHandler("page", PageHandler(scriptUI))
         registerChildHandler("list", ListHandler(presetName, scriptProcessor, scriptUI))
+        registerChildHandler("listAll", ListAllHandler(presetName, scriptProcessor, scriptUI))
         registerChildHandler("view", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
             player.sendMessage(Prefix.PREFIX + "Please click any block...")
@@ -93,7 +94,8 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             sender.sendMessage("""/es help - Displays this message.
                     |/es reload - Reloads configuration and scripts
                     |/es migrate - Migrates from ScriptBlock to this plugin.
-                    |/es list [world] [page] - Displays list of scripts in the [world] or current world if world is not specified.
+                    |/es list [world] [page] - Displays list of scripts in the [world] or current world.
+                    |/es listAll [page] - Displays list of scripts in this server.
                     |/es view - Displays information about script in the clicked block.
                     |/es remove - Removes all scripts in the clicked block.
                     |/es embed <script> - Embeds a script to the clicked block.
@@ -258,7 +260,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             val filter = presetName?.let {
                 scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
             }
-            val scope = if (world == "all") ScriptUI.ListScope.Server else ScriptUI.ListScope.World(world)
+            val scope = ScriptUI.ListScope.World(world)
             scriptUI.list(player, scope, filter, pageIndex)
             return true
         }
@@ -272,6 +274,21 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             } else {
                 emptyList()
             }
+        }
+    }
+
+    private class ListAllHandler(val presetName: String?,
+                                 val scriptProcessor: ScriptProcessor,
+                                 val scriptUI: ScriptUI) : CommandHandler(SenderType.Player()) {
+        override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+            val player = sender as Player
+            val pageIndex = if (args.size >= 2 && NumberUtils.isNumber(args[2])) Integer.parseInt(args[1]) - 1 else 0
+            val filter = presetName?.let {
+                scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
+            }
+            val scope = ScriptUI.ListScope.Server
+            scriptUI.list(player, scope, filter, pageIndex)
+            return true
         }
     }
 }
