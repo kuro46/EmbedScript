@@ -206,9 +206,9 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             if (args.size < 4) {
                 return false
             }
-            // TODO: refactor here
-            val world = Bukkit.getWorld(args[0])
-            if (world == null) {
+            val world = args.getOrNull(0)?.let {
+                Bukkit.getWorld(it)
+            } ?: run {
                 player.sendMessage(Prefix.ERROR_PREFIX + "World: " + args[0] + " not exist.")
                 return true
             }
