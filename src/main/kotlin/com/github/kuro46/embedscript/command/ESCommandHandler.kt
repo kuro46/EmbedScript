@@ -12,7 +12,6 @@ import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptUI
 import com.github.kuro46.embedscript.script.ScriptUtil
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
-import org.apache.commons.lang.math.NumberUtils
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.command.CommandSender
@@ -61,11 +60,11 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         }.apply { this.tabCompleter = scriptTabCompleter })
     }
 
-    override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+    override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
         return false
     }
 
-    private fun modifyAction(player: Player, args: List<String>, add: Boolean): Boolean {
+    private fun modifyAction(player: Player, args: Arguments, add: Boolean): Boolean {
         if (args.isEmpty()) {
             return false
         }
@@ -90,7 +89,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     }
 
     private class HelpHandler : CommandHandler() {
-        override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             sender.sendMessage("""/es help - Displays this message.
                     |/es reload - Reloads configuration and scripts
                     |/es migrate - Migrates from ScriptBlock to this plugin.
@@ -107,7 +106,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     }
 
     private class MigrateHandler(val embedScript: EmbedScript) : CommandHandler() {
-        override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             sender.sendMessage("Migrating data of ScriptBlock...")
             val migrationResult = runCatching { ScriptBlockMigrator.migrate(embedScript) }
             migrationResult.exceptionOrNull()?.also {
@@ -122,7 +121,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     }
 
     private class ExportHandler(val scriptExporter: ScriptExporter) : CommandHandler() {
-        override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             if (args.isEmpty()) {
                 return false
             }
@@ -141,7 +140,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()
@@ -154,7 +153,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     }
 
     private class ImportHandler(val scriptExporter: ScriptExporter) : CommandHandler() {
-        override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             if (args.isEmpty()) {
                 return false
             }
@@ -172,14 +171,14 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
             // TODO: Returns list of files in the EmbedScript/export
             return emptyList()
         }
     }
 
     private class ReloadHandler(val configuration: Configuration, val scriptManager: ScriptManager) : CommandHandler() {
-        override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...")
 
             val cfgReloadResult = runCatching { configuration.load() }
@@ -202,28 +201,28 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     }
 
     private class TeleportHandler : CommandHandler(SenderType.Player(), false) {
-        override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             if (args.size < 4) {
                 return false
             }
+            // TODO: refactor here
             val world = Bukkit.getWorld(args[0])
             if (world == null) {
                 player.sendMessage(Prefix.ERROR_PREFIX + "World: " + args[0] + " not exist.")
                 return true
             }
-            try {
-                val playerLocation = player.location
-                player.teleport(Location(world,
-                        Integer.parseInt(args[1]) + 0.5,
-                        Integer.parseInt(args[2]).toDouble(),
-                        Integer.parseInt(args[3]) + 0.5,
-                        playerLocation.yaw,
-                        playerLocation.pitch))
-            } catch (e: NumberFormatException) {
-                player.sendMessage("X or Y or Z is not valid number.")
-                return true
-            }
+
+            val playerLocation = player.location
+            val x = args.getInt(sender, 1) ?: return true
+            val y = args.getInt(sender, 2) ?: return true
+            val z = args.getInt(sender, 3) ?: return true
+            player.teleport(Location(world,
+                    x + 0.5,
+                    y.toDouble(),
+                    z + 0.5,
+                    playerLocation.yaw,
+                    playerLocation.pitch))
 
             player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.")
             return true
@@ -231,21 +230,14 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     }
 
     private class PageHandler(val scriptUI: ScriptUI) : CommandHandler(SenderType.Player(), false) {
-        override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             if (args.isEmpty()) {
                 return false
             }
 
-            val parsed: Int
-            try {
-                parsed = Integer.parseInt(args[0])
-            } catch (e: NumberFormatException) {
-                player.sendMessage(Prefix.ERROR_PREFIX + args[0] + " is not a valid number!")
-                return true
-            }
-
-            scriptUI.changePage(player, parsed)
+            val pageIndex = args.getInt(sender, 0) ?: return true
+            scriptUI.changePage(player, pageIndex)
             return true
         }
     }
@@ -253,10 +245,10 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     private class ListHandler(val presetName: String?,
                               val scriptProcessor: ScriptProcessor,
                               val scriptUI: ScriptUI) : CommandHandler(SenderType.Player(), false) {
-        override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             val world = args.getOrElse(0) { player.world.name }
-            val pageIndex = if (args.size >= 2 && NumberUtils.isNumber(args[1])) Integer.parseInt(args[1]) - 1 else 0
+            val pageIndex = args.getInt(sender, 1)?.minus(1) ?: 0
             val filter = presetName?.let {
                 scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
             }
@@ -265,7 +257,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: List<String>): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()
@@ -280,9 +272,9 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     private class ListAllHandler(val presetName: String?,
                                  val scriptProcessor: ScriptProcessor,
                                  val scriptUI: ScriptUI) : CommandHandler(SenderType.Player()) {
-        override fun onCommand(sender: CommandSender, command: String, args: List<String>): Boolean {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
-            val pageIndex = if (args.isNotEmpty() && NumberUtils.isNumber(args[0])) Integer.parseInt(args[0]) - 1 else 0
+            val pageIndex = args.getInt(sender, 0)?.minus(1) ?: 0
             val filter = presetName?.let {
                 scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
             }

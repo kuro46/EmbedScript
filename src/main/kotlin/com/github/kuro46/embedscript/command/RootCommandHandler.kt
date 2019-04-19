@@ -7,7 +7,7 @@ import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 
 abstract class RootCommandHandler : CommandHandler(), BukkitCommandExecutor, TabCompleter {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
-        super.handleCommandAsRoot(sender, command.name, args.toList())
+        super.handleCommandAsRoot(sender, command.name, Arguments(args.toList()))
         return true
     }
 
