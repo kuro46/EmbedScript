@@ -122,7 +122,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
 
     private class ExportHandler(val scriptExporter: ScriptExporter) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            if (args.isEmpty()) {
+            if (args.isElementNotEnough(0)) {
                 return false
             }
 
@@ -154,7 +154,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
 
     private class ImportHandler(val scriptExporter: ScriptExporter) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            if (args.isEmpty()) {
+            if (args.isElementNotEnough(0)) {
                 return false
             }
 
@@ -203,7 +203,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     private class TeleportHandler : CommandHandler(SenderType.Player(), false) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
-            if (args.size < 4) {
+            if (args.isElementNotEnough(3)) {
                 return false
             }
             val world = args.getOrNull(0)?.let {
@@ -232,7 +232,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
     private class PageHandler(val scriptUI: ScriptUI) : CommandHandler(SenderType.Player(), false) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
-            if (args.isEmpty()) {
+            if (args.isElementNotEnough(0)) {
                 return false
             }
 

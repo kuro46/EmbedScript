@@ -12,4 +12,12 @@ class Arguments(raw: List<String>) : List<String> by raw {
             intOrNull
         }
     }
+
+    fun isElementEnough(maxIndex: Int): Boolean {
+        return lastIndex >= maxIndex
+    }
+
+    fun isElementNotEnough(maxIndex: Int): Boolean {
+        return !isElementEnough(maxIndex)
+    }
 }
