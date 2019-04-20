@@ -13,7 +13,10 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
+import java.util.ArrayList
+import java.util.Collections
+import java.util.HashMap
+import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -48,7 +51,7 @@ object ScriptSerializer {
             Files.newBufferedReader(path).use { reader ->
                 val version = readVersion(path)
                 val formatter = createFormatter(version, path)
-                    ?: throw UnsupportedOperationException("Unsupported version: $version")
+                        ?: throw UnsupportedOperationException("Unsupported version: $version")
 
                 val result = formatter.fromJson(reader)
                 if (version != LATEST_VERSION) {
@@ -315,8 +318,7 @@ object ScriptSerializer {
                             while (reader.hasNext()) {
                                 when (reader.nextName()) {
                                     "type" -> {
-                                        val nextString = reader.nextString()
-                                        when (nextString) {
+                                        when (val nextString = reader.nextString()) {
                                             "BYPASS_PERMISSION", "COMMAND" -> keys.add("command")
                                             "CONSOLE" -> keys.add("console")
                                             "PLAYER" -> keys.add("say")
@@ -340,10 +342,10 @@ object ScriptSerializer {
                 }
 
                 scripts.add(Script(author!!, System.currentTimeMillis(),
-                    if (eventType == EventType.WALK) ImmutableSet.of(Script.MoveType.GROUND) else ImmutableSet.of(),
-                    if (eventType == EventType.INTERACT) ImmutableSet.of(Script.ClickType.ALL) else ImmutableSet.of(),
-                    if (eventType == EventType.INTERACT) ImmutableSet.of(Script.PushType.ALL) else ImmutableSet.of(),
-                    ImmutableListMultimap.copyOf(multimap)))
+                        if (eventType == EventType.WALK) ImmutableSet.of(Script.MoveType.GROUND) else ImmutableSet.of(),
+                        if (eventType == EventType.INTERACT) ImmutableSet.of(Script.ClickType.ALL) else ImmutableSet.of(),
+                        if (eventType == EventType.INTERACT) ImmutableSet.of(Script.PushType.ALL) else ImmutableSet.of(),
+                        ImmutableListMultimap.copyOf(multimap)))
             }
             reader.endArray()
 

@@ -26,9 +26,9 @@ class MoveListener(embedScript: EmbedScript) : Listener {
 
         val player = event.player
         val scriptPosition = ScriptPosition(to.world.name,
-            to.blockX,
-            to.blockY - 1,
-            to.blockZ)
+                to.blockX,
+                to.blockY - 1,
+                to.blockZ)
 
         if (!scriptManager.contains(scriptPosition)) {
             return
@@ -70,7 +70,7 @@ class MoveListener(embedScript: EmbedScript) : Listener {
 
     private fun equalsBlock(location: Location, location1: Location): Boolean {
         return location.blockX == location1.blockX &&
-            location.blockY == location1.blockY &&
-            location.blockZ == location1.blockZ
+                location.blockY == location1.blockY &&
+                location.blockZ == location1.blockZ
     }
 }

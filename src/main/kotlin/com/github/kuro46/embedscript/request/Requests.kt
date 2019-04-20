@@ -3,7 +3,7 @@ package com.github.kuro46.embedscript.request
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUI
 import org.bukkit.entity.Player
-import java.util.*
+import java.util.WeakHashMap
 
 /**
  * @author shirokuro
@@ -24,10 +24,8 @@ class Requests(private val scriptUI: ScriptUI) {
     }
 
     fun executeRequest(player: Player, position: ScriptPosition): Boolean {
-        val request = removeRequest(player) ?: return false
-
-        when (request) {
-            is Request.View-> scriptUI.view(player, position)
+        when (val request = removeRequest(player) ?: return false) {
+            is Request.View -> scriptUI.view(player, position)
             is Request.Remove -> scriptUI.remove(player, position)
             is Request.Embed -> scriptUI.embed(player, position, request.script)
             is Request.Add -> scriptUI.add(player, position, request.script)

@@ -10,7 +10,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 /**
@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit
  */
 class InteractListener(embedScript: EmbedScript) : Listener {
     private val coolTime: Cache<UUID, Boolean> = CacheBuilder.newBuilder()
-        .expireAfterWrite(300, TimeUnit.MILLISECONDS)
-        .build()
+            .expireAfterWrite(300, TimeUnit.MILLISECONDS)
+            .build()
     private val scriptManager = embedScript.scriptManager
     private val scriptProcessor = embedScript.scriptProcessor
     private val requests = embedScript.requests

@@ -5,7 +5,9 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
+import java.util.ArrayList
+import java.util.Collections
+import java.util.HashMap
 
 class Configuration private constructor(dataFolder: Path) {
 
@@ -75,7 +77,7 @@ class Configuration private constructor(dataFolder: Path) {
                 }
 
                 val permissions = permission?.let { listOf(it) }
-                    ?: Collections.unmodifiableList(ArrayList<String>(0))
+                        ?: Collections.unmodifiableList(ArrayList<String>(0))
                 // note:
                 // please don't replace with Collections.emptyList()
                 // because SnakeYaml cannot serialize Collections.emptyList()

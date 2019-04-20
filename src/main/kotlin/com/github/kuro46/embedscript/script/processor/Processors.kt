@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableList
 import net.md_5.bungee.chat.ComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import java.util.*
+import java.util.Locale
 import java.util.stream.Collectors
 
 object Processors {
@@ -19,121 +19,121 @@ object Processors {
 
     // ONLY TO PARSE
     val LISTEN_CLICK_PROCESSOR = newProcessor("listen-click", "lc",
-        object : AbstractParser() {
-            override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
-                addEnumToCollection(builder.clickTypes, Script.ClickType::class.java, matchedValues)
-            }
-        },
-        DEFAULT_EXECUTOR)
+            object : AbstractParser() {
+                override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+                    addEnumToCollection(builder.clickTypes, Script.ClickType::class.java, matchedValues)
+                }
+            },
+            DEFAULT_EXECUTOR)
     val LISTEN_MOVE_PROCESSOR = newProcessor("listen-move", "lm",
-        object : AbstractParser() {
-            override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
-                addEnumToCollection(builder.moveTypes, Script.MoveType::class.java, matchedValues)
-            }
-        },
-        DEFAULT_EXECUTOR)
+            object : AbstractParser() {
+                override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+                    addEnumToCollection(builder.moveTypes, Script.MoveType::class.java, matchedValues)
+                }
+            },
+            DEFAULT_EXECUTOR)
     val LISTEN_PUSH_PROCESSOR = newProcessor("listen-push", "lm",
-        object : AbstractParser() {
-            override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
-                addEnumToCollection(builder.pushTypes, Script.PushType::class.java, matchedValues)
-            }
-        },
-        DEFAULT_EXECUTOR)
+            object : AbstractParser() {
+                override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+                    addEnumToCollection(builder.pushTypes, Script.PushType::class.java, matchedValues)
+                }
+            },
+            DEFAULT_EXECUTOR)
 
     // CHECK PHASE
 
     val NEEDED_PERMISSION_PROCESSOR = newProcessor("needed-permission", "np",
-        DEFAULT_PARSER,
-        NeededPermissionExecutor())
+            DEFAULT_PARSER,
+            NeededPermissionExecutor())
     val UNNEEDED_PERMISSION_PROCESSOR = newProcessor("unneeded-permission", "up",
-        DEFAULT_PARSER,
-        object : NeededPermissionExecutor() {
-            override fun check(trigger: Player, matchedValues: List<String>): Boolean {
-                // invert
-                return !super.check(trigger, matchedValues)
-            }
-        })
+            DEFAULT_PARSER,
+            object : NeededPermissionExecutor() {
+                override fun check(trigger: Player, matchedValues: List<String>): Boolean {
+                    // invert
+                    return !super.check(trigger, matchedValues)
+                }
+            })
 
     // EXECUTION PHASE
 
     private val COMMAND_PARSER = object : AbstractParser() {
         override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
             val modifiedForCommand = matchedValues.stream()
-                // remove slash char if needed
-                .map { commandWithArgs ->
-                    if (commandWithArgs.startsWith("/"))
-                        commandWithArgs.substring(1)
-                    else
-                        commandWithArgs
-                }
-                // canonicalize the command
-                .map { commandWithArgs ->
-                    val splitCommandWithArgs = commandWithArgs.split(" ")
-                    val pluginCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0])
-                    val canonicalizedCommand = if (pluginCommand == null)
-                        splitCommandWithArgs[0]
-                    else
-                        pluginCommand.name
-                    val args = splitCommandWithArgs.stream()
-                        .skip(1)
-                        .collect(Collectors.joining(" "))
-                    "$canonicalizedCommand $args"
-                }
-                .collect(Collectors.toList())
+                    // remove slash char if needed
+                    .map { commandWithArgs ->
+                        if (commandWithArgs.startsWith("/"))
+                            commandWithArgs.substring(1)
+                        else
+                            commandWithArgs
+                    }
+                    // canonicalize the command
+                    .map { commandWithArgs ->
+                        val splitCommandWithArgs = commandWithArgs.split(" ")
+                        val pluginCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0])
+                        val canonicalizedCommand = if (pluginCommand == null)
+                            splitCommandWithArgs[0]
+                        else
+                            pluginCommand.name
+                        val args = splitCommandWithArgs.stream()
+                                .skip(1)
+                                .collect(Collectors.joining(" "))
+                        "$canonicalizedCommand $args"
+                    }
+                    .collect(Collectors.toList())
             builder.script.putAll(key, modifiedForCommand)
         }
     }
 
     val COMMAND_PROCESSOR = newProcessor("command", "c",
-        COMMAND_PARSER,
-        object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
-                matchedValues.forEach { trigger.performCommand(it) }
-            }
-        })
+            COMMAND_PARSER,
+            object : AbstractExecutor() {
+                override fun beginExecute(trigger: Player, matchedValues: List<String>) {
+                    matchedValues.forEach { trigger.performCommand(it) }
+                }
+            })
     val CONSOLE_PROCESSOR = newProcessor("console", "con",
-        COMMAND_PARSER,
-        object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
-                matchedValues.forEach { string -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), string) }
-            }
-        })
+            COMMAND_PARSER,
+            object : AbstractExecutor() {
+                override fun beginExecute(trigger: Player, matchedValues: List<String>) {
+                    matchedValues.forEach { string -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), string) }
+                }
+            })
     val SAY_PROCESSOR = newProcessor("say", "s",
-        DEFAULT_PARSER,
-        object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
-                matchedValues.forEach { trigger.sendMessage(it) }
-            }
-        })
+            DEFAULT_PARSER,
+            object : AbstractExecutor() {
+                override fun beginExecute(trigger: Player, matchedValues: List<String>) {
+                    matchedValues.forEach { trigger.sendMessage(it) }
+                }
+            })
     val SAY_JSON_PROCESSOR = newProcessor("say-json", "sj",
-        DEFAULT_PARSER,
-        object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
-                matchedValues.forEach { string -> trigger.spigot().sendMessage(*ComponentSerializer.parse(string)) }
-            }
-        })
+            DEFAULT_PARSER,
+            object : AbstractExecutor() {
+                override fun beginExecute(trigger: Player, matchedValues: List<String>) {
+                    matchedValues.forEach { string -> trigger.spigot().sendMessage(*ComponentSerializer.parse(string)) }
+                }
+            })
     val BROADCAST_PROCESSOR = newProcessor("broadcast", "b",
-        DEFAULT_PARSER,
-        object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
-                Bukkit.getOnlinePlayers().forEach { player ->
-                    for (string in matchedValues) {
-                        player.sendMessage(string)
+            DEFAULT_PARSER,
+            object : AbstractExecutor() {
+                override fun beginExecute(trigger: Player, matchedValues: List<String>) {
+                    Bukkit.getOnlinePlayers().forEach { player ->
+                        for (string in matchedValues) {
+                            player.sendMessage(string)
+                        }
                     }
                 }
-            }
-        })
+            })
     val BROADCAST_JSON_PROCESSOR = newProcessor("broadcast-json", "bj",
-        DEFAULT_PARSER,
-        object : AbstractExecutor() {
-            override fun beginExecute(trigger: Player, matchedValues: List<String>) {
-                matchedValues.stream()
-                        .map { json -> ComponentSerializer.parse(json) }
-                        .forEach {
-                            Bukkit.getOnlinePlayers().forEach { player -> player.spigot().sendMessage(*it) }
-                        }
-            }
-        })
+            DEFAULT_PARSER,
+            object : AbstractExecutor() {
+                override fun beginExecute(trigger: Player, matchedValues: List<String>) {
+                    matchedValues.stream()
+                            .map { json -> ComponentSerializer.parse(json) }
+                            .forEach {
+                                Bukkit.getOnlinePlayers().forEach { player -> player.spigot().sendMessage(*it) }
+                            }
+                }
+            })
 
     fun newProcessor(key: String,
                      omittedKey: String,

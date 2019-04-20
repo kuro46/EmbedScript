@@ -2,11 +2,11 @@ package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
 import com.google.common.collect.ImmutableList
-import org.apache.commons.lang.ArrayUtils
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin
-import java.util.*
+import java.util.HashMap
+import java.util.HashSet
 import java.util.stream.Collectors
 
 class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Processor {
@@ -53,12 +53,12 @@ class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Pr
                         var skipElement = 1
                         while (permissionsForAction == null) {
                             val split = action.split(' ')
-                                .dropLastWhile { it.isEmpty() }
-                                .toMutableList()
+                                    .dropLastWhile { it.isEmpty() }
+                                    .toMutableList()
                             split.reverse()
                             val skipped = split.stream()
-                                .skip(skipElement.toLong())
-                                .collect(Collectors.toList())
+                                    .skip(skipElement.toLong())
+                                    .collect(Collectors.toList())
                             if (skipped.isEmpty()) {
                                 break
                             }

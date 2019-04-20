@@ -5,7 +5,13 @@ import com.github.kuro46.embedscript.command.ESCommandHandler
 import com.github.kuro46.embedscript.listener.InteractListener
 import com.github.kuro46.embedscript.listener.MoveListener
 import com.github.kuro46.embedscript.request.Requests
-import com.github.kuro46.embedscript.script.*
+import com.github.kuro46.embedscript.script.EventType
+import com.github.kuro46.embedscript.script.Script
+import com.github.kuro46.embedscript.script.ScriptExporter
+import com.github.kuro46.embedscript.script.ScriptManager
+import com.github.kuro46.embedscript.script.ScriptPosition
+import com.github.kuro46.embedscript.script.ScriptSerializer
+import com.github.kuro46.embedscript.script.ScriptUI
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
@@ -14,7 +20,7 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.ServicePriority
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
+import java.util.Arrays
 import java.util.logging.Logger
 
 class EmbedScript private constructor(val plugin: Plugin) {
@@ -67,19 +73,19 @@ class EmbedScript private constructor(val plugin: Plugin) {
 
         val merged: ListMultimap<ScriptPosition, Script> = ArrayListMultimap.create()
         Arrays.stream(EventType.values())
-            .map { eventType -> dataFolder.resolve(eventType.fileName) }
-            .filter { path -> Files.exists(path) }
-            .map { path -> ScriptManager.load(path) }
-            .forEach { scriptManager ->
-                for (position in scriptManager.keySet()) {
-                    val scripts = scriptManager[position]
-                    val mergeTo = merged.get(position)
+                .map { eventType -> dataFolder.resolve(eventType.fileName) }
+                .filter { path -> Files.exists(path) }
+                .map { path -> ScriptManager.load(path) }
+                .forEach { scriptManager ->
+                    for (position in scriptManager.keySet()) {
+                        val scripts = scriptManager[position]
+                        val mergeTo = merged.get(position)
 
-                    mergeTo.addAll(scripts)
+                        mergeTo.addAll(scripts)
+                    }
+
+                    Files.delete(scriptManager.path)
                 }
-
-                Files.delete(scriptManager.path)
-            }
 
         if (merged.isEmpty) {
             return
@@ -109,9 +115,9 @@ class EmbedScript private constructor(val plugin: Plugin) {
 
     private fun registerESAPI() {
         Bukkit.getServicesManager().register(EmbedScriptAPI::class.java,
-            EmbedScriptAPI(scriptProcessor),
-            plugin,
-            ServicePriority.Normal)
+                EmbedScriptAPI(scriptProcessor),
+                plugin,
+                ServicePriority.Normal)
     }
 
     companion object {
