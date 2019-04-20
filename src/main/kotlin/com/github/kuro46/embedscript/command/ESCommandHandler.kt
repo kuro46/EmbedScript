@@ -244,7 +244,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
 
     private class ListHandler(val presetName: String?,
                               val scriptProcessor: ScriptProcessor,
-                              val scriptUI: ScriptUI) : CommandHandler(SenderType.Player(), false) {
+                              val scriptUI: ScriptUI) : CommandHandler(SenderType.Player()) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             val world = args.getOrElse(0) { player.world.name }
