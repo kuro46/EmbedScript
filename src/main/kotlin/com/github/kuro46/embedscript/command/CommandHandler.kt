@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript.command
 
+import com.github.kuro46.embedscript.util.Scheduler
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.command.ConsoleCommandSender
@@ -7,7 +8,6 @@ import org.bukkit.entity.Player
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
-import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import kotlin.streams.toList
 import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
@@ -62,7 +62,7 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
     }
 
     fun handleCommandAsRoot(sender: CommandSender, command: String, args: Arguments): Future<*> {
-        return commandHandleThread.submit {
+        return Scheduler.submit {
             if (!handleCommand(sender, command, args)) {
                 sender.sendMessage("Incorrect usage!")
             }
@@ -114,14 +114,6 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
             Pair(args.last(), args.dropLast(1))
         }
         return handleTabComplete(sender, uncompletedArg, Arguments(completedArgs.stream().filter { it.isNotEmpty() }.toList()))
-    }
-
-    companion object {
-        private val commandHandleThread = Executors.newCachedThreadPool { r ->
-            val thread = Thread(r, "EmbedScript-Command-Handling-Thread")
-            thread.isDaemon = true
-            thread
-        }
     }
 
     sealed class SenderType {
