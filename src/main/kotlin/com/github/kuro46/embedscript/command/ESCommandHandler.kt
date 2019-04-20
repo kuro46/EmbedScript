@@ -5,6 +5,7 @@ import com.github.kuro46.embedscript.EmbedScript
 import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
 import com.github.kuro46.embedscript.request.Request
+import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptExporter
@@ -248,12 +249,12 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             val world = args.getOrElse(0) { player.world.name }
-            val pageIndex = args.getInt(sender, 1)?.minus(1) ?: return true
+            val pageNumber = args.getInt(sender, 1, 1) ?: return true
             val filter = presetName?.let {
                 scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
             }
             val scope = ScriptUI.ListScope.World(world)
-            scriptUI.list(player, scope, filter, pageIndex)
+            scriptUI.list(player, scope, filter, pageNumber - 1)
             return true
         }
 
@@ -274,12 +275,12 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
                                  val scriptUI: ScriptUI) : CommandHandler(SenderType.Player()) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
-            val pageIndex = args.getInt(sender, 0)?.minus(1) ?: return true
+            val pageNumber = args.getInt(sender, 0, 1) ?: return true
             val filter = presetName?.let {
                 scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
             }
             val scope = ScriptUI.ListScope.Server
-            scriptUI.list(player, scope, filter, pageIndex)
+            scriptUI.list(player, scope, filter, pageNumber - 1)
             return true
         }
     }
