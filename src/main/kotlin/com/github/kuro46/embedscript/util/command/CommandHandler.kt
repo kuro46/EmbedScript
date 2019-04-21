@@ -3,6 +3,7 @@ package com.github.kuro46.embedscript.util.command
 import com.github.kuro46.embedscript.util.Scheduler
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
+import org.bukkit.plugin.Plugin
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -10,7 +11,8 @@ import java.util.concurrent.Future
 import kotlin.streams.toList
 import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 
-abstract class CommandHandler(private val senderType: SenderType = SenderType.All, private val async: Boolean = true) : CommandExecutor, TabCompleter {
+abstract class CommandHandler(private val senderType: SenderType = SenderType.All,
+                              private val handlingMode: HandlingMode = HandlingMode.Asynchronous) : CommandExecutor, TabCompleter {
     private val childHandlers: ConcurrentMap<String, CommandHandler> = ConcurrentHashMap()
     var commandExecutor: CommandExecutor? = null
     var tabCompleter: TabCompleter? = null
@@ -58,12 +60,12 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
 
         val commandExecutor = this.commandExecutor ?: this
 
-        return if (async) {
-            commandExecutor.onCommand(sender, command, args)
-        } else {
-            Bukkit.getScheduler().callSyncMethod(Bukkit.getPluginManager().getPlugin("EmbedScript")) {
+        return if (handlingMode is HandlingMode.Synchronous) {
+            Bukkit.getScheduler().callSyncMethod(handlingMode.plugin) {
                 commandExecutor.onCommand(sender, command, args)
             }.get()
+        } else {
+            commandExecutor.onCommand(sender, command, args)
         }
     }
 
@@ -115,5 +117,10 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
         object All : SenderType()
         data class Console(val errorMessage: String? = null) : SenderType()
         data class Player(val errorMessage: String? = null) : SenderType()
+    }
+
+    sealed class HandlingMode {
+        object Asynchronous : HandlingMode()
+        data class Synchronous(val plugin: Plugin) : HandlingMode()
     }
 }

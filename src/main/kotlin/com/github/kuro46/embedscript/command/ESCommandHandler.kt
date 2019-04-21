@@ -20,6 +20,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
 import java.nio.file.Files
 import kotlin.streams.toList
 
@@ -37,7 +38,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         registerChildHandler("export", ExportHandler(scriptExporter))
         registerChildHandler("import", ImportHandler(scriptExporter))
         registerChildHandler("reload", ReloadHandler(configuration, scriptManager))
-        registerChildHandler("teleport", TeleportHandler())
+        registerChildHandler("teleport", TeleportHandler(embedScript.plugin))
         registerChildHandler("list", ListHandler(presetName, scriptProcessor, scriptUI))
         registerChildHandler("listAll", ListAllHandler(presetName, scriptProcessor, scriptUI))
         registerChildHandler("view", ViewHandler(requests, scriptManager))
@@ -199,7 +200,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         }
     }
 
-    private class TeleportHandler : CommandHandler(SenderType.Player(), false) {
+    private class TeleportHandler(plugin: Plugin) : CommandHandler(SenderType.Player(), HandlingMode.Synchronous(plugin)) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             if (args.isElementNotEnough(3)) {
