@@ -19,6 +19,27 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
         childHandlers[command.toLowerCase(Locale.ENGLISH)] = handler
     }
 
+    private fun checkSenderType(sender: CommandSender): Boolean {
+        when (senderType) {
+            is SenderType.Console -> {
+                senderType.errorMessage?.let {
+                    CommandHandlerUtil.castToConsole(sender, it) ?: return false
+                } ?: run {
+                    CommandHandlerUtil.castToConsole(sender) ?: return false
+                }
+            }
+            is SenderType.Player -> {
+                senderType.errorMessage?.let {
+                    CommandHandlerUtil.castToConsole(sender, it) ?: return false
+                } ?: run {
+                    CommandHandlerUtil.castToConsole(sender) ?: return false
+                }
+            }
+        }
+
+        return true
+    }
+
     // ----------------
     // Command Handling
     // ----------------
@@ -26,22 +47,7 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
     abstract override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean
 
     private fun handleCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-        when (senderType) {
-            is SenderType.Console -> {
-                senderType.errorMessage?.let {
-                    CommandHandlerUtil.castToConsole(sender, it) ?: return true
-                } ?: run {
-                    CommandHandlerUtil.castToConsole(sender) ?: return true
-                }
-            }
-            is SenderType.Player -> {
-                senderType.errorMessage?.let {
-                    CommandHandlerUtil.castToConsole(sender, it) ?: return true
-                } ?: run {
-                    CommandHandlerUtil.castToConsole(sender) ?: return true
-                }
-            }
-        }
+        if (!checkSenderType(sender)) return true
 
         // find child executors and execute if contains
         args.getOrNull(0)?.let { firstArg ->
@@ -78,22 +84,7 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
     }
 
     private fun handleTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
-        when (senderType) {
-            is SenderType.Console -> {
-                senderType.errorMessage?.let {
-                    CommandHandlerUtil.castToConsole(sender, it) ?: return emptyList()
-                } ?: run {
-                    CommandHandlerUtil.castToConsole(sender) ?: return emptyList()
-                }
-            }
-            is SenderType.Player -> {
-                senderType.errorMessage?.let {
-                    CommandHandlerUtil.castToConsole(sender, it) ?: return emptyList()
-                } ?: run {
-                    CommandHandlerUtil.castToConsole(sender) ?: return emptyList()
-                }
-            }
-        }
+        if (!checkSenderType(sender)) return emptyList()
 
         // find child executors and execute if contains
         completedArgs.getOrNull(0)?.let { firstArg ->
