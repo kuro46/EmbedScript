@@ -118,7 +118,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
         // trim a space character at end of string
         val substring = formattedByNewVersion.substring(0, formattedByNewVersion.length - 1)
 
-        return processor.parse(author, substring)
+        return processor.parse(author, substring, -1)
     }
 
     private fun createPositionFromRawLocation(world: String, rawLocation: String): ScriptPosition {

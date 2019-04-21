@@ -73,8 +73,8 @@ class ViewHandler(private val requests: Requests,
         for (script in scriptManager[position]) {
             // null if failed to find name of author
             val author = getUserName(sender, script.author) ?: return
-            val formatted = formatTime(script.createdAt)
-            messages.add(TextComponent.fromLegacyText("$author created at $formatted"))
+            val timestamp = if (script.createdAt != -1L) { "at ${formatTime(script.createdAt)}" } else { "" }
+            messages.add(TextComponent.fromLegacyText("$author created $timestamp"))
             addMessageIfNeeded(messages, "@listen-move", script.moveTypes)
             addMessageIfNeeded(messages, "@listen-click", script.clickTypes)
             addMessageIfNeeded(messages, "@listen-push", script.pushTypes)
