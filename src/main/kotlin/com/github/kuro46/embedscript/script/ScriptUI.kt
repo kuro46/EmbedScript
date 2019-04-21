@@ -2,8 +2,6 @@ package com.github.kuro46.embedscript.script
 
 import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.util.Scheduler
-import com.google.common.cache.Cache
-import com.google.common.cache.CacheBuilder
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.ComponentBuilder
@@ -15,7 +13,6 @@ import org.bukkit.entity.Player
 import java.io.Serializable
 import java.util.ArrayList
 import java.util.Comparator
-import java.util.concurrent.TimeUnit
 import java.util.function.BiConsumer
 import java.util.function.BinaryOperator
 import java.util.function.Function
@@ -26,11 +23,6 @@ import java.util.stream.Collector
  * @author shirokuro
  */
 class ScriptUI(private val scriptManager: ScriptManager) {
-    private val pageManager: Cache<CommandSender, (Int) -> Unit> = CacheBuilder.newBuilder()
-            .expireAfterAccess(5, TimeUnit.MINUTES)
-            .weakKeys()
-            .build()
-
     fun embed(sender: CommandSender,
               position: ScriptPosition,
               script: Script) {
@@ -89,10 +81,18 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             if (messages.isEmpty()) {
                 player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in $target")
             } else {
+                val command = if (scope is ListScope.World) {
+                    "list ${scope.name}"
+                } else {
+                    "listAll"
+                }
                 sendPage("List of scripts in $target",
                         player,
                         messages,
-                        pageIndex)
+                        pageIndex) { index ->
+                    val pageNumber = index + 1
+                    "/embedscript $command $pageNumber"
+                }
             }
         }
     }
@@ -102,20 +102,12 @@ class ScriptUI(private val scriptManager: ScriptManager) {
         data class World(val name: String) : ListScope()
     }
 
-    fun changePage(player: Player, pageIndex: Int) {
-        val consumer = pageManager.getIfPresent(player)
-        if (consumer == null) {
-            player.sendMessage(Prefix.ERROR_PREFIX + "Cannot get your page.")
-            return
-        }
-        consumer(pageIndex)
-    }
-
     fun sendPage(title: String,
-                         sender: CommandSender,
-                         messages: Collection<Array<BaseComponent>>,
-                         pageIndex: Int,
-                         chatHeight: Int = UNFOCUSED_CHAT_HEIGHT) {
+                 sender: CommandSender,
+                 messages: Collection<Array<BaseComponent>>,
+                 pageIndex: Int,
+                 chatHeight: Int = UNFOCUSED_CHAT_HEIGHT,
+                 commandGenerator: (Int) -> String) {
         val availableMessageHeight = chatHeight - 3
         val pages = splitMessages(messages, availableMessageHeight)
 
@@ -134,11 +126,11 @@ class ScriptUI(private val scriptManager: ScriptManager) {
 
         sender.spigot().sendMessage(*ComponentBuilder("")
                 .append(ComponentBuilder("<<Previous>>")
-                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/embedscript page $previousPageIndex"))
+                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, commandGenerator(previousPageIndex)))
                         .create())
                 .append("   ")
                 .append(ComponentBuilder("<<Next>>")
-                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/embedscript page $nextPageIndex"))
+                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, commandGenerator(nextPageIndex)))
                         .create())
                 .append("   ")
                 .append(ComponentBuilder("<<Page ${pageIndex + 1} of ${pages.size}>>")
@@ -146,8 +138,6 @@ class ScriptUI(private val scriptManager: ScriptManager) {
                         .create())
                 .create())
         sender.sendMessage(separator)
-
-        pageManager.put(sender) { value -> sendPage(title, sender, messages, value, chatHeight) }
     }
 
     private fun titleToSeparator(title: String): String {

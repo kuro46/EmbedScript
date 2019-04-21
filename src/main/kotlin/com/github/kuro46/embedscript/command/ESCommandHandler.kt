@@ -34,7 +34,6 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         registerChildHandler("import", ImportHandler(scriptExporter))
         registerChildHandler("reload", ReloadHandler(configuration, scriptManager))
         registerChildHandler("teleport", TeleportHandler())
-        registerChildHandler("page", PageHandler(scriptUI))
         registerChildHandler("list", ListHandler(presetName, scriptProcessor, scriptUI))
         registerChildHandler("listAll", ListAllHandler(presetName, scriptProcessor, scriptUI))
         registerChildHandler("view", ViewHandler(requests, scriptManager, scriptUI))
@@ -221,19 +220,6 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
                     playerLocation.pitch))
 
             player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.")
-            return true
-        }
-    }
-
-    private class PageHandler(val scriptUI: ScriptUI) : CommandHandler(SenderType.Player(), false) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            if (args.isElementNotEnough(0)) {
-                return false
-            }
-
-            val pageIndex = args.getInt(sender, 0) ?: return true
-            scriptUI.changePage(player, pageIndex)
             return true
         }
     }

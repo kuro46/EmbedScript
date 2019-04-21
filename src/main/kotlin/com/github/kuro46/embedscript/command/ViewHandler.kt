@@ -84,7 +84,10 @@ class ViewHandler(private val requests: Requests,
                 messages.add(TextComponent.fromLegacyText("@$key ${ScriptUtil.toString(value)}"))
             }
         }
-        scriptUI.sendPage("Script information", sender, messages, pageNumber - 1, 12)
+        scriptUI.sendPage("Script information", sender, messages, pageNumber - 1, 12) { index ->
+            val pageNum = index + 1
+            "/embedscript view $world $x $y $z $pageNum"
+        }
     }
 
     private fun getUserName(sender: CommandSender, uuid: UUID): String? {
