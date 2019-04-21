@@ -1,13 +1,20 @@
-package com.github.kuro46.embedscript.script
+package com.github.kuro46.embedscript.command
 
 import com.github.kuro46.embedscript.Prefix
+import com.github.kuro46.embedscript.script.Script
+import com.github.kuro46.embedscript.script.ScriptManager
+import com.github.kuro46.embedscript.script.ScriptPosition
+import com.github.kuro46.embedscript.script.ScriptUtil
+import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import com.github.kuro46.embedscript.util.PageUtil
-import com.github.kuro46.embedscript.util.Scheduler
+import com.github.kuro46.embedscript.util.command.Arguments
+import com.github.kuro46.embedscript.util.command.CommandHandler
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.io.Serializable
@@ -15,84 +22,80 @@ import java.util.ArrayList
 import java.util.Comparator
 import java.util.function.BiConsumer
 import java.util.function.BinaryOperator
-import java.util.function.Function
 import java.util.function.Supplier
 import java.util.stream.Collector
+import kotlin.streams.toList
 
-/**
- * @author shirokuro
- */
-class ScriptUI(private val scriptManager: ScriptManager) {
-    fun embed(sender: CommandSender,
-              position: ScriptPosition,
-              script: Script) {
-        if (scriptManager.contains(position)) {
-            sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.")
-            return
+object ListHandlers {
+    class ListHandler(private val presetName: String?,
+                      private val scriptProcessor: ScriptProcessor,
+                      private val scriptManager: ScriptManager) : CommandHandler(SenderType.Player()) {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
+            val player = sender as Player
+            val world = args.getOrElse(0) { player.world.name }
+            val pageNumber = args.getInt(sender, 1, 1) ?: return true
+            val filter = presetName?.let {
+                scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
+            }
+            val scope = ListScope.World(world)
+            list(scriptManager, player, scope, filter, pageNumber - 1)
+            return true
         }
 
-        scriptManager.put(position, script)
-
-        sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully embedded.")
-    }
-
-    fun add(sender: CommandSender,
-            position: ScriptPosition,
-            script: Script) {
-        if (!scriptManager.contains(position)) {
-            sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
-            return
-        }
-        scriptManager.put(position, script)
-
-        sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully added.")
-    }
-
-    fun remove(sender: CommandSender, position: ScriptPosition) {
-        if (scriptManager.remove(position) == null) {
-            sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
-            return
-        }
-
-        sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully removed.")
-    }
-
-    /**
-     * Send list of scripts to player
-     *
-     * @param player    Player
-     * @param scope     Scope
-     * @param pageIndex page index
-     */
-    fun list(player: Player, scope: ListScope, filter: Script?, pageIndex: Int) {
-        Scheduler.execute {
-            val messages = scriptManager.scripts.asMap().entries.stream()
-                    .filter { entry ->
-                        when (scope) {
-                            is ListScope.Server -> true
-                            is ListScope.World -> scope.name.equals(entry.key.world, true)
-                        }
-                    }
-                    .sorted(ScriptPositionComparator())
-                    .collect(ScriptCollector(filter))
-
-            val target = if (scope is ListScope.World) scope.name else "this server"
-
-            if (messages.isEmpty()) {
-                player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in $target")
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+            return if (completedArgs.isEmpty()) {
+                // player wants world list
+                Bukkit.getWorlds().stream()
+                        .map { it.name }
+                        .toList()
             } else {
-                val command = if (scope is ListScope.World) {
-                    "list ${scope.name}"
-                } else {
-                    "listAll"
+                emptyList()
+            }
+        }
+    }
+
+    class ListAllHandler(private val presetName: String?,
+                         private val scriptProcessor: ScriptProcessor,
+                         private val scriptManager: ScriptManager) : CommandHandler(SenderType.Player()) {
+        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
+            val player = sender as Player
+            val pageNumber = args.getInt(sender, 0, 1) ?: return true
+            val filter = presetName?.let {
+                scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
+            }
+            val scope = ListScope.Server
+            list(scriptManager, player, scope, filter, pageNumber - 1)
+            return true
+        }
+    }
+
+    fun list(scriptManager: ScriptManager, player: Player, scope: ListScope, filter: Script?, pageIndex: Int) {
+        val messages = scriptManager.scripts.asMap().entries.stream()
+                .filter { entry ->
+                    when (scope) {
+                        is ListScope.Server -> true
+                        is ListScope.World -> scope.name.equals(entry.key.world, true)
+                    }
                 }
-                PageUtil.sendPage("List of scripts in $target",
-                        player,
-                        messages,
-                        pageIndex) { index ->
-                    val pageNumber = index + 1
-                    "/embedscript $command $pageNumber"
-                }
+                .sorted(ScriptPositionComparator())
+                .collect(ScriptCollector(filter))
+
+        val target = if (scope is ListScope.World) scope.name else "this server"
+
+        if (messages.isEmpty()) {
+            player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in $target")
+        } else {
+            val command = if (scope is ListScope.World) {
+                "list ${scope.name}"
+            } else {
+                "listAll"
+            }
+            PageUtil.sendPage("List of scripts in $target",
+                    player,
+                    messages,
+                    pageIndex) { index ->
+                val pageNumber = index + 1
+                "/embedscript $command $pageNumber"
             }
         }
     }
@@ -155,8 +158,8 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             }
         }
 
-        override fun finisher(): Function<MutableCollection<Array<BaseComponent>>, MutableCollection<Array<BaseComponent>>> {
-            return Function { message -> message }
+        override fun finisher(): java.util.function.Function<MutableCollection<Array<BaseComponent>>, MutableCollection<Array<BaseComponent>>> {
+            return java.util.function.Function { message -> message }
         }
 
         override fun characteristics(): Set<Collector.Characteristics> {
@@ -201,4 +204,5 @@ class ScriptUI(private val scriptManager: ScriptManager) {
             return false
         }
     }
+
 }

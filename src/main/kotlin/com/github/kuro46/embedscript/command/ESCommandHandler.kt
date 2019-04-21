@@ -9,9 +9,7 @@ import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
-import com.github.kuro46.embedscript.script.ScriptUI
 import com.github.kuro46.embedscript.script.ScriptUtil
-import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.CommandHandler
 import com.github.kuro46.embedscript.util.command.CommandHandlerUtil
@@ -27,7 +25,6 @@ import kotlin.streams.toList
 class ESCommandHandler constructor(embedScript: EmbedScript, private val presetName: String? = null) : RootCommandHandler() {
     private val configuration = embedScript.configuration
     private val scriptProcessor = embedScript.scriptProcessor
-    private val scriptUI = embedScript.scriptUI
     private val requests = embedScript.requests
     private val scriptManager = embedScript.scriptManager
     private val scriptExporter = embedScript.scriptExporter
@@ -39,8 +36,8 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         registerChildHandler("import", ImportHandler(scriptExporter))
         registerChildHandler("reload", ReloadHandler(configuration, scriptManager))
         registerChildHandler("teleport", TeleportHandler(embedScript.plugin))
-        registerChildHandler("list", ListHandler(presetName, scriptProcessor, scriptUI))
-        registerChildHandler("listAll", ListAllHandler(presetName, scriptProcessor, scriptUI))
+        registerChildHandler("list", ListHandlers.ListHandler(presetName, scriptProcessor, scriptManager))
+        registerChildHandler("listAll", ListHandlers.ListAllHandler(presetName, scriptProcessor, scriptManager))
         registerChildHandler("view", ViewHandler(requests, scriptManager))
         registerChildHandler("remove", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
@@ -225,48 +222,6 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
                     playerLocation.pitch))
 
             player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.")
-            return true
-        }
-    }
-
-    private class ListHandler(val presetName: String?,
-                              val scriptProcessor: ScriptProcessor,
-                              val scriptUI: ScriptUI) : CommandHandler(SenderType.Player()) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            val world = args.getOrElse(0) { player.world.name }
-            val pageNumber = args.getInt(sender, 1, 1) ?: return true
-            val filter = presetName?.let {
-                scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
-            }
-            val scope = ScriptUI.ListScope.World(world)
-            scriptUI.list(player, scope, filter, pageNumber - 1)
-            return true
-        }
-
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
-            return if (completedArgs.isEmpty()) {
-                // player wants world list
-                Bukkit.getWorlds().stream()
-                        .map { it.name }
-                        .toList()
-            } else {
-                emptyList()
-            }
-        }
-    }
-
-    private class ListAllHandler(val presetName: String?,
-                                 val scriptProcessor: ScriptProcessor,
-                                 val scriptUI: ScriptUI) : CommandHandler(SenderType.Player()) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            val pageNumber = args.getInt(sender, 0, 1) ?: return true
-            val filter = presetName?.let {
-                scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
-            }
-            val scope = ScriptUI.ListScope.Server
-            scriptUI.list(player, scope, filter, pageNumber - 1)
             return true
         }
     }
