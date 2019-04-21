@@ -103,7 +103,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
                 val bypassPermPatternMatcher = bypassPermPattern.matcher(key)
 
                 if (bypassPermPatternMatcher.find()) {
-                    formatBuilder["@console"] = value
+                    formatBuilder["@command"] = value
                     formatBuilder["@give-permission"] = "[${bypassPermPatternMatcher.group(1)}]"
                 } else {
                     throw ParseException("'$key' is unsupported action type!")
