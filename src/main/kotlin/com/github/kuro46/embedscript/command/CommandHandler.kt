@@ -73,22 +73,24 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
     // Tab Completion Handling
     // -----------------------
 
-    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
+    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
         return emptyList()
     }
 
-    private fun handleTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
+    private fun handleTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
         when (senderType) {
             is SenderType.Console -> {
-                if (sender !is ConsoleCommandSender) {
-                    sender.sendMessage(senderType.errorMessage)
-                    return emptyList()
+                senderType.errorMessage?.let {
+                    CommandHandlerUtil.castToConsole(sender, it) ?: return emptyList()
+                } ?: run {
+                    CommandHandlerUtil.castToConsole(sender) ?: return emptyList()
                 }
             }
             is SenderType.Player -> {
-                if (sender !is Player) {
-                    sender.sendMessage(senderType.errorMessage)
-                    return emptyList()
+                senderType.errorMessage?.let {
+                    CommandHandlerUtil.castToConsole(sender, it) ?: return emptyList()
+                } ?: run {
+                    CommandHandlerUtil.castToConsole(sender) ?: return emptyList()
                 }
             }
         }
@@ -96,13 +98,15 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
         // find child executors and execute if contains
         completedArgs.getOrNull(0)?.let { firstArg ->
             childHandlers[firstArg.toLowerCase(Locale.ENGLISH)]?.let { childHandler ->
-                return childHandler.handleTabComplete(sender, uncompletedArg, Arguments(completedArgs.stream().skip(1).toList()))
+                return childHandler.handleTabComplete(sender, uncompletedArg,
+                        uncompletedArgIndex - 1,
+                        Arguments(completedArgs.stream().skip(1).toList()))
             }
         }
 
         val tabCompleter = this.tabCompleter ?: this
 
-        val suggestions = tabCompleter.onTabComplete(sender, uncompletedArg, completedArgs).toMutableList()
+        val suggestions = tabCompleter.onTabComplete(sender, uncompletedArg, uncompletedArgIndex, completedArgs).toMutableList()
         suggestions.addAll(childHandlers.keys)
         return suggestions.filter { it.startsWith(uncompletedArg, true) }
     }
@@ -113,12 +117,12 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
         } else {
             Pair(args.last(), args.dropLast(1))
         }
-        return handleTabComplete(sender, uncompletedArg, Arguments(completedArgs.stream().filter { it.isNotEmpty() }.toList()))
+        return handleTabComplete(sender, uncompletedArg, args.lastIndex, Arguments(completedArgs.stream().filter { it.isNotEmpty() }.toList()))
     }
 
     sealed class SenderType {
         object All : SenderType()
-        data class Console(val errorMessage: String = "Cannot perform this command from the game.") : SenderType()
-        data class Player(val errorMessage: String = "Cannot perform this command from the console.") : SenderType()
+        data class Console(val errorMessage: String? = null) : SenderType()
+        data class Player(val errorMessage: String? = null) : SenderType()
     }
 }

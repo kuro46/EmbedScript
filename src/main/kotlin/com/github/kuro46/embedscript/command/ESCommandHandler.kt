@@ -5,7 +5,6 @@ import com.github.kuro46.embedscript.EmbedScript
 import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
 import com.github.kuro46.embedscript.request.Request
-import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptExporter
@@ -38,12 +37,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         registerChildHandler("page", PageHandler(scriptUI))
         registerChildHandler("list", ListHandler(presetName, scriptProcessor, scriptUI))
         registerChildHandler("listAll", ListAllHandler(presetName, scriptProcessor, scriptUI))
-        registerChildHandler("view", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
-            val player = sender as Player
-            player.sendMessage(Prefix.PREFIX + "Please click any block...")
-            requests.putRequest(player, Request.View)
-            true
-        })
+        registerChildHandler("view", ViewHandler(requests, scriptManager, scriptUI))
         registerChildHandler("remove", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
             player.sendMessage(Prefix.PREFIX + "Please click any block...")
@@ -97,6 +91,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
                     |/es list [world] [page] - Displays list of scripts in the [world] or current world.
                     |/es listAll [page] - Displays list of scripts in this server.
                     |/es view - Displays information about script in the clicked block.
+                    |/es view <world> <x> <y> <z> [page] - Displays information about scripts in the specified coordinate.
                     |/es remove - Removes all scripts in the clicked block.
                     |/es embed <script> - Embeds a script to the clicked block.
                     |/es add <script> - Adds a script to the clicked block
@@ -141,7 +136,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()
@@ -172,7 +167,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
             // TODO: Returns list of files in the EmbedScript/export
             return emptyList()
         }
@@ -258,7 +253,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()

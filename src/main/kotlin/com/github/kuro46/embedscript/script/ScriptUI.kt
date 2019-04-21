@@ -1,7 +1,6 @@
 package com.github.kuro46.embedscript.script
 
 import com.github.kuro46.embedscript.Prefix
-import com.github.kuro46.embedscript.util.MojangUtil
 import com.github.kuro46.embedscript.util.Scheduler
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
@@ -11,14 +10,9 @@ import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
 import org.apache.commons.lang.StringUtils
-import org.bukkit.Bukkit
-import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.io.Serializable
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.ArrayList
 import java.util.Comparator
 import java.util.concurrent.TimeUnit
@@ -27,7 +21,6 @@ import java.util.function.BinaryOperator
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.stream.Collector
-import java.util.stream.Collectors
 
 /**
  * @author shirokuro
@@ -70,53 +63,6 @@ class ScriptUI(private val scriptManager: ScriptManager) {
         }
 
         sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully removed.")
-    }
-
-    fun view(sender: CommandSender, position: ScriptPosition) {
-        if (!scriptManager.contains(position)) {
-            sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
-            return
-        }
-        val scripts = scriptManager[position]
-        Scheduler.execute {
-            val messages: MutableList<Array<BaseComponent>> = ArrayList()
-            for (script in scripts) {
-                val authorId = script.author
-                val author = Bukkit.getPlayer(authorId)?.name ?: run {
-                    val result = MojangUtil.getName(authorId)
-                    if (result == null) {
-                        sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to find user name")
-                        return@execute
-                    } else {
-                        result
-                    }
-                }
-                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
-                        .withZone(ZoneId.systemDefault())
-                val formatted = dateTimeFormatter.format(Instant.ofEpochMilli(script.createdAt))
-                messages.add(TextComponent.fromLegacyText("$author created at $formatted"))
-                messages.add(TextComponent.fromLegacyText("@listen-move " + collectionToString(script.moveTypes)))
-                messages.add(TextComponent.fromLegacyText("@listen-click " + collectionToString(script.clickTypes)))
-                messages.add(TextComponent.fromLegacyText("@listen-push " + collectionToString(script.pushTypes)))
-                val scriptMap = script.script
-                for (key in scriptMap.keySet()) {
-                    val value = scriptMap.get(key)
-                    messages.add(TextComponent.fromLegacyText("@$key ${ScriptUtil.toString(value)}"))
-                }
-            }
-            sendPage("Script information", sender, messages, 0, 12)
-        }
-    }
-
-    private fun collectionToString(collection: Collection<*>): String {
-        return when {
-            collection.isEmpty() -> "NONE"
-            collection.size == 1 -> ScriptUtil.toString(collection.iterator().next().toString())
-            else -> collection.stream()
-                    .map { it.toString() }
-                    .map { s -> s + ChatColor.RESET }
-                    .collect(Collectors.joining("][", "[", "]"))
-        }
     }
 
     /**
@@ -165,7 +111,7 @@ class ScriptUI(private val scriptManager: ScriptManager) {
         consumer(pageIndex)
     }
 
-    private fun sendPage(title: String,
+    fun sendPage(title: String,
                          sender: CommandSender,
                          messages: Collection<Array<BaseComponent>>,
                          pageIndex: Int,
