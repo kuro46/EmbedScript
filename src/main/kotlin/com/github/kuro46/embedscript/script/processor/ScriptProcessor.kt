@@ -54,10 +54,10 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
 
     // PARSE START
 
-    fun parse(author: UUID, script: String): Script {
+    fun parse(author: UUID, script: String, createdAt: Long = System.currentTimeMillis()): Script {
         val mutableScript = MutableScript(script)
         prepareBuild(mutableScript)
-        return buildScript(author, mutableScript)
+        return buildScript(createdAt, author, mutableScript)
     }
 
     /**
@@ -109,7 +109,7 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
      * @param script modifiable script
      * @return script
      */
-    private fun buildScript(author: UUID, script: MutableScript): Script {
+    private fun buildScript(createdAt: Long, author: UUID, script: MutableScript): Script {
         val builder = ScriptBuilder.withAuthor(author)
         val view = script.getView()
         for ((key) in view.entries()) {
@@ -117,7 +117,7 @@ class ScriptProcessor(private val logger: Logger, plugin: Plugin, private val co
             processor.parser.build(builder, key, view.get(key))
         }
 
-        return builder.build(System.currentTimeMillis())
+        return builder.build(createdAt)
     }
 
     // EXECUTE START

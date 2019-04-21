@@ -5,25 +5,26 @@ import com.github.kuro46.embedscript.EmbedScript
 import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
 import com.github.kuro46.embedscript.request.Request
-import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
-import com.github.kuro46.embedscript.script.ScriptUI
 import com.github.kuro46.embedscript.script.ScriptUtil
-import com.github.kuro46.embedscript.script.processor.ScriptProcessor
+import com.github.kuro46.embedscript.util.command.Arguments
+import com.github.kuro46.embedscript.util.command.CommandHandler
+import com.github.kuro46.embedscript.util.command.CommandHandlerUtil
+import com.github.kuro46.embedscript.util.command.RootCommandHandler
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
 import java.nio.file.Files
 import kotlin.streams.toList
 
 class ESCommandHandler constructor(embedScript: EmbedScript, private val presetName: String? = null) : RootCommandHandler() {
     private val configuration = embedScript.configuration
     private val scriptProcessor = embedScript.scriptProcessor
-    private val scriptUI = embedScript.scriptUI
     private val requests = embedScript.requests
     private val scriptManager = embedScript.scriptManager
     private val scriptExporter = embedScript.scriptExporter
@@ -34,16 +35,10 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         registerChildHandler("export", ExportHandler(scriptExporter))
         registerChildHandler("import", ImportHandler(scriptExporter))
         registerChildHandler("reload", ReloadHandler(configuration, scriptManager))
-        registerChildHandler("teleport", TeleportHandler())
-        registerChildHandler("page", PageHandler(scriptUI))
-        registerChildHandler("list", ListHandler(presetName, scriptProcessor, scriptUI))
-        registerChildHandler("listAll", ListAllHandler(presetName, scriptProcessor, scriptUI))
-        registerChildHandler("view", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
-            val player = sender as Player
-            player.sendMessage(Prefix.PREFIX + "Please click any block...")
-            requests.putRequest(player, Request.View)
-            true
-        })
+        registerChildHandler("teleport", TeleportHandler(embedScript.plugin))
+        registerChildHandler("list", ListHandlers.ListHandler(presetName, scriptProcessor, scriptManager))
+        registerChildHandler("listAll", ListHandlers.ListAllHandler(presetName, scriptProcessor, scriptManager))
+        registerChildHandler("view", ViewHandler(requests, scriptManager))
         registerChildHandler("remove", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
             player.sendMessage(Prefix.PREFIX + "Please click any block...")
@@ -97,6 +92,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
                     |/es list [world] [page] - Displays list of scripts in the [world] or current world.
                     |/es listAll [page] - Displays list of scripts in this server.
                     |/es view - Displays information about script in the clicked block.
+                    |/es view <world> <x> <y> <z> [page] - Displays information about scripts in the specified coordinate.
                     |/es remove - Removes all scripts in the clicked block.
                     |/es embed <script> - Embeds a script to the clicked block.
                     |/es add <script> - Adds a script to the clicked block
@@ -141,7 +137,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()
@@ -172,7 +168,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
+        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
             // TODO: Returns list of files in the EmbedScript/export
             return emptyList()
         }
@@ -201,7 +197,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         }
     }
 
-    private class TeleportHandler : CommandHandler(SenderType.Player(), false) {
+    private class TeleportHandler(plugin: Plugin) : CommandHandler(SenderType.Player(), HandlingMode.Synchronous(plugin)) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             if (args.isElementNotEnough(3)) {
@@ -226,61 +222,6 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
                     playerLocation.pitch))
 
             player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.")
-            return true
-        }
-    }
-
-    private class PageHandler(val scriptUI: ScriptUI) : CommandHandler(SenderType.Player(), false) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            if (args.isElementNotEnough(0)) {
-                return false
-            }
-
-            val pageIndex = args.getInt(sender, 0) ?: return true
-            scriptUI.changePage(player, pageIndex)
-            return true
-        }
-    }
-
-    private class ListHandler(val presetName: String?,
-                              val scriptProcessor: ScriptProcessor,
-                              val scriptUI: ScriptUI) : CommandHandler(SenderType.Player()) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            val world = args.getOrElse(0) { player.world.name }
-            val pageNumber = args.getInt(sender, 1, 1) ?: return true
-            val filter = presetName?.let {
-                scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
-            }
-            val scope = ScriptUI.ListScope.World(world)
-            scriptUI.list(player, scope, filter, pageNumber - 1)
-            return true
-        }
-
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
-            return if (completedArgs.isEmpty()) {
-                // player wants world list
-                Bukkit.getWorlds().stream()
-                        .map { it.name }
-                        .toList()
-            } else {
-                emptyList()
-            }
-        }
-    }
-
-    private class ListAllHandler(val presetName: String?,
-                                 val scriptProcessor: ScriptProcessor,
-                                 val scriptUI: ScriptUI) : CommandHandler(SenderType.Player()) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            val pageNumber = args.getInt(sender, 0, 1) ?: return true
-            val filter = presetName?.let {
-                scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
-            }
-            val scope = ScriptUI.ListScope.Server
-            scriptUI.list(player, scope, filter, pageNumber - 1)
             return true
         }
     }

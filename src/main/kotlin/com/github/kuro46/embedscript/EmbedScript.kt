@@ -11,7 +11,6 @@ import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptSerializer
-import com.github.kuro46.embedscript.script.ScriptUI
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
@@ -28,7 +27,6 @@ class EmbedScript private constructor(val plugin: Plugin) {
     val logger: Logger = plugin.logger
     val scriptManager: ScriptManager
     val configuration: Configuration
-    val scriptUI: ScriptUI
     val requests: Requests
     val scriptProcessor: ScriptProcessor
     val scriptExporter: ScriptExporter
@@ -39,9 +37,8 @@ class EmbedScript private constructor(val plugin: Plugin) {
 
         this.configuration = loadConfiguration()
 
-        this.scriptUI = ScriptUI(scriptManager)
         this.scriptExporter = ScriptExporter(dataFolder, scriptManager)
-        this.requests = Requests(scriptUI)
+        this.requests = Requests(scriptManager)
         this.scriptProcessor = ScriptProcessor(logger, plugin, configuration)
 
         registerCommands()

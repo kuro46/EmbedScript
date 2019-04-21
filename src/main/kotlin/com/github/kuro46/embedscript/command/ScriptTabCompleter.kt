@@ -1,10 +1,12 @@
 package com.github.kuro46.embedscript.command
 
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
+import com.github.kuro46.embedscript.util.command.Arguments
+import com.github.kuro46.embedscript.util.command.TabCompleter
 import org.bukkit.command.CommandSender
 
 class ScriptTabCompleter(private val scriptProcessor: ScriptProcessor) : TabCompleter {
-    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, completedArgs: Arguments): List<String> {
+    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
         return if (isKey(completedArgs)) {
             scriptProcessor.getProcessors().keys.map { "@$it" }
         } else {
