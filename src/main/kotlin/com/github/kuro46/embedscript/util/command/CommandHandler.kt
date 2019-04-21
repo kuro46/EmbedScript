@@ -30,9 +30,9 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
             }
             is SenderType.Player -> {
                 senderType.errorMessage?.let {
-                    CommandHandlerUtil.castToConsole(sender, it) ?: return false
+                    CommandHandlerUtil.castToPlayer(sender, it) ?: return false
                 } ?: run {
-                    CommandHandlerUtil.castToConsole(sender) ?: return false
+                    CommandHandlerUtil.castToPlayer(sender) ?: return false
                 }
             }
         }
