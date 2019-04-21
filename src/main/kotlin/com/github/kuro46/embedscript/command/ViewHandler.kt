@@ -21,7 +21,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.ArrayList
 import java.util.UUID
-import java.util.stream.Collectors
 import kotlin.streams.toList
 
 class ViewHandler(private val requests: Requests,
@@ -76,10 +75,9 @@ class ViewHandler(private val requests: Requests,
             val author = getUserName(sender, script.author) ?: return
             val formatted = formatTime(script.createdAt)
             messages.add(TextComponent.fromLegacyText("$author created at $formatted"))
-            // TODO: delete none
-            messages.add(TextComponent.fromLegacyText("@listen-move " + collectionToString(script.moveTypes)))
-            messages.add(TextComponent.fromLegacyText("@listen-click " + collectionToString(script.clickTypes)))
-            messages.add(TextComponent.fromLegacyText("@listen-push " + collectionToString(script.pushTypes)))
+            addMessageIfNeeded(messages, "@listen-move", script.moveTypes)
+            addMessageIfNeeded(messages, "@listen-click", script.clickTypes)
+            addMessageIfNeeded(messages, "@listen-push", script.pushTypes)
             val scriptMap = script.script
             for (key in scriptMap.keySet()) {
                 val value = scriptMap.get(key)
@@ -90,6 +88,15 @@ class ViewHandler(private val requests: Requests,
             val pageNum = index + 1
             "/embedscript view $world $x $y $z $pageNum"
         }
+    }
+
+    private fun addMessageIfNeeded(addTo: MutableList<Array<BaseComponent>>, key: String, values: Collection<*>) {
+        if (values.isEmpty()) {
+            return
+        }
+
+        val string = ScriptUtil.toString(values.map { it.toString() + ChatColor.RESET })
+        addTo.add(TextComponent.fromLegacyText("$key $string"))
     }
 
     private fun getUserName(sender: CommandSender, uuid: UUID): String? {
@@ -106,16 +113,5 @@ class ViewHandler(private val requests: Requests,
         val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
                 .withZone(ZoneId.systemDefault())
         return dateTimeFormatter.format(Instant.ofEpochMilli(time))
-    }
-
-    private fun collectionToString(collection: Collection<*>): String {
-        return when {
-            collection.isEmpty() -> "NONE"
-            collection.size == 1 -> ScriptUtil.toString(collection.iterator().next().toString())
-            else -> collection.stream()
-                    .map { it.toString() }
-                    .map { s -> s + ChatColor.RESET }
-                    .collect(Collectors.joining("][", "[", "]"))
-        }
     }
 }
