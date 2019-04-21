@@ -130,22 +130,21 @@ object ListHandlers {
         override fun accumulator(): BiConsumer<MutableCollection<Array<BaseComponent>>, MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>> {
             return BiConsumer { messages, entry ->
                 val position = entry.key
-                val scripts = entry.value
+                val scripts = ArrayList(entry.value).filter { filter == null || isFilterable(it, filter) }
 
-                for (script in scripts) {
-                    if (filter != null && isFilterable(script, filter)) {
-                        continue
-                    }
-
-                    val tpCommand = "/embedscript teleport ${position.world} ${position.x} ${position.y} ${position.z}"
-                    val message = ComponentBuilder("")
-                            .append("[${messages.size + 1}] ")
-                            .append("World: ${position.world} X: ${position.x} Y: ${position.y} Z: ${position.z} (click here)")
-                            .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
-                            .event(HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
-                            .create()
-                    messages.add(message)
+                if (scripts.isEmpty()) {
+                    return@BiConsumer
                 }
+
+                val tpCommand = "/embedscript view ${position.world} ${position.x} ${position.y} ${position.z}"
+                val message = ComponentBuilder("")
+                        .append("[${messages.size + 1}] ")
+                        .append("World: ${position.world} X: ${position.x} " +
+                                "Y: ${position.y} Z: ${position.z} (click to details)")
+                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
+                        .event(HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
+                        .create()
+                messages.add(message)
             }
         }
 
