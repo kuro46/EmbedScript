@@ -36,7 +36,7 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         registerChildHandler("teleport", TeleportHandler())
         registerChildHandler("list", ListHandler(presetName, scriptProcessor, scriptUI))
         registerChildHandler("listAll", ListAllHandler(presetName, scriptProcessor, scriptUI))
-        registerChildHandler("view", ViewHandler(requests, scriptManager, scriptUI))
+        registerChildHandler("view", ViewHandler(requests, scriptManager))
         registerChildHandler("remove", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
             player.sendMessage(Prefix.PREFIX + "Please click any block...")

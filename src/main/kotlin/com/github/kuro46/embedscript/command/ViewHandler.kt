@@ -5,9 +5,9 @@ import com.github.kuro46.embedscript.request.Request
 import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
-import com.github.kuro46.embedscript.script.ScriptUI
 import com.github.kuro46.embedscript.script.ScriptUtil
 import com.github.kuro46.embedscript.util.MojangUtil
+import com.github.kuro46.embedscript.util.PageUtil
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
@@ -22,8 +22,7 @@ import java.util.stream.Collectors
 import kotlin.streams.toList
 
 class ViewHandler(private val requests: Requests,
-                  private val scriptManager: ScriptManager,
-                  private val scriptUI: ScriptUI) : CommandHandler() {
+                  private val scriptManager: ScriptManager) : CommandHandler() {
     override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
         return when {
             // pass to InteractListener
@@ -84,7 +83,7 @@ class ViewHandler(private val requests: Requests,
                 messages.add(TextComponent.fromLegacyText("@$key ${ScriptUtil.toString(value)}"))
             }
         }
-        scriptUI.sendPage("Script information", sender, messages, pageNumber - 1, 12) { index ->
+        PageUtil.sendPage("Script information", sender, messages, pageNumber - 1, 12) { index ->
             val pageNum = index + 1
             "/embedscript view $world $x $y $z $pageNum"
         }
