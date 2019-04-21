@@ -1,4 +1,4 @@
-package com.github.kuro46.embedscript.command
+package com.github.kuro46.embedscript.util.command
 
 import com.github.kuro46.embedscript.util.Scheduler
 import org.bukkit.Bukkit

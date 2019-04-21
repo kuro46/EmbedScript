@@ -12,6 +12,10 @@ import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptUI
 import com.github.kuro46.embedscript.script.ScriptUtil
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
+import com.github.kuro46.embedscript.util.command.Arguments
+import com.github.kuro46.embedscript.util.command.CommandHandler
+import com.github.kuro46.embedscript.util.command.CommandHandlerUtil
+import com.github.kuro46.embedscript.util.command.RootCommandHandler
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.command.CommandSender

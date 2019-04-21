@@ -8,6 +8,9 @@ import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtil
 import com.github.kuro46.embedscript.util.MojangUtil
 import com.github.kuro46.embedscript.util.PageUtil
+import com.github.kuro46.embedscript.util.command.Arguments
+import com.github.kuro46.embedscript.util.command.CommandHandler
+import com.github.kuro46.embedscript.util.command.CommandHandlerUtil
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
