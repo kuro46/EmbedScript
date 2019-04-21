@@ -3,8 +3,6 @@ package com.github.kuro46.embedscript.util.command
 import com.github.kuro46.embedscript.util.Scheduler
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
-import org.bukkit.command.ConsoleCommandSender
-import org.bukkit.entity.Player
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -30,15 +28,17 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
     private fun handleCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
         when (senderType) {
             is SenderType.Console -> {
-                if (sender !is ConsoleCommandSender) {
-                    sender.sendMessage(senderType.errorMessage)
-                    return true
+                senderType.errorMessage?.let {
+                    CommandHandlerUtil.castToConsole(sender, it) ?: return true
+                } ?: run {
+                    CommandHandlerUtil.castToConsole(sender) ?: return true
                 }
             }
             is SenderType.Player -> {
-                if (sender !is Player) {
-                    sender.sendMessage(senderType.errorMessage)
-                    return true
+                senderType.errorMessage?.let {
+                    CommandHandlerUtil.castToConsole(sender, it) ?: return true
+                } ?: run {
+                    CommandHandlerUtil.castToConsole(sender) ?: return true
                 }
             }
         }
