@@ -3,7 +3,6 @@ package com.github.kuro46.embedscript.script
 import com.github.kuro46.embedscript.GsonHolder
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
-import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Multimap
 import com.google.gson.JsonParseException
 import com.google.gson.TypeAdapter
@@ -19,9 +18,9 @@ import java.util.UUID
 @JsonAdapter(Script.ScriptAdapter::class)
 class Script(val author: UUID,
              val createdAt: Long,
-             val moveTypes: ImmutableSet<MoveType>,
-             val clickTypes: ImmutableSet<ClickType>,
-             val pushTypes: ImmutableSet<PushType>,
+             val moveTypes: Set<MoveType>,
+             val clickTypes: Set<ClickType>,
+             val pushTypes: Set<PushType>,
              val script: ImmutableListMultimap<String, String>) {
 
     enum class MoveType {
@@ -145,9 +144,9 @@ class Script(val author: UUID,
 
             return Script(author,
                     createdAt,
-                    ImmutableSet.copyOf(moveTypes),
-                    ImmutableSet.copyOf(clickTypes),
-                    ImmutableSet.copyOf(pushTypes),
+                    moveTypes,
+                    clickTypes,
+                    pushTypes,
                     ImmutableListMultimap.copyOf(script))
         }
     }

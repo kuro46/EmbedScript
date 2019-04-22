@@ -1,6 +1,5 @@
 package com.github.kuro46.embedscript.script.processor
 
-import com.google.common.collect.ImmutableList
 import org.bukkit.entity.Player
 
 interface Processor {
@@ -15,9 +14,9 @@ interface Processor {
 
     interface Parser {
 
-        fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: ImmutableList<String>)
+        fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: List<String>)
 
-        fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>)
+        fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>)
     }
 
     interface Executor {

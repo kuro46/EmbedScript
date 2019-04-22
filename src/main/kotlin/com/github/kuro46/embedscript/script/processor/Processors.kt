@@ -2,7 +2,6 @@ package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
-import com.google.common.collect.ImmutableList
 import net.md_5.bungee.chat.ComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -20,21 +19,21 @@ object Processors {
     // ONLY TO PARSE
     val LISTEN_CLICK_PROCESSOR = newProcessor("listen-click", "lc",
             object : AbstractParser() {
-                override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+                override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.clickTypes, Script.ClickType::class.java, matchedValues)
                 }
             },
             DEFAULT_EXECUTOR)
     val LISTEN_MOVE_PROCESSOR = newProcessor("listen-move", "lm",
             object : AbstractParser() {
-                override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+                override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.moveTypes, Script.MoveType::class.java, matchedValues)
                 }
             },
             DEFAULT_EXECUTOR)
     val LISTEN_PUSH_PROCESSOR = newProcessor("listen-push", "lm",
             object : AbstractParser() {
-                override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+                override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.pushTypes, Script.PushType::class.java, matchedValues)
                 }
             },
@@ -57,7 +56,7 @@ object Processors {
     // EXECUTION PHASE
 
     private val COMMAND_PARSER = object : AbstractParser() {
-        override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+        override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
             val modifiedForCommand = matchedValues.stream()
                     // remove slash char if needed
                     .map { commandWithArgs ->

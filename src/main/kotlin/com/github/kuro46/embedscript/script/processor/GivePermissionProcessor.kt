@@ -1,7 +1,6 @@
 package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
-import com.google.common.collect.ImmutableList
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin
@@ -40,7 +39,7 @@ class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Pr
     }
 
     private class GivePermissionParser(private val configuration: Configuration) : AbstractParser() {
-        override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+        override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
             if (!matchedValues.isEmpty()) {
                 builder.script.putAll(key, matchedValues)
             } else {

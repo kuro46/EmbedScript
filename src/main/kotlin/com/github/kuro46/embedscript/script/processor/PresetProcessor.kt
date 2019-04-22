@@ -2,7 +2,6 @@ package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
 import com.github.kuro46.embedscript.script.ParseException
-import com.google.common.collect.ImmutableList
 
 class PresetProcessor(configuration: Configuration) : Processor {
     override val parser: Processor.Parser = PresetParser(configuration)
@@ -14,7 +13,7 @@ class PresetProcessor(configuration: Configuration) : Processor {
     override val executor: Processor.Executor = Processors.DEFAULT_EXECUTOR
 
     private class PresetParser(private val configuration: Configuration) : AbstractParser() {
-        override fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: ImmutableList<String>) {
+        override fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: List<String>) {
             var mergeTo: MutableScript? = null
             val presets = configuration.presets
             for (value in matchedValues) {
@@ -39,7 +38,7 @@ class PresetProcessor(configuration: Configuration) : Processor {
             mergeTo.getView().forEach { k, value -> script.add(k, value) }
         }
 
-        override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+        override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
             // do nothing
             // please do not remove this method because AbstractParser#build does builder.getScript().putAll(key, matchedValues);
         }
