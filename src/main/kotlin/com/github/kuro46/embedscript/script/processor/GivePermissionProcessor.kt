@@ -1,6 +1,8 @@
 package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
+import com.github.kuro46.embedscript.script.processor.executor.AbstractExecutor
+import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin

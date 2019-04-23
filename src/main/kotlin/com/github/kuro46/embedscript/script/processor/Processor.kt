@@ -1,6 +1,7 @@
 package com.github.kuro46.embedscript.script.processor
 
-import org.bukkit.entity.Player
+import com.github.kuro46.embedscript.script.processor.executor.Executor
+import com.github.kuro46.embedscript.script.processor.parser.Parser
 
 interface Processor {
 
@@ -11,22 +12,4 @@ interface Processor {
     val parser: Parser
 
     val executor: Executor
-
-    interface Parser {
-
-        fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: List<String>)
-
-        fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>)
-    }
-
-    interface Executor {
-
-        fun check(trigger: Player, matchedValues: List<String>): Boolean
-
-        fun prepareExecute(trigger: Player, matchedValues: List<String>)
-
-        fun beginExecute(trigger: Player, matchedValues: List<String>)
-
-        fun endExecute(trigger: Player, matchedValues: List<String>)
-    }
 }
