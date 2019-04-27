@@ -118,21 +118,22 @@ class Script(val author: UUID,
 
                     }.type)
                     "createdAt" -> createdAt = reader.nextLong()
-                    "moveTypes" -> moveTypes = gson.fromJson<Set<MoveType>>(reader, object : TypeToken<Set<MoveType>>() {
-
-                    }.type)
-                    "clickTypes" -> clickTypes = gson.fromJson<Set<ClickType>>(reader, object : TypeToken<Set<ClickType>>() {
-
-                    }.type)
-                    "pushTypes" -> pushTypes = gson.fromJson<Set<PushType>>(reader, object : TypeToken<Set<PushType>>() {
-
-                    }.type)
+                    "moveTypes" -> moveTypes = gson.fromJson<Set<MoveType>>(reader,
+                            object : TypeToken<Set<MoveType>>() {
+                            }.type)
+                    "clickTypes" -> clickTypes = gson.fromJson<Set<ClickType>>(reader,
+                            object : TypeToken<Set<ClickType>>() {
+                            }.type)
+                    "pushTypes" -> pushTypes = gson.fromJson<Set<PushType>>(reader,
+                            object : TypeToken<Set<PushType>>() {
+                            }.type)
                     "script" -> {
                         script = ArrayListMultimap.create()
                         reader.beginObject()
                         while (reader.hasNext()) {
-                            script!!.putAll(reader.nextName(), gson.fromJson(reader, object : TypeToken<List<String>>() {
-                            }.type))
+                            script!!.putAll(reader.nextName(), gson.fromJson(reader,
+                                    object : TypeToken<List<String>>() {
+                                    }.type))
                         }
                         reader.endObject()
                     }
@@ -141,7 +142,12 @@ class Script(val author: UUID,
             }
             reader.endObject()
 
-            if (createdAt == null || author == null || moveTypes == null || clickTypes == null || pushTypes == null || script == null) {
+            if (createdAt == null ||
+                    author == null ||
+                    moveTypes == null ||
+                    clickTypes == null ||
+                    pushTypes == null ||
+                    script == null) {
                 throw JsonParseException("")
             }
 
