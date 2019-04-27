@@ -4,7 +4,7 @@ import com.github.kuro46.embedscript.script.processor.MutableScript
 import com.github.kuro46.embedscript.script.processor.ScriptBuilder
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 
-interface Parser {
+interface ChildParser {
 
     fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: List<String>)
 

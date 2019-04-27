@@ -2,7 +2,7 @@ package com.github.kuro46.embedscript.script.processor.executor
 
 import org.bukkit.entity.Player
 
-interface Executor {
+interface ChildExecutor {
 
     fun check(trigger: Player, matchedValues: List<String>): Boolean
 

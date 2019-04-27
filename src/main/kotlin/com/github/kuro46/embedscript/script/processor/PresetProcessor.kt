@@ -2,18 +2,18 @@ package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
 import com.github.kuro46.embedscript.script.ParseException
-import com.github.kuro46.embedscript.script.processor.executor.Executor
+import com.github.kuro46.embedscript.script.processor.executor.ChildExecutor
 import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
-import com.github.kuro46.embedscript.script.processor.parser.Parser
+import com.github.kuro46.embedscript.script.processor.parser.ChildParser
 
 class PresetProcessor(configuration: Configuration) : Processor {
-    override val parser: Parser = PresetParser(configuration)
+    override val parser: ChildParser = PresetParser(configuration)
 
     override val key = "preset"
 
     override val omittedKey = "p"
 
-    override val executor: Executor = Processors.DEFAULT_EXECUTOR
+    override val executor: ChildExecutor = Processors.DEFAULT_EXECUTOR
 
     private class PresetParser(private val configuration: Configuration) : AbstractParser() {
         override fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: List<String>) {

@@ -3,9 +3,9 @@ package com.github.kuro46.embedscript.script.processor
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.processor.executor.AbstractExecutor
-import com.github.kuro46.embedscript.script.processor.executor.Executor
+import com.github.kuro46.embedscript.script.processor.executor.ChildExecutor
 import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
-import com.github.kuro46.embedscript.script.processor.parser.Parser
+import com.github.kuro46.embedscript.script.processor.parser.ChildParser
 import net.md_5.bungee.chat.ComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -13,10 +13,10 @@ import java.util.Locale
 import java.util.stream.Collectors
 
 object Processors {
-    val DEFAULT_EXECUTOR: Executor = object : AbstractExecutor() {
+    val DEFAULT_EXECUTOR: ChildExecutor = object : AbstractExecutor() {
 
     }
-    val DEFAULT_PARSER: Parser = object : AbstractParser() {
+    val DEFAULT_PARSER: ChildParser = object : AbstractParser() {
 
     }
 
@@ -140,8 +140,8 @@ object Processors {
 
     fun newProcessor(key: String,
                      omittedKey: String,
-                     parser: Parser,
-                     executor: Executor): Processor {
+                     parser: ChildParser,
+                     executor: ChildExecutor): Processor {
         return object : Processor {
             override val key = key
 

@@ -22,7 +22,7 @@ class ScriptExecutor(private val scriptProcessor: ScriptProcessor) {
         get() = scriptProcessor.logger
 
     fun execute(trigger: Player, script: Script, scriptPosition: ScriptPosition) {
-        val executors: MutableList<Pair<Executor, List<String>>> = ArrayList()
+        val executors: MutableList<Pair<ChildExecutor, List<String>>> = ArrayList()
         val scriptMap = script.script
         for (key in scriptMap.keySet()) {
             val value = scriptMap.get(key).stream()

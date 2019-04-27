@@ -1,7 +1,7 @@
 package com.github.kuro46.embedscript.script.processor
 
-import com.github.kuro46.embedscript.script.processor.executor.Executor
-import com.github.kuro46.embedscript.script.processor.parser.Parser
+import com.github.kuro46.embedscript.script.processor.executor.ChildExecutor
+import com.github.kuro46.embedscript.script.processor.parser.ChildParser
 
 interface Processor {
 
@@ -9,7 +9,7 @@ interface Processor {
 
     val omittedKey: String
 
-    val parser: Parser
+    val parser: ChildParser
 
-    val executor: Executor
+    val executor: ChildExecutor
 }
