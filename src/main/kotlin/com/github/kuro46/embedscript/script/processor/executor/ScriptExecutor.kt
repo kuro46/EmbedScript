@@ -12,7 +12,6 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.StringJoiner
 import java.util.logging.Logger
-import java.util.stream.Collectors
 
 /**
  * @author shirokuro
@@ -30,19 +29,7 @@ class ScriptExecutor(private val scriptProcessor: ScriptProcessor) {
     }
 
     private fun executeAsync(trigger: Player, script: Script, scriptPosition: ScriptPosition) {
-        val executors: MutableList<Pair<ChildExecutor, List<String>>> = ArrayList()
-        val scriptMap = script.script
-        for (key in scriptMap.keySet()) {
-            val value = scriptMap.get(key).stream()
-                    .map { string ->
-                        var s = string
-                        s = replaceAndUnescape(s, "<player>") { trigger.name }
-                        s = replaceAndUnescape(s, "<world>") { trigger.world.name }
-                        s
-                    }
-                    .collect(Collectors.toList())
-            executors.add(Pair(processors.getValue(key).executor, value))
-        }
+        val executors = generateExecutors(trigger, script)
 
         try {
             // check phase
@@ -77,29 +64,55 @@ class ScriptExecutor(private val scriptProcessor: ScriptProcessor) {
         }
 
         if (configuration.isLogEnabled) {
-            var message = configuration.logFormat
-            message = replaceAndUnescape(message!!, "<trigger>") { trigger.name }
-            message = replaceAndUnescape(message, "<script>") {
-                val joiner = StringJoiner(" ")
-                for (key in scriptMap.keySet()) {
-                    joiner.add("@$key ${ScriptUtil.toString(scriptMap.get(key))}")
-                }
-                joiner.toString()
-            }
-            val location = trigger.location
-            val worldName = location.world.name
-            message = replaceAndUnescape(message, "<trigger_world>") { worldName }
-            message = replaceAndUnescape(message, "<trigger_x>") { location.blockX.toString() }
-            message = replaceAndUnescape(message, "<trigger_y>") { location.blockY.toString() }
-            message = replaceAndUnescape(message, "<trigger_z>") { location.blockZ.toString() }
-            message = replaceAndUnescape(message, "<script_world>") { worldName }
-            message = replaceAndUnescape(message, "<script_x>") { scriptPosition.x.toString() }
-            message = replaceAndUnescape(message, "<script_y>") { scriptPosition.y.toString() }
-            message = replaceAndUnescape(message, "<script_z>") { scriptPosition.z.toString() }
-
-            logger.info(message)
+            log(trigger, script, scriptPosition)
         }
     }
+
+    private fun generateExecutors(trigger: Player, script: Script): List<Pair<ChildExecutor, List<String>>> {
+        val executors: MutableList<Pair<ChildExecutor, List<String>>> = ArrayList()
+        val scriptMap = script.script
+        for (key in scriptMap.keySet()) {
+            val values = scriptMap.get(key).map {
+                // replace place holders
+                var varIt = it
+                varIt = replaceAndUnescape(varIt, "<player>") { trigger.name }
+                varIt = replaceAndUnescape(varIt, "<world>") { trigger.world.name }
+                varIt
+            }
+
+            val executorForValue = processors.getValue(key).executor
+
+            executors.add(Pair(executorForValue, values))
+        }
+
+        return executors
+    }
+
+    private fun log(trigger: Player, script: Script, scriptPosition: ScriptPosition) {
+        var message = configuration.logFormat
+        message = replaceAndUnescape(message!!, "<trigger>") { trigger.name }
+        message = replaceAndUnescape(message, "<script>") {
+            val joiner = StringJoiner(" ")
+            val scriptMap = script.script
+            for (key in scriptMap.keySet()) {
+                joiner.add("@$key ${ScriptUtil.toString(scriptMap.get(key))}")
+            }
+            joiner.toString()
+        }
+        val location = trigger.location
+        val worldName = location.world.name
+        message = replaceAndUnescape(message, "<trigger_world>") { worldName }
+        message = replaceAndUnescape(message, "<trigger_x>") { location.blockX.toString() }
+        message = replaceAndUnescape(message, "<trigger_y>") { location.blockY.toString() }
+        message = replaceAndUnescape(message, "<trigger_z>") { location.blockZ.toString() }
+        message = replaceAndUnescape(message, "<script_world>") { worldName }
+        message = replaceAndUnescape(message, "<script_x>") { scriptPosition.x.toString() }
+        message = replaceAndUnescape(message, "<script_y>") { scriptPosition.y.toString() }
+        message = replaceAndUnescape(message, "<script_z>") { scriptPosition.z.toString() }
+
+        logger.info(message)
+    }
+
 
     private fun <T> executeInServerThreadIfNeeded(executionMode: ExecutionMode, function: () -> T): T {
         return when(executionMode) {
