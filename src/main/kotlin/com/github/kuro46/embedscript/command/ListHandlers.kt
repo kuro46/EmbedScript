@@ -166,13 +166,13 @@ object ListHandlers {
         }
 
         private fun isFilterable(script: Script, filter: Script): Boolean {
-            if (isFilterable<Script.MoveType>(script.moveTypes, filter.moveTypes)) {
+            if (isFilterable(script.moveTypes, filter.moveTypes)) {
                 return true
             }
-            if (isFilterable<Script.ClickType>(script.clickTypes, filter.clickTypes)) {
+            if (isFilterable(script.clickTypes, filter.clickTypes)) {
                 return true
             }
-            if (isFilterable<Script.PushType>(script.pushTypes, filter.pushTypes)) {
+            if (isFilterable(script.pushTypes, filter.pushTypes)) {
                 return true
             }
 
