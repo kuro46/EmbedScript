@@ -9,6 +9,9 @@ import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin
 import java.util.HashMap
 
+/**
+ * @author shirokuro
+ */
 class GivePermissionProcessor {
     companion object {
         fun register(processor: ScriptProcessor) {

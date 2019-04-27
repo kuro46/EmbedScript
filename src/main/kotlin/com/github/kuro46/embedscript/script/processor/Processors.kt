@@ -13,6 +13,9 @@ import org.bukkit.entity.Player
 import java.util.Locale
 import java.util.stream.Collectors
 
+/**
+ * @author shirokuro
+ */
 object Processors {
     val DEFAULT_EXECUTOR: ChildExecutor = object : AbstractExecutor() {
         override val executionMode: ExecutionMode

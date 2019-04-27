@@ -5,6 +5,9 @@ import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.TabCompleter
 import org.bukkit.command.CommandSender
 
+/**
+ * @author shirokuro
+ */
 class ScriptTabCompleter(private val scriptProcessor: ScriptProcessor) : TabCompleter {
     override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
         return if (isKey(completedArgs)) {

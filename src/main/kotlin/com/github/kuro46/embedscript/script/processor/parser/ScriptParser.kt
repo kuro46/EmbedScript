@@ -10,6 +10,9 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.UUID
 
+/**
+ * @author shirokuro
+ */
 class ScriptParser(private val scriptProcessor: ScriptProcessor) {
     private val processors: Map<String, ChildProcessor>
         get() = scriptProcessor.getProcessors()

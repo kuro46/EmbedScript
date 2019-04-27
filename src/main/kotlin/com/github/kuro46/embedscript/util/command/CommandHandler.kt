@@ -11,6 +11,9 @@ import java.util.concurrent.Future
 import kotlin.streams.toList
 import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 
+/**
+ * @author shirokuro
+ */
 abstract class CommandHandler(private val senderType: SenderType = SenderType.All,
                               private val handlingMode: HandlingMode = HandlingMode.Asynchronous) : CommandExecutor, TabCompleter {
     private val childHandlers: ConcurrentMap<String, CommandHandler> = ConcurrentHashMap()

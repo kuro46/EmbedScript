@@ -4,6 +4,9 @@ import com.github.kuro46.embedscript.Configuration
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
 
+/**
+ * @author shirokuro
+ */
 class PresetProcessor {
     companion object {
         fun register(processor: ScriptProcessor) {

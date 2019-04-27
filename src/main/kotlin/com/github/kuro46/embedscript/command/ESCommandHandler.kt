@@ -22,6 +22,9 @@ import org.bukkit.plugin.Plugin
 import java.nio.file.Files
 import kotlin.streams.toList
 
+/**
+ * @author shirokuro
+ */
 class ESCommandHandler constructor(embedScript: EmbedScript, private val presetName: String? = null) : RootCommandHandler() {
     private val configuration = embedScript.configuration
     private val scriptProcessor = embedScript.scriptProcessor

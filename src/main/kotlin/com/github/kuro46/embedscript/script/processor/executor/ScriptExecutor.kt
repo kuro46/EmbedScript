@@ -14,6 +14,9 @@ import java.util.StringJoiner
 import java.util.logging.Logger
 import java.util.stream.Collectors
 
+/**
+ * @author shirokuro
+ */
 class ScriptExecutor(private val scriptProcessor: ScriptProcessor) {
     private val processors: Map<String, ChildProcessor>
         get() = scriptProcessor.getProcessors()

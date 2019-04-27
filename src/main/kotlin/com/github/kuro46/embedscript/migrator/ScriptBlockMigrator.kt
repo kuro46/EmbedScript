@@ -17,6 +17,9 @@ import java.util.Locale
 import java.util.UUID
 import java.util.regex.Pattern
 
+/**
+ * @author shirokuro
+ */
 class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
     private val processor = embedScript.scriptProcessor
     private val mergeTo = embedScript.scriptManager

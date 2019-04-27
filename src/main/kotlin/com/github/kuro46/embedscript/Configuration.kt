@@ -6,6 +6,9 @@ import java.nio.file.Path
 import java.util.Collections
 import java.util.HashMap
 
+/**
+ * @author shirokuro
+ */
 class Configuration private constructor(dataFolder: Path) {
 
     private val configPath: Path = dataFolder.resolve("config.yml")

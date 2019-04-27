@@ -4,6 +4,9 @@ import com.github.kuro46.embedscript.script.processor.MutableScript
 import com.github.kuro46.embedscript.script.processor.ScriptBuilder
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 
+/**
+ * @author shirokuro
+ */
 interface ChildParser {
 
     fun getSuggestions(uncompletedArg: String): List<String> = emptyList()

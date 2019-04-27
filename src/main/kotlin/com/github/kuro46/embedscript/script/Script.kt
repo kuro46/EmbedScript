@@ -15,6 +15,9 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import java.util.UUID
 
+/**
+ * @author shirokuro
+ */
 @JsonAdapter(Script.ScriptAdapter::class)
 class Script(val author: UUID,
              val createdAt: Long,

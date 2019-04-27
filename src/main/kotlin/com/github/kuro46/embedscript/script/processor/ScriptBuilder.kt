@@ -7,6 +7,9 @@ import com.google.common.collect.ListMultimap
 import java.util.HashSet
 import java.util.UUID
 
+/**
+ * @author shirokuro
+ */
 class ScriptBuilder private constructor(val author: UUID) {
     val moveTypes: MutableSet<Script.MoveType> = HashSet()
     val clickTypes: MutableSet<Script.ClickType> = HashSet()

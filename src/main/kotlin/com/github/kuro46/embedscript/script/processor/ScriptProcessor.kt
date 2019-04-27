@@ -12,6 +12,9 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 
+/**
+ * @author shirokuro
+ */
 class ScriptProcessor(val logger: Logger, val plugin: Plugin, val configuration: Configuration) {
     private val processors: MutableMap<String, ChildProcessor> = ConcurrentHashMap()
     val scriptParser = ScriptParser(this)

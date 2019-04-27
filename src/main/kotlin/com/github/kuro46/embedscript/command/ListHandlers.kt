@@ -26,6 +26,9 @@ import java.util.function.Supplier
 import java.util.stream.Collector
 import kotlin.streams.toList
 
+/**
+ * @author shirokuro
+ */
 object ListHandlers {
     class ListHandler(private val presetName: String?,
                       private val scriptProcessor: ScriptProcessor,

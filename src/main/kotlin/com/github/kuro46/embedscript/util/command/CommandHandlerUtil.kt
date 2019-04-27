@@ -4,6 +4,9 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
 
+/**
+ * @author shirokuro
+ */
 object CommandHandlerUtil {
     fun newHandler(senderType: CommandHandler.SenderType = CommandHandler.SenderType.All,
                    onCommand: (CommandSender, String, Arguments) -> Boolean,

@@ -7,8 +7,10 @@ import com.google.common.collect.ImmutableListMultimap
 import com.google.common.collect.ListMultimap
 import java.util.Locale
 
-class MutableScript
-constructor(private var script: String) {
+/**
+ * @author shirokuro
+ */
+class MutableScript constructor(private var script: String) {
     private val multimap: ListMultimap<String, String> = ArrayListMultimap.create()
     private var view: ImmutableListMultimap<String, String>? = null
 

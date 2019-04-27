@@ -8,6 +8,9 @@ import org.apache.commons.lang.StringUtils
 import org.bukkit.command.CommandSender
 import java.util.ArrayList
 
+/**
+ * @author shirokuro
+ */
 object PageUtil {
     private const val UNFOCUSED_CHAT_HEIGHT = 10
     private const val CHAT_WIDTH = 50
