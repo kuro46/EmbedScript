@@ -6,6 +6,8 @@ import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 
 interface ChildParser {
 
+    fun getSuggestions(uncompletedArg: String): List<String> = emptyList()
+
     fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: List<String>)
 
     fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>)

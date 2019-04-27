@@ -3,6 +3,7 @@ package com.github.kuro46.embedscript.script.processor
 import com.github.kuro46.embedscript.Configuration
 import com.github.kuro46.embedscript.script.processor.executor.AbstractExecutor
 import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin
@@ -81,6 +82,10 @@ class GivePermissionProcessor {
                 }
                 builder.script.putAll(key, preferPermissions)
             }
+        }
+
+        override fun getSuggestions(uncompletedArg: String): List<String> {
+            return Bukkit.getPluginManager().permissions.map { it.name }
         }
     }
 }

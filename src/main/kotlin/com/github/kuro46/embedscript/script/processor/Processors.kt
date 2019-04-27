@@ -26,12 +26,20 @@ object Processors {
                 override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.clickTypes, Script.ClickType::class.java, matchedValues)
                 }
+
+                override fun getSuggestions(uncompletedArg: String): List<String> {
+                    return Script.ClickType.values().map { it.name }
+                }
             },
             DEFAULT_EXECUTOR)
     val LISTEN_MOVE_PROCESSOR = ChildProcessor("listen-move", "lm",
             object : AbstractParser() {
                 override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.moveTypes, Script.MoveType::class.java, matchedValues)
+                }
+
+                override fun getSuggestions(uncompletedArg: String): List<String> {
+                    return Script.MoveType.values().map { it.name }
                 }
             },
             DEFAULT_EXECUTOR)
@@ -40,16 +48,26 @@ object Processors {
                 override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.pushTypes, Script.PushType::class.java, matchedValues)
                 }
+
+                override fun getSuggestions(uncompletedArg: String): List<String> {
+                    return Script.PushType.values().map { it.name }
+                }
             },
             DEFAULT_EXECUTOR)
 
     // CHECK PHASE
 
+    val PERMISSION_PARSER = object : AbstractParser() {
+        override fun getSuggestions(uncompletedArg: String): List<String> {
+            return Bukkit.getPluginManager().permissions.map { it.name }
+        }
+    }
+
     val NEEDED_PERMISSION_PROCESSOR = ChildProcessor("needed-permission", "np",
-            DEFAULT_PARSER,
+            PERMISSION_PARSER,
             NeededPermissionExecutor())
     val UNNEEDED_PERMISSION_PROCESSOR = ChildProcessor("unneeded-permission", "up",
-            DEFAULT_PARSER,
+            PERMISSION_PARSER,
             object : NeededPermissionExecutor() {
                 override fun check(trigger: Player, matchedValues: List<String>): Boolean {
                     // invert

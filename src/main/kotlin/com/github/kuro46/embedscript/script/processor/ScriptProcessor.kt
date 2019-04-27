@@ -14,8 +14,8 @@ import java.util.logging.Logger
 
 class ScriptProcessor(val logger: Logger, val plugin: Plugin, val configuration: Configuration) {
     private val processors: MutableMap<String, ChildProcessor> = HashMap()
-    private val scriptParser = ScriptParser(this)
-    private val scriptExecutor = ScriptExecutor(this)
+    val scriptParser = ScriptParser(this)
+    val scriptExecutor = ScriptExecutor(this)
 
     init {
 

@@ -2,8 +2,8 @@ package com.github.kuro46.embedscript.script.processor.parser
 
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
-import com.github.kuro46.embedscript.script.processor.MutableScript
 import com.github.kuro46.embedscript.script.processor.ChildProcessor
+import com.github.kuro46.embedscript.script.processor.MutableScript
 import com.github.kuro46.embedscript.script.processor.ScriptBuilder
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import java.util.HashMap
@@ -60,6 +60,26 @@ class ScriptParser(private val scriptProcessor: ScriptProcessor) {
                 throw ParseException("'$key' is unknown key!")
             }
         }
+    }
+
+    fun unOmitValue(value: String): String? {
+        if (processors.containsKey(value)) {
+            return value
+        }
+
+        val lowerCaseValue = value.toLowerCase()
+
+        if (processors.containsKey(lowerCaseValue)) {
+            return value
+        }
+
+        processors.forEach { (key, processor) ->
+            if (processor.omittedKey == lowerCaseValue) {
+                return key
+            }
+        }
+
+        return null
     }
 
     /**

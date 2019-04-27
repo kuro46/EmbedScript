@@ -8,10 +8,35 @@ import org.bukkit.command.CommandSender
 class ScriptTabCompleter(private val scriptProcessor: ScriptProcessor) : TabCompleter {
     override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
         return if (isKey(completedArgs)) {
+            // uncompleted arg is key
             scriptProcessor.getProcessors().keys.map { "@$it" }
         } else {
-            emptyList()
+            // uncompleted arg is value
+
+            val key = completedArgs.last()
+            // remove '@'
+            val processorName = scriptProcessor.scriptParser.unOmitValue(removeFirstChar(key))
+                    ?: run {
+                        sender.sendMessage("'$key' is unknown key!")
+                        return emptyList()
+                    }
+            val suggestions =
+                    scriptProcessor.getProcessors().getValue(processorName).parser.getSuggestions(uncompletedArg)
+
+            return if (suggestions.isNotEmpty()) {
+                val surrounded: MutableList<String> = ArrayList(suggestions.size + 1)
+                suggestions.forEach { surrounded.add("[$it]") }
+                surrounded.add("[]")
+
+                surrounded
+            } else {
+                listOf("[]")
+            }
         }
+    }
+
+    private fun removeFirstChar(str: String): String {
+        return str.substring(1)
     }
 
     /**

@@ -46,5 +46,9 @@ class PresetProcessor {
             // do nothing
             // please do not remove this method because AbstractParser#build does builder.getScript().putAll(key, matchedValues);
         }
+
+        override fun getSuggestions(uncompletedArg: String): List<String> {
+            return configuration.presets!!.keys.toList()
+        }
     }
 }
