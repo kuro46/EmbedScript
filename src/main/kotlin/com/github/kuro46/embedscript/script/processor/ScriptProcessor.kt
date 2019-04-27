@@ -12,7 +12,7 @@ import java.util.HashMap
 import java.util.UUID
 import java.util.logging.Logger
 
-class ScriptProcessor(val logger: Logger, plugin: Plugin, val configuration: Configuration) {
+class ScriptProcessor(val logger: Logger, val plugin: Plugin, val configuration: Configuration) {
     private val processors: MutableMap<String, ChildProcessor> = HashMap()
     private val scriptParser = ScriptParser(this)
     private val scriptExecutor = ScriptExecutor(this)
@@ -30,8 +30,8 @@ class ScriptProcessor(val logger: Logger, plugin: Plugin, val configuration: Con
         registerProcessor(Processors.UNNEEDED_PERMISSION_PROCESSOR)
         registerProcessor(Processors.COMMAND_PROCESSOR)
         registerProcessor(Processors.CONSOLE_PROCESSOR)
-        registerProcessor(GivePermissionProcessor(plugin, configuration))
-        registerProcessor(PresetProcessor(configuration))
+        GivePermissionProcessor.register(this)
+        PresetProcessor.register(this)
     }
 
     fun registerProcessor(processor: ChildProcessor): ChildProcessor? {

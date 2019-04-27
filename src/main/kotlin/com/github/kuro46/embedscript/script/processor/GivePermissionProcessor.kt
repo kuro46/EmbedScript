@@ -2,9 +2,7 @@ package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
 import com.github.kuro46.embedscript.script.processor.executor.AbstractExecutor
-import com.github.kuro46.embedscript.script.processor.executor.ChildExecutor
 import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
-import com.github.kuro46.embedscript.script.processor.parser.ChildParser
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin
@@ -12,13 +10,17 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.stream.Collectors
 
-class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : ChildProcessor {
-    override val executor: ChildExecutor = GivePermissionExecutor(plugin)
-    override val parser: ChildParser = GivePermissionParser(configuration)
-
-    override val key = "give-permission"
-
-    override val omittedKey = "gp"
+class GivePermissionProcessor {
+    companion object {
+        fun register(processor: ScriptProcessor) {
+            processor.registerProcessor(ChildProcessor(
+                    key = "give-permission",
+                    omittedKey = "gp",
+                    executor = GivePermissionExecutor(processor.plugin),
+                    parser = GivePermissionParser(processor.configuration)
+            ))
+        }
+    }
 
     private class GivePermissionExecutor(private val plugin: Plugin) : AbstractExecutor() {
         private val attachments = HashMap<Player, PermissionAttachment>()

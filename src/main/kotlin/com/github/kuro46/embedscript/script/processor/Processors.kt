@@ -21,21 +21,21 @@ object Processors {
     }
 
     // ONLY TO PARSE
-    val LISTEN_CLICK_PROCESSOR = newProcessor("listen-click", "lc",
+    val LISTEN_CLICK_PROCESSOR = ChildProcessor("listen-click", "lc",
             object : AbstractParser() {
                 override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.clickTypes, Script.ClickType::class.java, matchedValues)
                 }
             },
             DEFAULT_EXECUTOR)
-    val LISTEN_MOVE_PROCESSOR = newProcessor("listen-move", "lm",
+    val LISTEN_MOVE_PROCESSOR = ChildProcessor("listen-move", "lm",
             object : AbstractParser() {
                 override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.moveTypes, Script.MoveType::class.java, matchedValues)
                 }
             },
             DEFAULT_EXECUTOR)
-    val LISTEN_PUSH_PROCESSOR = newProcessor("listen-push", "lm",
+    val LISTEN_PUSH_PROCESSOR = ChildProcessor("listen-push", "lm",
             object : AbstractParser() {
                 override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.pushTypes, Script.PushType::class.java, matchedValues)
@@ -45,10 +45,10 @@ object Processors {
 
     // CHECK PHASE
 
-    val NEEDED_PERMISSION_PROCESSOR = newProcessor("needed-permission", "np",
+    val NEEDED_PERMISSION_PROCESSOR = ChildProcessor("needed-permission", "np",
             DEFAULT_PARSER,
             NeededPermissionExecutor())
-    val UNNEEDED_PERMISSION_PROCESSOR = newProcessor("unneeded-permission", "up",
+    val UNNEEDED_PERMISSION_PROCESSOR = ChildProcessor("unneeded-permission", "up",
             DEFAULT_PARSER,
             object : NeededPermissionExecutor() {
                 override fun check(trigger: Player, matchedValues: List<String>): Boolean {
@@ -87,35 +87,35 @@ object Processors {
         }
     }
 
-    val COMMAND_PROCESSOR = newProcessor("command", "c",
+    val COMMAND_PROCESSOR = ChildProcessor("command", "c",
             COMMAND_PARSER,
             object : AbstractExecutor() {
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { trigger.performCommand(it) }
                 }
             })
-    val CONSOLE_PROCESSOR = newProcessor("console", "con",
+    val CONSOLE_PROCESSOR = ChildProcessor("console", "con",
             COMMAND_PARSER,
             object : AbstractExecutor() {
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { string -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), string) }
                 }
             })
-    val SAY_PROCESSOR = newProcessor("say", "s",
+    val SAY_PROCESSOR = ChildProcessor("say", "s",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { trigger.sendMessage(it) }
                 }
             })
-    val SAY_JSON_PROCESSOR = newProcessor("say-json", "sj",
+    val SAY_JSON_PROCESSOR = ChildProcessor("say-json", "sj",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { string -> trigger.spigot().sendMessage(*ComponentSerializer.parse(string)) }
                 }
             })
-    val BROADCAST_PROCESSOR = newProcessor("broadcast", "b",
+    val BROADCAST_PROCESSOR = ChildProcessor("broadcast", "b",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
@@ -126,7 +126,7 @@ object Processors {
                     }
                 }
             })
-    val BROADCAST_JSON_PROCESSOR = newProcessor("broadcast-json", "bj",
+    val BROADCAST_JSON_PROCESSOR = ChildProcessor("broadcast-json", "bj",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
@@ -137,21 +137,6 @@ object Processors {
                             }
                 }
             })
-
-    fun newProcessor(key: String,
-                     omittedKey: String,
-                     parser: ChildParser,
-                     executor: ChildExecutor): ChildProcessor {
-        return object : ChildProcessor {
-            override val key = key
-
-            override val omittedKey = omittedKey
-
-            override val parser = parser
-
-            override val executor = executor
-        }
-    }
 
     private fun <T : Enum<T>> addEnumToCollection(collection: MutableCollection<T>,
                                                   clazz: Class<T>,
