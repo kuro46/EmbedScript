@@ -8,12 +8,12 @@ import com.github.kuro46.embedscript.script.processor.executor.ScriptExecutor
 import com.github.kuro46.embedscript.script.processor.parser.ScriptParser
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
-import java.util.HashMap
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 
 class ScriptProcessor(val logger: Logger, val plugin: Plugin, val configuration: Configuration) {
-    private val processors: MutableMap<String, ChildProcessor> = HashMap()
+    private val processors: MutableMap<String, ChildProcessor> = ConcurrentHashMap()
     val scriptParser = ScriptParser(this)
     val scriptExecutor = ScriptExecutor(this)
 
@@ -68,7 +68,7 @@ class ScriptProcessor(val logger: Logger, val plugin: Plugin, val configuration:
 
     // EXECUTE START
 
-    fun execute(trigger: Player, script: Script, scriptPosition: ScriptPosition) {
-        scriptExecutor.execute(trigger, script, scriptPosition)
+    fun execute(trigger: Player, scripts: List<Script>, scriptPosition: ScriptPosition) {
+        scriptExecutor.execute(trigger, scripts, scriptPosition)
     }
 }

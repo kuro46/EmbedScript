@@ -8,6 +8,7 @@ import com.github.kuro46.embedscript.script.processor.ChildProcessor
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import com.github.kuro46.embedscript.util.Scheduler
 import com.github.kuro46.embedscript.util.Util
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.StringJoiner
 import java.util.logging.Logger
@@ -21,7 +22,11 @@ class ScriptExecutor(private val scriptProcessor: ScriptProcessor) {
     private val logger: Logger
         get() = scriptProcessor.logger
 
-    fun execute(trigger: Player, script: Script, scriptPosition: ScriptPosition) {
+    fun execute(trigger: Player, scripts: List<Script>, scriptPosition: ScriptPosition) {
+        Scheduler.execute { scripts.forEach { executeAsync(trigger, it, scriptPosition) } }
+    }
+
+    private fun executeAsync(trigger: Player, script: Script, scriptPosition: ScriptPosition) {
         val executors: MutableList<Pair<ChildExecutor, List<String>>> = ArrayList()
         val scriptMap = script.script
         for (key in scriptMap.keySet()) {
@@ -39,44 +44,66 @@ class ScriptExecutor(private val scriptProcessor: ScriptProcessor) {
         try {
             // check phase
             for ((key, value) in executors) {
-                if (!key.check(trigger, value)) {
+                val checkResult = executeInServerThreadIfNeeded(key.executionMode) {
+                    key.check(trigger, value)
+                }
+                if (!checkResult) {
                     return
                 }
             }
 
             // prepare phase
-            executors.forEach { (executor, matchedValues) -> executor.prepareExecute(trigger, matchedValues) }
+            executors.forEach { (executor, matchedValues) ->
+                executeInServerThreadIfNeeded(executor.executionMode) {
+                    executor.prepareExecute(trigger, matchedValues)
+                }
+            }
             // execute start
-            executors.forEach { (executor, matchedValues) -> executor.beginExecute(trigger, matchedValues) }
+            executors.forEach { (executor, matchedValues) ->
+                executeInServerThreadIfNeeded(executor.executionMode) {
+                    executor.beginExecute(trigger, matchedValues)
+                }
+            }
         } finally {
             // execute end
-            executors.forEach { (executor, matchedValues) -> executor.endExecute(trigger, matchedValues) }
+            executors.forEach { (executor, matchedValues) ->
+                executeInServerThreadIfNeeded(executor.executionMode) {
+                    executor.endExecute(trigger, matchedValues)
+                }
+            }
         }
 
         if (configuration.isLogEnabled) {
-            Scheduler.execute {
-                var message = configuration.logFormat
-                message = replaceAndUnescape(message!!, "<trigger>") { trigger.name }
-                message = replaceAndUnescape(message, "<script>") {
-                    val joiner = StringJoiner(" ")
-                    for (key in scriptMap.keySet()) {
-                        joiner.add("@$key ${ScriptUtil.toString(scriptMap.get(key))}")
-                    }
-                    joiner.toString()
+            var message = configuration.logFormat
+            message = replaceAndUnescape(message!!, "<trigger>") { trigger.name }
+            message = replaceAndUnescape(message, "<script>") {
+                val joiner = StringJoiner(" ")
+                for (key in scriptMap.keySet()) {
+                    joiner.add("@$key ${ScriptUtil.toString(scriptMap.get(key))}")
                 }
-                val location = trigger.location
-                val worldName = location.world.name
-                message = replaceAndUnescape(message, "<trigger_world>") { worldName }
-                message = replaceAndUnescape(message, "<trigger_x>") { location.blockX.toString() }
-                message = replaceAndUnescape(message, "<trigger_y>") { location.blockY.toString() }
-                message = replaceAndUnescape(message, "<trigger_z>") { location.blockZ.toString() }
-                message = replaceAndUnescape(message, "<script_world>") { worldName }
-                message = replaceAndUnescape(message, "<script_x>") { scriptPosition.x.toString() }
-                message = replaceAndUnescape(message, "<script_y>") { scriptPosition.y.toString() }
-                message = replaceAndUnescape(message, "<script_z>") { scriptPosition.z.toString() }
-
-                logger.info(message)
+                joiner.toString()
             }
+            val location = trigger.location
+            val worldName = location.world.name
+            message = replaceAndUnescape(message, "<trigger_world>") { worldName }
+            message = replaceAndUnescape(message, "<trigger_x>") { location.blockX.toString() }
+            message = replaceAndUnescape(message, "<trigger_y>") { location.blockY.toString() }
+            message = replaceAndUnescape(message, "<trigger_z>") { location.blockZ.toString() }
+            message = replaceAndUnescape(message, "<script_world>") { worldName }
+            message = replaceAndUnescape(message, "<script_x>") { scriptPosition.x.toString() }
+            message = replaceAndUnescape(message, "<script_y>") { scriptPosition.y.toString() }
+            message = replaceAndUnescape(message, "<script_z>") { scriptPosition.z.toString() }
+
+            logger.info(message)
+        }
+    }
+
+    private fun <T> executeInServerThreadIfNeeded(executionMode: ExecutionMode, function: () -> T): T {
+        return when(executionMode) {
+            ExecutionMode.SYNCHRONOUS -> {
+                Bukkit.getScheduler().callSyncMethod(scriptProcessor.plugin, function).get()
+            }
+            ExecutionMode.ASYNCHRONOUS -> function()
         }
     }
 

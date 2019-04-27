@@ -4,6 +4,7 @@ import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.processor.executor.AbstractExecutor
 import com.github.kuro46.embedscript.script.processor.executor.ChildExecutor
+import com.github.kuro46.embedscript.script.processor.executor.ExecutionMode
 import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
 import com.github.kuro46.embedscript.script.processor.parser.ChildParser
 import net.md_5.bungee.chat.ComponentSerializer
@@ -14,7 +15,8 @@ import java.util.stream.Collectors
 
 object Processors {
     val DEFAULT_EXECUTOR: ChildExecutor = object : AbstractExecutor() {
-
+        override val executionMode: ExecutionMode
+            get() = ExecutionMode.ASYNCHRONOUS
     }
     val DEFAULT_PARSER: ChildParser = object : AbstractParser() {
 
@@ -108,6 +110,9 @@ object Processors {
     val COMMAND_PROCESSOR = ChildProcessor("command", "c",
             COMMAND_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.SYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { trigger.performCommand(it) }
                 }
@@ -115,6 +120,9 @@ object Processors {
     val CONSOLE_PROCESSOR = ChildProcessor("console", "con",
             COMMAND_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.SYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { string -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), string) }
                 }
@@ -122,6 +130,9 @@ object Processors {
     val SAY_PROCESSOR = ChildProcessor("say", "s",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.ASYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { trigger.sendMessage(it) }
                 }
@@ -129,6 +140,9 @@ object Processors {
     val SAY_JSON_PROCESSOR = ChildProcessor("say-json", "sj",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.ASYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { string -> trigger.spigot().sendMessage(*ComponentSerializer.parse(string)) }
                 }
@@ -136,6 +150,9 @@ object Processors {
     val BROADCAST_PROCESSOR = ChildProcessor("broadcast", "b",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.ASYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     Bukkit.getOnlinePlayers().forEach { player ->
                         for (string in matchedValues) {
@@ -147,6 +164,9 @@ object Processors {
     val BROADCAST_JSON_PROCESSOR = ChildProcessor("broadcast-json", "bj",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.ASYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.stream()
                             .map { json -> ComponentSerializer.parse(json) }
@@ -170,6 +190,12 @@ object Processors {
     }
 
     private open class NeededPermissionExecutor : AbstractExecutor() {
+        override val executionMode: ExecutionMode
+            get() {
+                return if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms"))
+                    ExecutionMode.ASYNCHRONOUS
+                else ExecutionMode.SYNCHRONOUS
+            }
         override fun check(trigger: Player, matchedValues: List<String>): Boolean {
             for (matchedValue in matchedValues) {
                 if (!trigger.hasPermission(matchedValue)) {

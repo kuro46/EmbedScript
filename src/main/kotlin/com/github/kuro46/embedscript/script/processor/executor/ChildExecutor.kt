@@ -4,6 +4,8 @@ import org.bukkit.entity.Player
 
 interface ChildExecutor {
 
+    val executionMode: ExecutionMode
+
     fun check(trigger: Player, matchedValues: List<String>): Boolean
 
     fun prepareExecute(trigger: Player, matchedValues: List<String>)

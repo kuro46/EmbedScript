@@ -2,6 +2,7 @@ package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
 import com.github.kuro46.embedscript.script.processor.executor.AbstractExecutor
+import com.github.kuro46.embedscript.script.processor.executor.ExecutionMode
 import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -25,6 +26,13 @@ class GivePermissionProcessor {
 
     private class GivePermissionExecutor(private val plugin: Plugin) : AbstractExecutor() {
         private val attachments = HashMap<Player, PermissionAttachment>()
+
+        override val executionMode: ExecutionMode
+            get() {
+                return if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms"))
+                    ExecutionMode.ASYNCHRONOUS
+                else ExecutionMode.SYNCHRONOUS
+            }
 
         override fun prepareExecute(trigger: Player, matchedValues: List<String>) {
             val attachment = if (matchedValues.isEmpty()) null else trigger.addAttachment(plugin)

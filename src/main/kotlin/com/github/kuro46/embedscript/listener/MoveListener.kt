@@ -34,10 +34,9 @@ class MoveListener(embedScript: EmbedScript) : Listener {
             return
         }
 
-        for (script in scriptManager[scriptPosition]) {
-            if (validateMoveType(script, event)) {
-                scriptProcessor.execute(player, script, scriptPosition)
-            }
+        val scripts = scriptManager[scriptPosition].filter { validateMoveType(it, event) }
+        if (scripts.isNotEmpty()) {
+            scriptProcessor.execute(player, scripts, scriptPosition)
         }
     }
 
