@@ -124,7 +124,9 @@ object ScriptSerializer {
         }
     }
 
-    private abstract class Formatter(protected val filePath: Path) : TypeAdapter<ListMultimap<ScriptPosition, Script>>() {
+    private abstract class Formatter(
+            protected val filePath: Path
+    ) : TypeAdapter<ListMultimap<ScriptPosition, Script>>() {
 
         abstract fun version(): String
     }
@@ -193,9 +195,9 @@ object ScriptSerializer {
                 reader.beginObject()
                 while (reader.hasNext()) {
                     when (reader.nextName()) {
-                        "coordinate" -> position = GsonHolder.get().fromJson(reader, object : TypeToken<ScriptPosition>() {
-
-                        }.type)
+                        "coordinate" -> position = GsonHolder.get().fromJson(reader,
+                                object : TypeToken<ScriptPosition>() {
+                                }.type)
                         "scripts" -> {
                             scripts = ArrayList()
                             reader.beginArray()
