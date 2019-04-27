@@ -11,7 +11,6 @@ class Configuration private constructor(dataFolder: Path) {
     private val configPath: Path = dataFolder.resolve("config.yml")
     var presets: Map<String, String>? = null
         private set
-    private var parseLoopLimit: Int = 0
     var isLogEnabled: Boolean = false
         private set
     var logFormat: String? = null
@@ -24,9 +23,6 @@ class Configuration private constructor(dataFolder: Path) {
     fun load() {
         val configuration = YamlConfiguration()
         Files.newBufferedReader(configPath).use { reader -> configuration.load(reader) }
-
-        // load parse-loop-limit
-        parseLoopLimit = configuration.getInt(KEY_PARSE_LOOP_LIMIT, 3)
 
         loadLogging(configuration)
 
@@ -49,7 +45,6 @@ class Configuration private constructor(dataFolder: Path) {
     }
 
     companion object {
-        private const val KEY_PARSE_LOOP_LIMIT = "parse-loop-limit"
         private const val KEY_LOGGING_ENABLED = "logging.enabled"
         private const val KEY_LOGGING_FORMAT = "logging.format"
         private const val KEY_PRESETS = "presets"
