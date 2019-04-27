@@ -141,8 +141,8 @@ object Processors {
     fun newProcessor(key: String,
                      omittedKey: String,
                      parser: ChildParser,
-                     executor: ChildExecutor): Processor {
-        return object : Processor {
+                     executor: ChildExecutor): ChildProcessor {
+        return object : ChildProcessor {
             override val key = key
 
             override val omittedKey = omittedKey

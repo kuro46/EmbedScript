@@ -12,7 +12,7 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.stream.Collectors
 
-class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Processor {
+class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : ChildProcessor {
     override val executor: ChildExecutor = GivePermissionExecutor(plugin)
     override val parser: ChildParser = GivePermissionParser(configuration)
 

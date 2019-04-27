@@ -6,7 +6,7 @@ import com.github.kuro46.embedscript.script.processor.executor.ChildExecutor
 import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
 import com.github.kuro46.embedscript.script.processor.parser.ChildParser
 
-class PresetProcessor(configuration: Configuration) : Processor {
+class PresetProcessor(configuration: Configuration) : ChildProcessor {
     override val parser: ChildParser = PresetParser(configuration)
 
     override val key = "preset"

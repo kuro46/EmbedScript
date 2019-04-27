@@ -13,7 +13,7 @@ import java.util.UUID
 import java.util.logging.Logger
 
 class ScriptProcessor(val logger: Logger, plugin: Plugin, val configuration: Configuration) {
-    private val processors: MutableMap<String, Processor> = HashMap()
+    private val processors: MutableMap<String, ChildProcessor> = HashMap()
     private val scriptParser = ScriptParser(this)
     private val scriptExecutor = ScriptExecutor(this)
 
@@ -34,19 +34,19 @@ class ScriptProcessor(val logger: Logger, plugin: Plugin, val configuration: Con
         registerProcessor(PresetProcessor(configuration))
     }
 
-    fun registerProcessor(processor: Processor): Processor? {
+    fun registerProcessor(processor: ChildProcessor): ChildProcessor? {
         return processors.put(processor.key, processor)
     }
 
-    fun unregisterProcessor(processor: Processor): Processor? {
+    fun unregisterProcessor(processor: ChildProcessor): ChildProcessor? {
         return processors.remove(processor.key)
     }
 
-    fun isProcessorRegistered(processor: Processor): Boolean {
+    fun isProcessorRegistered(processor: ChildProcessor): Boolean {
         return processors.containsKey(processor.key)
     }
 
-    fun getProcessors(): Map<String, Processor> {
+    fun getProcessors(): Map<String, ChildProcessor> {
         return processors
     }
 

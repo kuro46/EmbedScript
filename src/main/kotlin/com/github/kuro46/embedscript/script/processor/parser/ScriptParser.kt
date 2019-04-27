@@ -3,7 +3,7 @@ package com.github.kuro46.embedscript.script.processor.parser
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.processor.MutableScript
-import com.github.kuro46.embedscript.script.processor.Processor
+import com.github.kuro46.embedscript.script.processor.ChildProcessor
 import com.github.kuro46.embedscript.script.processor.ScriptBuilder
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import java.util.HashMap
@@ -11,7 +11,7 @@ import java.util.HashSet
 import java.util.UUID
 
 class ScriptParser(private val scriptProcessor: ScriptProcessor) {
-    private val processors: Map<String, Processor>
+    private val processors: Map<String, ChildProcessor>
         get() = scriptProcessor.getProcessors()
 
     fun parse(author: UUID, script: String, createdAt: Long = System.currentTimeMillis()): Script {

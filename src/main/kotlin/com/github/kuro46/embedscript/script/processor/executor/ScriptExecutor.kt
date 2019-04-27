@@ -4,7 +4,7 @@ import com.github.kuro46.embedscript.Configuration
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtil
-import com.github.kuro46.embedscript.script.processor.Processor
+import com.github.kuro46.embedscript.script.processor.ChildProcessor
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
 import com.github.kuro46.embedscript.util.Scheduler
 import com.github.kuro46.embedscript.util.Util
@@ -14,7 +14,7 @@ import java.util.logging.Logger
 import java.util.stream.Collectors
 
 class ScriptExecutor(private val scriptProcessor: ScriptProcessor) {
-    private val processors: Map<String, Processor>
+    private val processors: Map<String, ChildProcessor>
         get() = scriptProcessor.getProcessors()
     private val configuration: Configuration
         get() = scriptProcessor.configuration
