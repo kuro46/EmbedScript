@@ -2,7 +2,9 @@ package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
 import com.github.kuro46.embedscript.script.processor.executor.AbstractExecutor
+import com.github.kuro46.embedscript.script.processor.executor.Executor
 import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
+import com.github.kuro46.embedscript.script.processor.parser.Parser
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin
@@ -11,8 +13,8 @@ import java.util.HashSet
 import java.util.stream.Collectors
 
 class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Processor {
-    override val executor: Processor.Executor = GivePermissionExecutor(plugin)
-    override val parser: Processor.Parser = GivePermissionParser(configuration)
+    override val executor: Executor = GivePermissionExecutor(plugin)
+    override val parser: Parser = GivePermissionParser(configuration)
 
     override val key = "give-permission"
 
