@@ -14,8 +14,10 @@ import org.bukkit.command.CommandExecutor as BukkitCommandExecutor
 /**
  * @author shirokuro
  */
-abstract class CommandHandler(private val senderType: SenderType = SenderType.All,
-                              private val handlingMode: HandlingMode = HandlingMode.Asynchronous) : CommandExecutor, TabCompleter {
+abstract class CommandHandler(
+        private val senderType: SenderType = SenderType.All,
+        private val handlingMode: HandlingMode = HandlingMode.Asynchronous
+) : CommandExecutor, TabCompleter {
     private val childHandlers: ConcurrentMap<String, CommandHandler> = ConcurrentHashMap()
     var commandExecutor: CommandExecutor? = null
     var tabCompleter: TabCompleter? = null
@@ -84,11 +86,21 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
     // Tab Completion Handling
     // -----------------------
 
-    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+    override fun onTabComplete(
+            sender: CommandSender,
+            uncompletedArg: String,
+            uncompletedArgIndex: Int,
+            completedArgs: Arguments
+    ): List<String> {
         return emptyList()
     }
 
-    private fun handleTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+    private fun handleTabComplete(
+            sender: CommandSender,
+            uncompletedArg: String,
+            uncompletedArgIndex: Int,
+            completedArgs: Arguments
+    ): List<String> {
         if (!checkSenderType(sender)) return emptyList()
 
         // find child executors and execute if contains
@@ -102,7 +114,12 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
 
         val tabCompleter = this.tabCompleter ?: this
 
-        val suggestions = tabCompleter.onTabComplete(sender, uncompletedArg, uncompletedArgIndex, completedArgs).toMutableList()
+        val suggestions = tabCompleter.onTabComplete(
+                sender,
+                uncompletedArg,
+                uncompletedArgIndex,
+                completedArgs
+        ).toMutableList()
         suggestions.addAll(childHandlers.keys)
         return suggestions.filter { it.startsWith(uncompletedArg, true) }
     }
@@ -113,7 +130,15 @@ abstract class CommandHandler(private val senderType: SenderType = SenderType.Al
         } else {
             Pair(args.last(), args.dropLast(1))
         }
-        return handleTabComplete(sender, uncompletedArg, args.lastIndex, Arguments(completedArgs.stream().filter { it.isNotEmpty() }.toList()))
+
+        val withoutEmptyString = completedArgs.filter { it.isNotEmpty() }
+
+        return handleTabComplete(
+                sender,
+                uncompletedArg,
+                args.lastIndex,
+                Arguments(withoutEmptyString)
+        )
     }
 
     sealed class SenderType {
