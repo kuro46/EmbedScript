@@ -9,7 +9,12 @@ import org.bukkit.command.CommandSender
  * @author shirokuro
  */
 class ScriptTabCompleter(private val scriptProcessor: ScriptProcessor) : TabCompleter {
-    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+    override fun onTabComplete(
+            sender: CommandSender,
+            uncompletedArg: String,
+            uncompletedArgIndex: Int,
+            completedArgs: Arguments
+    ): List<String> {
         return if (isKey(completedArgs)) {
             // uncompleted arg is key
             scriptProcessor.getProcessors().keys.map { "@$it" }
@@ -17,24 +22,29 @@ class ScriptTabCompleter(private val scriptProcessor: ScriptProcessor) : TabComp
             // uncompleted arg is value
 
             val key = completedArgs.last()
-            // remove '@'
-            val processorName = scriptProcessor.scriptParser.unOmitValue(removeFirstChar(key))
-                    ?: run {
-                        sender.sendMessage("'$key' is unknown key!")
-                        return emptyList()
-                    }
-            val suggestions =
-                    scriptProcessor.getProcessors().getValue(processorName).parser.getSuggestions(uncompletedArg)
+            
+            getValueSuggestions(sender, key, uncompletedArg)
+        }
+    }
 
-            return if (suggestions.isNotEmpty()) {
-                val surrounded: MutableList<String> = ArrayList(suggestions.size + 1)
-                suggestions.forEach { surrounded.add("[$it]") }
-                surrounded.add("[]")
+    private fun getValueSuggestions(sender: CommandSender, key: String, value: String): List<String> {
+        // remove '@'
+        val processorName = scriptProcessor.scriptParser.unOmitValue(removeFirstChar(key))
+                ?: run {
+                    sender.sendMessage("'$key' is unknown key!")
+                    return emptyList()
+                }
+        val suggestions =
+                scriptProcessor.getProcessors().getValue(processorName).parser.getSuggestions(value)
 
-                surrounded
-            } else {
-                listOf("[]")
-            }
+        return if (suggestions.isNotEmpty()) {
+            val surrounded: MutableList<String> = ArrayList(suggestions.size + 1)
+            suggestions.forEach { surrounded.add("[$it]") }
+            surrounded.add("[]")
+
+            surrounded
+        } else {
+            listOf("[]")
         }
     }
 
