@@ -20,7 +20,12 @@ class PresetProcessor {
     }
 
     private class PresetParser(private val configuration: Configuration) : AbstractParser() {
-        override fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: List<String>) {
+        override fun prepareBuild(
+                processor: ScriptProcessor,
+                script: MutableScript,
+                key: String,
+                matchedValues: List<String>
+        ) {
             var mergeTo: MutableScript? = null
             val presets = configuration.presets
             for (value in matchedValues) {
@@ -47,7 +52,8 @@ class PresetProcessor {
 
         override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
             // do nothing
-            // please do not remove this method because AbstractParser#build does builder.getScript().putAll(key, matchedValues);
+            // please do not remove this method
+            // because AbstractParser#build does builder.getScript().putAll(key, matchedValues);
         }
 
         override fun getSuggestions(uncompletedArg: String): List<String> {
