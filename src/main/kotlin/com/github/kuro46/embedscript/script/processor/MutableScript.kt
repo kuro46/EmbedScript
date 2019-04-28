@@ -92,7 +92,8 @@ class MutableScript constructor(private var script: String) {
      * @return KeyValue
      */
     private fun splitToKeyValue(string: String): Pair<String, List<String>> {
-        val pair = Util.splitByFirstSpace(string) ?: throw ParseException("Failed to parse '$string' to KeyValue")
+        val pair = Util.splitByFirstSpace(string)
+                ?: throw ParseException("Failed to parse '$string' to KeyValue")
         // expect "key"
         val key = pair.first.toLowerCase(Locale.ENGLISH)
         // expect "[value]", or "[value1][value2]"
@@ -108,17 +109,21 @@ class MutableScript constructor(private var script: String) {
         if (modifiableString.isEmpty()) {
             return emptyList()
         } else if (!(modifiableString.startsWith("[") && modifiableString.endsWith("]"))) {
-            throw ParseException("Value of the script is needed to starts with '[' and ends with ']' : $modifiableString")
+            throw ParseException("Value of the script is needed " +
+                    "to starts with '[' and ends with ']' : $modifiableString")
         }
 
         // trim "[" and "]"
         modifiableString = modifiableString.substring(1, modifiableString.length - 1)
 
         // translate color codes
-        modifiableString = Util.replaceAndUnescape(modifiableString, "&(?<code>[0123456789AaBbCcDdEeFfKkLlMmNnOoRr])",
+        modifiableString = Util.replaceAndUnescape(
+                modifiableString,
+                "&(?<code>[0123456789AaBbCcDdEeFfKkLlMmNnOoRr])",
                 "&\${code}",
                 "§\${code}",
-                false)
+                false
+        )
 
         return Util.splitAndUnescape(modifiableString, "][")
     }
