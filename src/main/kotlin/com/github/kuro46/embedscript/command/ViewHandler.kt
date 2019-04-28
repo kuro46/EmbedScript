@@ -45,7 +45,12 @@ class ViewHandler(private val requests: Requests,
         }
     }
 
-    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+    override fun onTabComplete(
+            sender: CommandSender,
+            uncompletedArg: String,
+            uncompletedArgIndex: Int,
+            completedArgs: Arguments
+    ): List<String> {
         return if (uncompletedArgIndex == 0) {
             // wants suggest worlds
             Bukkit.getWorlds().stream().map { it.name }.toList()
