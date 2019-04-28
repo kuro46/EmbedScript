@@ -25,7 +25,13 @@ object Util {
         return replaceAndUnescape(source, target, target, replacement, true)
     }
 
-    fun replaceAndUnescape(source: String, target: String, escapeTo: String, replacement: String, quote: Boolean): String {
+    fun replaceAndUnescape(
+            source: String,
+            target: String,
+            escapeTo: String,
+            replacement: String,
+            quote: Boolean
+    ): String {
         var source = source
         val patterns = createPatterns(target, quote)
         val pattern = patterns.pattern
