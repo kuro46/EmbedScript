@@ -17,8 +17,12 @@ import java.util.concurrent.TimeUnit
  * @author shirokuro
  */
 class InteractListener(embedScript: EmbedScript) : Listener {
+    companion object {
+        private const val EXECUTION_INTERVAL = 300L
+    }
+
     private val coolTime: Cache<UUID, Boolean> = CacheBuilder.newBuilder()
-            .expireAfterWrite(300, TimeUnit.MILLISECONDS)
+            .expireAfterWrite(EXECUTION_INTERVAL, TimeUnit.MILLISECONDS)
             .build()
     private val scriptManager = embedScript.scriptManager
     private val scriptProcessor = embedScript.scriptProcessor
@@ -42,7 +46,9 @@ class InteractListener(embedScript: EmbedScript) : Listener {
             return
         }
 
-        val scripts = scriptManager[position].filter { validateClickType(it, event.action) || validatePushType(it, event) }
+        val scripts = scriptManager[position].filter {
+            validateClickType(it, event.action) || validatePushType(it, event)
+        }
         if (scripts.isNotEmpty()) {
             scriptProcessor.execute(player, scripts, position)
             event.isCancelled = true
