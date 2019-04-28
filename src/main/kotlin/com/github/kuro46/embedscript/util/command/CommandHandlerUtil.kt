@@ -16,7 +16,12 @@ object CommandHandlerUtil {
                 return onCommand(sender, command, args)
             }
 
-            override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+            override fun onTabComplete(
+                    sender: CommandSender,
+                    uncompletedArg: String,
+                    uncompletedArgIndex: Int,
+                    completedArgs: Arguments
+            ): List<String> {
                 return onTabComplete(sender, uncompletedArg, uncompletedArgIndex, completedArgs)
             }
         }
