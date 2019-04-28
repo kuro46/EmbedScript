@@ -8,17 +8,24 @@ import org.apache.commons.lang.StringUtils
 import org.bukkit.command.CommandSender
 import java.util.ArrayList
 
+/**
+ * @author shirokuro
+ */
 object PageUtil {
+    // upper title, under title and navigation bar
+    private const val UI_LINES = 3
     private const val UNFOCUSED_CHAT_HEIGHT = 10
     private const val CHAT_WIDTH = 50
 
-    fun sendPage(title: String,
-                 sender: CommandSender,
-                 messages: Collection<Array<BaseComponent>>,
-                 pageIndex: Int,
-                 chatHeight: Int = UNFOCUSED_CHAT_HEIGHT,
-                 commandGenerator: (Int) -> String) {
-        val availableMessageHeight = chatHeight - 3
+    fun sendPage(
+            title: String,
+            sender: CommandSender,
+            messages: Collection<Array<BaseComponent>>,
+            pageIndex: Int,
+            chatHeight: Int = UNFOCUSED_CHAT_HEIGHT,
+            commandGenerator: (Int) -> String
+    ) {
+        val availableMessageHeight = chatHeight - UI_LINES
         val pages = splitMessages(messages, availableMessageHeight)
 
         if (pageIndex >= pages.size || pageIndex < 0) {
@@ -57,7 +64,10 @@ object PageUtil {
         return separatorString + decorated + separatorString
     }
 
-    private fun splitMessages(messages: Collection<Array<BaseComponent>>, maximumLines: Int): List<List<Array<BaseComponent>>> {
+    private fun splitMessages(
+            messages: Collection<Array<BaseComponent>>,
+            maximumLines: Int
+    ): List<List<Array<BaseComponent>>> {
         val pages: MutableList<List<Array<BaseComponent>>> = ArrayList()
         val buffer: MutableList<Array<BaseComponent>> = ArrayList()
         for (message in messages) {

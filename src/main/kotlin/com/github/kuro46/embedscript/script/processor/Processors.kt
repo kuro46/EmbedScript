@@ -2,51 +2,77 @@ package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
-import com.google.common.collect.ImmutableList
+import com.github.kuro46.embedscript.script.processor.executor.AbstractExecutor
+import com.github.kuro46.embedscript.script.processor.executor.ChildExecutor
+import com.github.kuro46.embedscript.script.processor.executor.ExecutionMode
+import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
+import com.github.kuro46.embedscript.script.processor.parser.ChildParser
 import net.md_5.bungee.chat.ComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.Locale
 import java.util.stream.Collectors
 
+/**
+ * @author shirokuro
+ */
 object Processors {
-    val DEFAULT_EXECUTOR: Processor.Executor = object : AbstractExecutor() {
-
+    val DEFAULT_EXECUTOR: ChildExecutor = object : AbstractExecutor() {
+        override val executionMode: ExecutionMode
+            get() = ExecutionMode.ASYNCHRONOUS
     }
-    val DEFAULT_PARSER: Processor.Parser = object : AbstractParser() {
+    val DEFAULT_PARSER: ChildParser = object : AbstractParser() {
 
     }
 
     // ONLY TO PARSE
-    val LISTEN_CLICK_PROCESSOR = newProcessor("listen-click", "lc",
+    val LISTEN_CLICK_PROCESSOR = ChildProcessor("listen-click", "lc",
             object : AbstractParser() {
-                override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+                override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.clickTypes, Script.ClickType::class.java, matchedValues)
                 }
-            },
-            DEFAULT_EXECUTOR)
-    val LISTEN_MOVE_PROCESSOR = newProcessor("listen-move", "lm",
-            object : AbstractParser() {
-                override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
-                    addEnumToCollection(builder.moveTypes, Script.MoveType::class.java, matchedValues)
+
+                override fun getSuggestions(uncompletedArg: String): List<String> {
+                    return Script.ClickType.values().map { it.name }
                 }
             },
             DEFAULT_EXECUTOR)
-    val LISTEN_PUSH_PROCESSOR = newProcessor("listen-push", "lm",
+    val LISTEN_MOVE_PROCESSOR = ChildProcessor("listen-move", "lm",
             object : AbstractParser() {
-                override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+                override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
+                    addEnumToCollection(builder.moveTypes, Script.MoveType::class.java, matchedValues)
+                }
+
+                override fun getSuggestions(uncompletedArg: String): List<String> {
+                    return Script.MoveType.values().map { it.name }
+                }
+            },
+            DEFAULT_EXECUTOR)
+    val LISTEN_PUSH_PROCESSOR = ChildProcessor("listen-push", "lm",
+            object : AbstractParser() {
+                override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
                     addEnumToCollection(builder.pushTypes, Script.PushType::class.java, matchedValues)
+                }
+
+                override fun getSuggestions(uncompletedArg: String): List<String> {
+                    return Script.PushType.values().map { it.name }
                 }
             },
             DEFAULT_EXECUTOR)
 
     // CHECK PHASE
 
-    val NEEDED_PERMISSION_PROCESSOR = newProcessor("needed-permission", "np",
-            DEFAULT_PARSER,
+    val PERMISSION_PARSER = object : AbstractParser() {
+        override fun getSuggestions(uncompletedArg: String): List<String> {
+            return Bukkit.getPluginManager().permissions.map { it.name }
+        }
+    }
+
+    val NEEDED_PERMISSION_PROCESSOR = ChildProcessor("needed-permission", "np",
+            PERMISSION_PARSER,
             NeededPermissionExecutor())
-    val UNNEEDED_PERMISSION_PROCESSOR = newProcessor("unneeded-permission", "up",
-            DEFAULT_PARSER,
+    val UNNEEDED_PERMISSION_PROCESSOR = ChildProcessor("unneeded-permission", "up",
+            PERMISSION_PARSER,
             object : NeededPermissionExecutor() {
                 override fun check(trigger: Player, matchedValues: List<String>): Boolean {
                     // invert
@@ -57,7 +83,7 @@ object Processors {
     // EXECUTION PHASE
 
     private val COMMAND_PARSER = object : AbstractParser() {
-        override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+        override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
             val modifiedForCommand = matchedValues.stream()
                     // remove slash char if needed
                     .map { commandWithArgs ->
@@ -84,37 +110,52 @@ object Processors {
         }
     }
 
-    val COMMAND_PROCESSOR = newProcessor("command", "c",
+    val COMMAND_PROCESSOR = ChildProcessor("command", "c",
             COMMAND_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.SYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { trigger.performCommand(it) }
                 }
             })
-    val CONSOLE_PROCESSOR = newProcessor("console", "con",
+    val CONSOLE_PROCESSOR = ChildProcessor("console", "con",
             COMMAND_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.SYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { string -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), string) }
                 }
             })
-    val SAY_PROCESSOR = newProcessor("say", "s",
+    val SAY_PROCESSOR = ChildProcessor("say", "s",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.ASYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { trigger.sendMessage(it) }
                 }
             })
-    val SAY_JSON_PROCESSOR = newProcessor("say-json", "sj",
+    val SAY_JSON_PROCESSOR = ChildProcessor("say-json", "sj",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.ASYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.forEach { string -> trigger.spigot().sendMessage(*ComponentSerializer.parse(string)) }
                 }
             })
-    val BROADCAST_PROCESSOR = newProcessor("broadcast", "b",
+    val BROADCAST_PROCESSOR = ChildProcessor("broadcast", "b",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.ASYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     Bukkit.getOnlinePlayers().forEach { player ->
                         for (string in matchedValues) {
@@ -123,9 +164,12 @@ object Processors {
                     }
                 }
             })
-    val BROADCAST_JSON_PROCESSOR = newProcessor("broadcast-json", "bj",
+    val BROADCAST_JSON_PROCESSOR = ChildProcessor("broadcast-json", "bj",
             DEFAULT_PARSER,
             object : AbstractExecutor() {
+                override val executionMode: ExecutionMode
+                    get() = ExecutionMode.ASYNCHRONOUS
+
                 override fun beginExecute(trigger: Player, matchedValues: List<String>) {
                     matchedValues.stream()
                             .map { json -> ComponentSerializer.parse(json) }
@@ -134,21 +178,6 @@ object Processors {
                             }
                 }
             })
-
-    fun newProcessor(key: String,
-                     omittedKey: String,
-                     parser: Processor.Parser,
-                     executor: Processor.Executor): Processor {
-        return object : Processor {
-            override val key = key
-
-            override val omittedKey = omittedKey
-
-            override val parser = parser
-
-            override val executor = executor
-        }
-    }
 
     private fun <T : Enum<T>> addEnumToCollection(collection: MutableCollection<T>,
                                                   clazz: Class<T>,
@@ -164,6 +193,12 @@ object Processors {
     }
 
     private open class NeededPermissionExecutor : AbstractExecutor() {
+        override val executionMode: ExecutionMode
+            get() {
+                return if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms"))
+                    ExecutionMode.ASYNCHRONOUS
+                else ExecutionMode.SYNCHRONOUS
+            }
         override fun check(trigger: Player, matchedValues: List<String>): Boolean {
             for (matchedValue in matchedValues) {
                 if (!trigger.hasPermission(matchedValue)) {

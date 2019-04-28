@@ -3,11 +3,13 @@ package com.github.kuro46.embedscript.script.processor
 import com.github.kuro46.embedscript.script.Script
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
-import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ListMultimap
 import java.util.HashSet
 import java.util.UUID
 
+/**
+ * @author shirokuro
+ */
 class ScriptBuilder private constructor(val author: UUID) {
     val moveTypes: MutableSet<Script.MoveType> = HashSet()
     val clickTypes: MutableSet<Script.ClickType> = HashSet()
@@ -16,9 +18,9 @@ class ScriptBuilder private constructor(val author: UUID) {
 
     fun build(createdAt: Long): Script {
         return Script(author, createdAt,
-                ImmutableSet.copyOf<Script.MoveType>(moveTypes),
-                ImmutableSet.copyOf<Script.ClickType>(clickTypes),
-                ImmutableSet.copyOf<Script.PushType>(pushTypes),
+                moveTypes.toHashSet(),
+                clickTypes.toHashSet(),
+                pushTypes.toHashSet(),
                 ImmutableListMultimap.copyOf(script))
     }
 

@@ -3,7 +3,6 @@ package com.github.kuro46.embedscript.script
 import com.github.kuro46.embedscript.GsonHolder
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
-import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Multimap
 import com.google.gson.JsonParseException
 import com.google.gson.TypeAdapter
@@ -16,12 +15,15 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import java.util.UUID
 
+/**
+ * @author shirokuro
+ */
 @JsonAdapter(Script.ScriptAdapter::class)
 class Script(val author: UUID,
              val createdAt: Long,
-             val moveTypes: ImmutableSet<MoveType>,
-             val clickTypes: ImmutableSet<ClickType>,
-             val pushTypes: ImmutableSet<PushType>,
+             val moveTypes: Set<MoveType>,
+             val clickTypes: Set<ClickType>,
+             val pushTypes: Set<PushType>,
              val script: ImmutableListMultimap<String, String>) {
 
     enum class MoveType {
@@ -116,21 +118,22 @@ class Script(val author: UUID,
 
                     }.type)
                     "createdAt" -> createdAt = reader.nextLong()
-                    "moveTypes" -> moveTypes = gson.fromJson<Set<MoveType>>(reader, object : TypeToken<Set<MoveType>>() {
-
-                    }.type)
-                    "clickTypes" -> clickTypes = gson.fromJson<Set<ClickType>>(reader, object : TypeToken<Set<ClickType>>() {
-
-                    }.type)
-                    "pushTypes" -> pushTypes = gson.fromJson<Set<PushType>>(reader, object : TypeToken<Set<PushType>>() {
-
-                    }.type)
+                    "moveTypes" -> moveTypes = gson.fromJson<Set<MoveType>>(reader,
+                            object : TypeToken<Set<MoveType>>() {
+                            }.type)
+                    "clickTypes" -> clickTypes = gson.fromJson<Set<ClickType>>(reader,
+                            object : TypeToken<Set<ClickType>>() {
+                            }.type)
+                    "pushTypes" -> pushTypes = gson.fromJson<Set<PushType>>(reader,
+                            object : TypeToken<Set<PushType>>() {
+                            }.type)
                     "script" -> {
                         script = ArrayListMultimap.create()
                         reader.beginObject()
                         while (reader.hasNext()) {
-                            script!!.putAll(reader.nextName(), gson.fromJson(reader, object : TypeToken<List<String>>() {
-                            }.type))
+                            script!!.putAll(reader.nextName(), gson.fromJson(reader,
+                                    object : TypeToken<List<String>>() {
+                                    }.type))
                         }
                         reader.endObject()
                     }
@@ -139,15 +142,20 @@ class Script(val author: UUID,
             }
             reader.endObject()
 
-            if (createdAt == null || author == null || moveTypes == null || clickTypes == null || pushTypes == null || script == null) {
+            if (createdAt == null ||
+                    author == null ||
+                    moveTypes == null ||
+                    clickTypes == null ||
+                    pushTypes == null ||
+                    script == null) {
                 throw JsonParseException("")
             }
 
             return Script(author,
                     createdAt,
-                    ImmutableSet.copyOf(moveTypes),
-                    ImmutableSet.copyOf(clickTypes),
-                    ImmutableSet.copyOf(pushTypes),
+                    moveTypes,
+                    clickTypes,
+                    pushTypes,
                     ImmutableListMultimap.copyOf(script))
         }
     }

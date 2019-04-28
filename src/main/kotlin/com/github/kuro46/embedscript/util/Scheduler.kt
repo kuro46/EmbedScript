@@ -25,7 +25,7 @@ object Scheduler {
         if (!forceOtherThread && threads.contains(Thread.currentThread())) {
             task()
         } else {
-            executor.execute(task)
+            executor.execute(wrapFunction(task))
         }
     }
 
@@ -33,7 +33,18 @@ object Scheduler {
         return if (!forceOtherThread && threads.contains(Thread.currentThread())) {
             Futures.immediateFuture(null)
         } else {
-            executor.submit(task)
+            executor.submit(wrapFunction(task))
+        }
+    }
+
+    private fun wrapFunction(task: () -> Unit): ()-> Unit {
+        return {
+            try {
+                task()
+            } catch (e: Throwable) {
+                System.err.println("Exception or Error occurred in '${Thread.currentThread().name}' !")
+                e.printStackTrace()
+            }
         }
     }
 }

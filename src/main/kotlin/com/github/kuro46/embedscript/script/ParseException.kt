@@ -1,5 +1,8 @@
 package com.github.kuro46.embedscript.script
 
+/**
+ * @author shirokuro
+ */
 class ParseException : Exception {
     constructor(message: String) : super(message)
 

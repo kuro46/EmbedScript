@@ -22,7 +22,13 @@ import org.bukkit.plugin.Plugin
 import java.nio.file.Files
 import kotlin.streams.toList
 
-class ESCommandHandler constructor(embedScript: EmbedScript, private val presetName: String? = null) : RootCommandHandler() {
+/**
+ * @author shirokuro
+ */
+class ESCommandHandler constructor(
+        embedScript: EmbedScript,
+        private val presetName: String? = null
+) : RootCommandHandler() {
     private val configuration = embedScript.configuration
     private val scriptProcessor = embedScript.scriptProcessor
     private val requests = embedScript.requests
@@ -137,7 +143,12 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+        override fun onTabComplete(
+                sender: CommandSender,
+                uncompletedArg: String,
+                uncompletedArgIndex: Int,
+                completedArgs: Arguments
+        ): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()
@@ -168,13 +179,21 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+        override fun onTabComplete(
+                sender: CommandSender,
+                uncompletedArg: String,
+                uncompletedArgIndex: Int,
+                completedArgs: Arguments
+        ): List<String> {
             // TODO: Returns list of files in the EmbedScript/export
             return emptyList()
         }
     }
 
-    private class ReloadHandler(val configuration: Configuration, val scriptManager: ScriptManager) : CommandHandler() {
+    private class ReloadHandler(
+            val configuration: Configuration,
+            val scriptManager: ScriptManager
+    ) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...")
 
@@ -197,7 +216,8 @@ class ESCommandHandler constructor(embedScript: EmbedScript, private val presetN
         }
     }
 
-    private class TeleportHandler(plugin: Plugin) : CommandHandler(SenderType.Player(), HandlingMode.Synchronous(plugin)) {
+    private class TeleportHandler(plugin: Plugin) :
+            CommandHandler(SenderType.Player(), HandlingMode.Synchronous(plugin)) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             if (args.isElementNotEnough(3)) {

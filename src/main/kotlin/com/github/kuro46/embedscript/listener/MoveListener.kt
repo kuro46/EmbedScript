@@ -14,6 +14,10 @@ import org.bukkit.event.player.PlayerMoveEvent
  * @author shirokuro
  */
 class MoveListener(embedScript: EmbedScript) : Listener {
+    companion object {
+        private const val GROUND_ACCEPTABLE_MAXIMUM_RANGE = 0.2
+    }
+
     private val scriptProcessor = embedScript.scriptProcessor
     private val scriptManager = embedScript.scriptManager
 
@@ -34,10 +38,9 @@ class MoveListener(embedScript: EmbedScript) : Listener {
             return
         }
 
-        for (script in scriptManager[scriptPosition]) {
-            if (validateMoveType(script, event)) {
-                scriptProcessor.execute(player, script, scriptPosition)
-            }
+        val scripts = scriptManager[scriptPosition].filter { validateMoveType(it, event) }
+        if (scripts.isNotEmpty()) {
+            scriptProcessor.execute(player, scripts, scriptPosition)
         }
     }
 
@@ -65,7 +68,9 @@ class MoveListener(embedScript: EmbedScript) : Listener {
         //Expects non-air
         val downerSurface = upperSurface.getRelative(BlockFace.DOWN)
 
-        return upperSurface.type == Material.AIR && downerSurface.type != Material.AIR && to.y - upperSurface.y <= 0.2
+        return upperSurface.type == Material.AIR &&
+                downerSurface.type != Material.AIR &&
+                to.y - upperSurface.y <= GROUND_ACCEPTABLE_MAXIMUM_RANGE
     }
 
     private fun equalsBlock(location: Location, location1: Location): Boolean {

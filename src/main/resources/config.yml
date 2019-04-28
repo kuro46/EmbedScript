@@ -1,4 +1,3 @@
-parse-loop-limit: 3
 presets:
   interact: "@listen-click [ALL] @listen-push [ALL]"
   walk: "@listen-move [GROUND]"
@@ -6,4 +5,3 @@ presets:
 logging:
   enabled: true
   format: "<trigger> executed '<script>' at <trigger_world>: <trigger_x>, <trigger_y>, <trigger_z>"
-permissions-for-actions:

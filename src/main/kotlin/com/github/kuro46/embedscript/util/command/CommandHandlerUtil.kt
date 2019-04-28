@@ -4,6 +4,9 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
 
+/**
+ * @author shirokuro
+ */
 object CommandHandlerUtil {
     fun newHandler(senderType: CommandHandler.SenderType = CommandHandler.SenderType.All,
                    onCommand: (CommandSender, String, Arguments) -> Boolean,
@@ -13,7 +16,12 @@ object CommandHandlerUtil {
                 return onCommand(sender, command, args)
             }
 
-            override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+            override fun onTabComplete(
+                    sender: CommandSender,
+                    uncompletedArg: String,
+                    uncompletedArgIndex: Int,
+                    completedArgs: Arguments
+            ): List<String> {
                 return onTabComplete(sender, uncompletedArg, uncompletedArgIndex, completedArgs)
             }
         }

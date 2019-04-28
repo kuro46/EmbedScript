@@ -25,7 +25,11 @@ import java.util.function.BinaryOperator
 import java.util.function.Supplier
 import java.util.stream.Collector
 import kotlin.streams.toList
+import java.util.function.Function as JavaFunction
 
+/**
+ * @author shirokuro
+ */
 object ListHandlers {
     class ListHandler(private val presetName: String?,
                       private val scriptProcessor: ScriptProcessor,
@@ -42,7 +46,12 @@ object ListHandlers {
             return true
         }
 
-        override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+        override fun onTabComplete(
+                sender: CommandSender,
+                uncompletedArg: String,
+                uncompletedArgIndex: Int,
+                completedArgs: Arguments
+        ): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()
@@ -105,7 +114,9 @@ object ListHandlers {
         data class World(val name: String) : ListScope()
     }
 
-    private class ScriptPositionComparator : Comparator<MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>>, Serializable {
+    private class ScriptPositionComparator :
+            Comparator<MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>>,
+            Serializable {
         override fun compare(entry: MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>,
                              entry1: MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>): Int {
             val position = entry.key
@@ -157,8 +168,8 @@ object ListHandlers {
             }
         }
 
-        override fun finisher(): java.util.function.Function<MutableCollection<Array<BaseComponent>>, MutableCollection<Array<BaseComponent>>> {
-            return java.util.function.Function { message -> message }
+        override fun finisher(): JavaFunction<MutableCollection<Array<BaseComponent>>, MutableCollection<Array<BaseComponent>>> {
+            return JavaFunction { message -> message }
         }
 
         override fun characteristics(): Set<Collector.Characteristics> {
@@ -166,13 +177,13 @@ object ListHandlers {
         }
 
         private fun isFilterable(script: Script, filter: Script): Boolean {
-            if (isFilterable<Script.MoveType>(script.moveTypes, filter.moveTypes)) {
+            if (isFilterable(script.moveTypes, filter.moveTypes)) {
                 return true
             }
-            if (isFilterable<Script.ClickType>(script.clickTypes, filter.clickTypes)) {
+            if (isFilterable(script.clickTypes, filter.clickTypes)) {
                 return true
             }
-            if (isFilterable<Script.PushType>(script.pushTypes, filter.pushTypes)) {
+            if (isFilterable(script.pushTypes, filter.pushTypes)) {
                 return true
             }
 

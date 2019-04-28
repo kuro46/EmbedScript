@@ -4,6 +4,9 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 
+/**
+ * @author shirokuro
+ */
 class ScriptExporter(dataFolder: Path, private val scriptManager: ScriptManager) {
     private val exportFolder: Path = dataFolder.resolve("export")
 

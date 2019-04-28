@@ -23,6 +23,9 @@ import java.util.ArrayList
 import java.util.UUID
 import kotlin.streams.toList
 
+/**
+ * @author shirokuro
+ */
 class ViewHandler(private val requests: Requests,
                   private val scriptManager: ScriptManager) : CommandHandler() {
     override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
@@ -42,7 +45,12 @@ class ViewHandler(private val requests: Requests,
         }
     }
 
-    override fun onTabComplete(sender: CommandSender, uncompletedArg: String, uncompletedArgIndex: Int, completedArgs: Arguments): List<String> {
+    override fun onTabComplete(
+            sender: CommandSender,
+            uncompletedArg: String,
+            uncompletedArgIndex: Int,
+            completedArgs: Arguments
+    ): List<String> {
         return if (uncompletedArgIndex == 0) {
             // wants suggest worlds
             Bukkit.getWorlds().stream().map { it.name }.toList()

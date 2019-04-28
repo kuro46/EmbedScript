@@ -9,6 +9,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 /**
  * Script manager<br></br>
  * This class is thread-safe
+ *
+ * @author shirokuro
  */
 class ScriptManager
 private constructor(val scripts: ListMultimap<ScriptPosition, Script>, val path: Path) {

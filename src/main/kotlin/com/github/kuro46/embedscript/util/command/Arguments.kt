@@ -2,6 +2,9 @@ package com.github.kuro46.embedscript.util.command
 
 import org.bukkit.command.CommandSender
 
+/**
+ * @author shirokuro
+ */
 class Arguments(raw: List<String>) : List<String> by raw {
     fun getInt(sender: CommandSender, index: Int, ifIndexOutOfBounds: Int? = null): Int? {
         return getOrNull(index)?.let {

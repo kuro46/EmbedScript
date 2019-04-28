@@ -1,24 +1,38 @@
 package com.github.kuro46.embedscript.script.processor
 
-import com.github.kuro46.embedscript.Configuration
-import com.google.common.collect.ImmutableList
+import com.github.kuro46.embedscript.script.processor.executor.AbstractExecutor
+import com.github.kuro46.embedscript.script.processor.executor.ExecutionMode
+import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import org.bukkit.plugin.Plugin
 import java.util.HashMap
-import java.util.HashSet
-import java.util.stream.Collectors
 
-class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Processor {
-    override val executor: Processor.Executor = GivePermissionExecutor(plugin)
-    override val parser: Processor.Parser = GivePermissionParser(configuration)
-
-    override val key = "give-permission"
-
-    override val omittedKey = "gp"
+/**
+ * @author shirokuro
+ */
+class GivePermissionProcessor {
+    companion object {
+        fun register(processor: ScriptProcessor) {
+            processor.registerProcessor(ChildProcessor(
+                    key = "give-permission",
+                    omittedKey = "gp",
+                    executor = GivePermissionExecutor(processor.plugin),
+                    parser = GivePermissionParser()
+            ))
+        }
+    }
 
     private class GivePermissionExecutor(private val plugin: Plugin) : AbstractExecutor() {
         private val attachments = HashMap<Player, PermissionAttachment>()
+
+        override val executionMode: ExecutionMode
+            get() {
+                return if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms"))
+                    ExecutionMode.ASYNCHRONOUS
+                else ExecutionMode.SYNCHRONOUS
+            }
 
         override fun prepareExecute(trigger: Player, matchedValues: List<String>) {
             val attachment = if (matchedValues.isEmpty()) null else trigger.addAttachment(plugin)
@@ -39,43 +53,13 @@ class GivePermissionProcessor(plugin: Plugin, configuration: Configuration) : Pr
         }
     }
 
-    private class GivePermissionParser(private val configuration: Configuration) : AbstractParser() {
-        override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
-            if (!matchedValues.isEmpty()) {
-                builder.script.putAll(key, matchedValues)
-            } else {
-                val preferPermissions = HashSet<String>()
-                val permissionsForActions = configuration.permissionsForActions
-                for (action in builder.script.values()) {
-                    var permissionsForAction: List<String>? = permissionsForActions!![action]
+    private class GivePermissionParser : AbstractParser() {
+        override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
+            builder.script.putAll(key, matchedValues)
+        }
 
-                    if (permissionsForAction == null) {
-                        var skipElement = 1
-                        while (permissionsForAction == null) {
-                            val split = action.split(' ')
-                                    .dropLastWhile { it.isEmpty() }
-                                    .toMutableList()
-                            split.reverse()
-                            val skipped = split.stream()
-                                    .skip(skipElement.toLong())
-                                    .collect(Collectors.toList())
-                            if (skipped.isEmpty()) {
-                                break
-                            }
-                            skipped.reverse()
-                            permissionsForAction = permissionsForActions[skipped.joinToString(" ")]
-
-                            skipElement++
-                        }
-                    }
-
-                    if (permissionsForAction == null) {
-                        continue
-                    }
-                    preferPermissions.addAll(permissionsForAction)
-                }
-                builder.script.putAll(key, preferPermissions)
-            }
+        override fun getSuggestions(uncompletedArg: String): List<String> {
+            return Bukkit.getPluginManager().permissions.map { it.name }
         }
     }
 }

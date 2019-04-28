@@ -2,19 +2,30 @@ package com.github.kuro46.embedscript.script.processor
 
 import com.github.kuro46.embedscript.Configuration
 import com.github.kuro46.embedscript.script.ParseException
-import com.google.common.collect.ImmutableList
+import com.github.kuro46.embedscript.script.processor.parser.AbstractParser
 
-class PresetProcessor(configuration: Configuration) : Processor {
-    override val parser: Processor.Parser = PresetParser(configuration)
-
-    override val key = "preset"
-
-    override val omittedKey = "p"
-
-    override val executor: Processor.Executor = Processors.DEFAULT_EXECUTOR
+/**
+ * @author shirokuro
+ */
+class PresetProcessor {
+    companion object {
+        fun register(processor: ScriptProcessor) {
+            processor.registerProcessor(ChildProcessor(
+                    key = "preset",
+                    omittedKey = "p",
+                    executor = Processors.DEFAULT_EXECUTOR,
+                    parser = PresetParser(processor.configuration)
+            ))
+        }
+    }
 
     private class PresetParser(private val configuration: Configuration) : AbstractParser() {
-        override fun prepareBuild(processor: ScriptProcessor, script: MutableScript, key: String, matchedValues: ImmutableList<String>) {
+        override fun prepareBuild(
+                processor: ScriptProcessor,
+                script: MutableScript,
+                key: String,
+                matchedValues: List<String>
+        ) {
             var mergeTo: MutableScript? = null
             val presets = configuration.presets
             for (value in matchedValues) {
@@ -39,9 +50,14 @@ class PresetProcessor(configuration: Configuration) : Processor {
             mergeTo.getView().forEach { k, value -> script.add(k, value) }
         }
 
-        override fun build(builder: ScriptBuilder, key: String, matchedValues: ImmutableList<String>) {
+        override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
             // do nothing
-            // please do not remove this method because AbstractParser#build does builder.getScript().putAll(key, matchedValues);
+            // please do not remove this method
+            // because AbstractParser#build does builder.getScript().putAll(key, matchedValues);
+        }
+
+        override fun getSuggestions(uncompletedArg: String): List<String> {
+            return configuration.presets!!.keys.toList()
         }
     }
 }

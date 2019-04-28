@@ -3,7 +3,6 @@ package com.github.kuro46.embedscript.script
 import com.github.kuro46.embedscript.GsonHolder
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
-import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ListMultimap
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
@@ -125,7 +124,9 @@ object ScriptSerializer {
         }
     }
 
-    private abstract class Formatter(protected val filePath: Path) : TypeAdapter<ListMultimap<ScriptPosition, Script>>() {
+    private abstract class Formatter(
+            protected val filePath: Path
+    ) : TypeAdapter<ListMultimap<ScriptPosition, Script>>() {
 
         abstract fun version(): String
     }
@@ -194,9 +195,9 @@ object ScriptSerializer {
                 reader.beginObject()
                 while (reader.hasNext()) {
                     when (reader.nextName()) {
-                        "coordinate" -> position = GsonHolder.get().fromJson(reader, object : TypeToken<ScriptPosition>() {
-
-                        }.type)
+                        "coordinate" -> position = GsonHolder.get().fromJson(reader,
+                                object : TypeToken<ScriptPosition>() {
+                                }.type)
                         "scripts" -> {
                             scripts = ArrayList()
                             reader.beginArray()
@@ -341,10 +342,10 @@ object ScriptSerializer {
                     multimap.put(key, command)
                 }
 
-                scripts.add(Script(author!!, System.currentTimeMillis(),
-                        if (eventType == EventType.WALK) ImmutableSet.of(Script.MoveType.GROUND) else ImmutableSet.of(),
-                        if (eventType == EventType.INTERACT) ImmutableSet.of(Script.ClickType.ALL) else ImmutableSet.of(),
-                        if (eventType == EventType.INTERACT) ImmutableSet.of(Script.PushType.ALL) else ImmutableSet.of(),
+                scripts.add(Script(author!!, -1,
+                        if (eventType == EventType.WALK) setOf(Script.MoveType.GROUND) else setOf(),
+                        if (eventType == EventType.INTERACT) setOf(Script.ClickType.ALL) else setOf(),
+                        if (eventType == EventType.INTERACT) setOf(Script.PushType.ALL) else setOf(),
                         ImmutableListMultimap.copyOf(multimap)))
             }
             reader.endArray()
