@@ -42,33 +42,33 @@ class Requests(private val scriptManager: ScriptManager) {
               position: ScriptPosition,
               script: Script) {
         if (scriptManager.contains(position)) {
-            sender.sendMessage(Prefix.ERROR_PREFIX + "Script already exists in that place.")
+            sender.sendMessage(Prefix.ERROR + "Script already exists in that place.")
             return
         }
 
         scriptManager.put(position, script)
 
-        sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully embedded.")
+        sender.sendMessage(Prefix.SUCCESS + "Script was successfully embedded.")
     }
 
     fun add(sender: CommandSender,
             position: ScriptPosition,
             script: Script) {
         if (!scriptManager.contains(position)) {
-            sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
+            sender.sendMessage(Prefix.ERROR + "Script not exists in that place.")
             return
         }
         scriptManager.put(position, script)
 
-        sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully added.")
+        sender.sendMessage(Prefix.SUCCESS + "Script was successfully added.")
     }
 
     fun remove(sender: CommandSender, position: ScriptPosition) {
         if (scriptManager.remove(position) == null) {
-            sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
+            sender.sendMessage(Prefix.ERROR + "Script not exists in that place.")
             return
         }
 
-        sender.sendMessage(Prefix.SUCCESS_PREFIX + "Script was successfully removed.")
+        sender.sendMessage(Prefix.SUCCESS + "Script was successfully removed.")
     }
 }

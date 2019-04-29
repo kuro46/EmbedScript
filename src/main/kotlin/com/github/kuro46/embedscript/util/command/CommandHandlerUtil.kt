@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript.util.command
 
+import com.github.kuro46.embedscript.Prefix
 import org.bukkit.command.CommandSender
 import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
@@ -35,7 +36,7 @@ object CommandHandlerUtil {
     fun castToPlayer(sender: CommandSender, castFailed: String =
                                            "Cannot perform this command from the console."): Player? {
         return if (sender !is Player) {
-            sender.sendMessage(castFailed)
+            sender.sendMessage(Prefix.ERROR + castFailed)
             null
         } else { sender }
     }
@@ -43,7 +44,7 @@ object CommandHandlerUtil {
     fun castToConsole(sender: CommandSender, castFailed: String =
                                             "Cannot perform this command from the game."): ConsoleCommandSender? {
         return if(sender !is ConsoleCommandSender) {
-            sender.sendMessage(castFailed)
+            sender.sendMessage(Prefix.ERROR + castFailed)
             null
         } else { sender }
     }

@@ -92,7 +92,7 @@ object ListHandlers {
         val target = if (scope is ListScope.World) scope.name else "this server"
 
         if (messages.isEmpty()) {
-            player.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in $target")
+            player.sendMessage(Prefix.ERROR + "Script not exists in $target")
         } else {
             val command = if (scope is ListScope.World) {
                 "list ${scope.name}"
@@ -147,13 +147,32 @@ object ListHandlers {
                     return@BiConsumer
                 }
 
-                val tpCommand = "/embedscript view ${position.world} ${position.x} ${position.y} ${position.z}"
-                val message = ComponentBuilder("")
-                        .append("[${messages.size + 1}] ")
-                        .append("World: ${position.world} X: ${position.x} " +
-                                "Y: ${position.y} Z: ${position.z} (click to details)")
-                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
-                        .event(HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(tpCommand)))
+                val viewCommand = "/embedscript view ${position.world} ${position.x} ${position.y} ${position.z}"
+                val tpCommand = "/embedscript teleport ${position.world} ${position.x} ${position.y} ${position.z}"
+                val mainMessage = "[${messages.size + 1}] ${position.world}, ${position.x}, " +
+                        "${position.y}, ${position.z} "
+                val message = ComponentBuilder(mainMessage)
+                        .append(ComponentBuilder("[detail]")
+                                .event(HoverEvent(
+                                        HoverEvent.Action.SHOW_TEXT,
+                                        TextComponent.fromLegacyText(viewCommand)
+                                ))
+                                .event(ClickEvent(
+                                        ClickEvent.Action.RUN_COMMAND,
+                                        viewCommand
+                                ))
+                                .create())
+                        .append(" ")
+                        .append(ComponentBuilder("[teleport]")
+                                .event(HoverEvent(
+                                        HoverEvent.Action.SHOW_TEXT,
+                                        TextComponent.fromLegacyText(tpCommand)
+                                ))
+                                .event(ClickEvent(
+                                        ClickEvent.Action.RUN_COMMAND,
+                                        tpCommand
+                                ))
+                                .create())
                         .create()
                 messages.add(message)
             }

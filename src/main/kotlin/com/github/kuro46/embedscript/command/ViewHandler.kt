@@ -61,7 +61,7 @@ class ViewHandler(private val requests: Requests,
 
     private fun passToInteractListener(sender: CommandSender) {
         val player = CommandHandlerUtil.castToPlayer(sender) ?: return
-        player.sendMessage(Prefix.PREFIX + "Please click any block...")
+        player.sendMessage(Prefix.INFO + "Please click any block...")
         requests.putRequest(player, Request.View)
     }
 
@@ -74,7 +74,7 @@ class ViewHandler(private val requests: Requests,
 
         val position = ScriptPosition(world, x, y, z)
         if (!scriptManager.contains(position)) {
-            sender.sendMessage(Prefix.ERROR_PREFIX + "Script not exists in that place.")
+            sender.sendMessage(Prefix.ERROR + "Script not exists in that place.")
             return
         }
         val messages: MutableList<Array<BaseComponent>> = ArrayList()
@@ -111,7 +111,7 @@ class ViewHandler(private val requests: Requests,
         return Bukkit.getPlayer(uuid)?.name ?: run {
             val result = MojangUtil.getName(uuid)
             if (result == null) {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Failed to find user name")
+                sender.sendMessage(Prefix.ERROR + "Failed to find user name")
             }
             result
         }

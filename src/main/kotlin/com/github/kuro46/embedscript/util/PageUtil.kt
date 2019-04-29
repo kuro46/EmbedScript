@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript.util
 
+import com.github.kuro46.embedscript.Prefix
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.ComponentBuilder
@@ -29,7 +30,7 @@ object PageUtil {
         val pages = splitMessages(messages, availableMessageHeight)
 
         if (pageIndex >= pages.size || pageIndex < 0) {
-            sender.sendMessage("Out of bounds")
+            sender.sendMessage(Prefix.ERROR + "Page index out of bounds")
             return
         }
         val page = pages[pageIndex]

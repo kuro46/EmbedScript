@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript.util.command
 
+import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.util.Scheduler
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
@@ -77,7 +78,7 @@ abstract class CommandHandler(
     fun handleCommandAsRoot(sender: CommandSender, command: String, args: Arguments): Future<*> {
         return Scheduler.submit {
             if (!handleCommand(sender, command, args)) {
-                sender.sendMessage("Incorrect usage!")
+                sender.sendMessage(Prefix.ERROR + "Incorrect usage!")
             }
         }
     }

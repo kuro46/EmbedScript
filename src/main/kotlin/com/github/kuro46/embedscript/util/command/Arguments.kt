@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript.util.command
 
+import com.github.kuro46.embedscript.Prefix
 import org.bukkit.command.CommandSender
 
 /**
@@ -10,7 +11,7 @@ class Arguments(raw: List<String>) : List<String> by raw {
         return getOrNull(index)?.let {
             val intOrNull = it.toIntOrNull()
             if (intOrNull == null) {
-                sender.sendMessage("'$it' is not a valid number!")
+                sender.sendMessage(Prefix.ERROR + "'$it' is not a valid number!")
             }
             intOrNull
         } ?: ifIndexOutOfBounds

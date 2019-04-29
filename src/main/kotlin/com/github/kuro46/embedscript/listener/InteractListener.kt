@@ -38,7 +38,8 @@ class InteractListener(embedScript: EmbedScript) : Listener {
         updateCoolTime(player)
 
         val position = ScriptPosition(event.clickedBlock)
-        if (requests.executeRequest(player, position)) {
+        if (event.action == Action.RIGHT_CLICK_BLOCK &&
+                requests.executeRequest(player, position)) {
             return
         }
 

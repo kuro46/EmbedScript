@@ -47,7 +47,7 @@ class ESCommandHandler constructor(
         registerChildHandler("view", ViewHandler(requests, scriptManager))
         registerChildHandler("remove", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
-            player.sendMessage(Prefix.PREFIX + "Please click any block...")
+            player.sendMessage(Prefix.INFO + "Please click any block...")
             requests.putRequest(player, Request.Remove)
             true
         })
@@ -79,11 +79,11 @@ class ESCommandHandler constructor(
                 "@preset " + ScriptUtil.toString(presetName) + " "
             script = scriptProcessor.parse(player.uniqueId, preset + stringScript)
         } catch (e: ParseException) {
-            player.sendMessage(Prefix.ERROR_PREFIX + "Failed to filter the scripts. (error: ${e.message})")
+            player.sendMessage(Prefix.ERROR + "Failed to parse script. (error: ${e.message})")
             return true
         }
 
-        player.sendMessage(Prefix.PREFIX + "Please click any block...")
+        player.sendMessage(Prefix.INFO + "Please click any block...")
         val request = if (add) Request.Add(script) else Request.Embed(script)
         requests.putRequest(player, request)
 
@@ -110,14 +110,14 @@ class ESCommandHandler constructor(
 
     private class MigrateHandler(val embedScript: EmbedScript) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            sender.sendMessage("Migrating data of ScriptBlock...")
+            sender.sendMessage(Prefix.INFO + "Migrating data of ScriptBlock...")
             val migrationResult = runCatching { ScriptBlockMigrator.migrate(embedScript) }
             migrationResult.exceptionOrNull()?.also {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Migration failed!")
+                sender.sendMessage(Prefix.ERROR + "Migration failed!")
                 System.err.println("Migration failed!")
                 it.printStackTrace()
             } ?: run {
-                sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully migrated!")
+                sender.sendMessage(Prefix.SUCCESS + "Successfully migrated!")
             }
             return true
         }
@@ -129,16 +129,17 @@ class ESCommandHandler constructor(
                 return false
             }
 
-            sender.sendMessage("Exporting...")
+            sender.sendMessage(Prefix.INFO + "Exporting...")
             val world = args[0]
             val fileName = ScriptExporter.appendJsonExtensionIfNeeded(args.getOrElse(1) { world })
             val filePath = scriptExporter.resolveByExportFolder(fileName)
 
             if (Files.exists(filePath)) {
-                sender.sendMessage("File: '$fileName' already exists!")
+                sender.sendMessage(Prefix.ERROR + "File: '$fileName' already exists!")
             } else {
                 scriptExporter.export(world, filePath)
-                sender.sendMessage("All scripts in the '$world' was successfully exported to '$fileName'!")
+                sender.sendMessage(Prefix.SUCCESS +
+                        "All scripts in the '$world' was successfully exported to '$fileName'!")
             }
             return true
         }
@@ -166,14 +167,14 @@ class ESCommandHandler constructor(
                 return false
             }
 
-            sender.sendMessage("Importing...")
+            sender.sendMessage(Prefix.INFO + "Importing...")
             val fileName = args[0]
             val filePath = scriptExporter.resolveByExportFolder(fileName)
             if (Files.notExists(filePath)) {
-                sender.sendMessage("File: '$fileName' not exists!")
+                sender.sendMessage(Prefix.ERROR + "File: '$fileName' not exists!")
             } else {
                 scriptExporter.import(filePath)
-                sender.sendMessage("Scripts were successfully imported from '$fileName'!")
+                sender.sendMessage(Prefix.SUCCESS + "Scripts were successfully imported from '$fileName'!")
             }
 
             return true
@@ -195,23 +196,23 @@ class ESCommandHandler constructor(
             val scriptManager: ScriptManager
     ) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            sender.sendMessage(Prefix.PREFIX + "Reloading configuration and scripts...")
+            sender.sendMessage(Prefix.INFO + "Reloading configuration and scripts...")
 
             val cfgReloadResult = runCatching { configuration.load() }
             cfgReloadResult.exceptionOrNull()?.let {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Reload failed! (error: " + it.message + ")")
+                sender.sendMessage(Prefix.ERROR + "Reload failed! (error: " + it.message + ")")
                 it.printStackTrace()
                 return true
             }
 
             val scriptReloadResult = runCatching { scriptManager.reload() }
             scriptReloadResult.exceptionOrNull()?.let {
-                sender.sendMessage(Prefix.ERROR_PREFIX + "Reload failed! (error: " + it.message + ")")
+                sender.sendMessage(Prefix.ERROR + "Reload failed! (error: " + it.message + ")")
                 it.printStackTrace()
                 return true
             }
 
-            sender.sendMessage(Prefix.SUCCESS_PREFIX + "Successfully reloaded!")
+            sender.sendMessage(Prefix.SUCCESS + "Successfully reloaded!")
             return true
         }
     }
@@ -226,7 +227,7 @@ class ESCommandHandler constructor(
             val world = args.getOrNull(0)?.let {
                 Bukkit.getWorld(it)
             } ?: run {
-                player.sendMessage(Prefix.ERROR_PREFIX + "World: " + args[0] + " not exist.")
+                player.sendMessage(Prefix.ERROR + "World: " + args[0] + " not exists.")
                 return true
             }
 
@@ -241,7 +242,7 @@ class ESCommandHandler constructor(
                     playerLocation.yaw,
                     playerLocation.pitch))
 
-            player.sendMessage(Prefix.SUCCESS_PREFIX + "Teleported.")
+            player.sendMessage(Prefix.SUCCESS + "Teleported.")
             return true
         }
     }
