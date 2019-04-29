@@ -117,16 +117,12 @@ object ScriptSerializer {
                     record.get("y").asInt,
                     record.get("z").asInt
             )
-            val scriptMultimap: ListMultimap<String, String> = ArrayListMultimap.create()
-            val scriptSection = record.getAsJsonObject("script")
-            scriptSection.entrySet().forEach { (key, value) ->
-                val jsonValues = value.asJsonArray
-                val values: MutableList<String> = ArrayList()
-                jsonValues.forEach { values.add(it.asString) }
-                scriptMultimap.putAll(key, values)
-            }
 
             val gson = reader.gson
+            val scriptMultimap: ListMultimap<String, String> = ArrayListMultimap.create()
+            record.getAsJsonObject("script").entrySet().forEach { (key, value) ->
+                scriptMultimap.putAll(key, gson.fromJson<List<String>>(value))
+            }
 
             val script = Script(
                     UUID.fromString(record.get("author").asString),
