@@ -29,7 +29,7 @@ object Processors {
     val LISTEN_CLICK_PROCESSOR = ChildProcessor("listen-click", "lc",
             object : AbstractParser() {
                 override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
-                    addEnumToCollection(builder.clickTypes, Script.ClickType::class.java, matchedValues)
+                    addEnumToCollection(builder.clickTypes, matchedValues)
                 }
 
                 override fun getSuggestions(uncompletedArg: String): List<String> {
@@ -40,7 +40,7 @@ object Processors {
     val LISTEN_MOVE_PROCESSOR = ChildProcessor("listen-move", "lm",
             object : AbstractParser() {
                 override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
-                    addEnumToCollection(builder.moveTypes, Script.MoveType::class.java, matchedValues)
+                    addEnumToCollection(builder.moveTypes, matchedValues)
                 }
 
                 override fun getSuggestions(uncompletedArg: String): List<String> {
@@ -51,7 +51,7 @@ object Processors {
     val LISTEN_PUSH_PROCESSOR = ChildProcessor("listen-push", "lm",
             object : AbstractParser() {
                 override fun build(builder: ScriptBuilder, key: String, matchedValues: List<String>) {
-                    addEnumToCollection(builder.pushTypes, Script.PushType::class.java, matchedValues)
+                    addEnumToCollection(builder.pushTypes, matchedValues)
                 }
 
                 override fun getSuggestions(uncompletedArg: String): List<String> {
@@ -179,16 +179,16 @@ object Processors {
                 }
             })
 
-    private fun <T : Enum<T>> addEnumToCollection(collection: MutableCollection<T>,
-                                                  clazz: Class<T>,
-                                                  strings: List<String>) {
+    private inline fun <reified T : Enum<T>> addEnumToCollection(
+            collection: MutableCollection<T>,
+            strings: List<String>
+    ) {
         for (string in strings) {
             try {
-                collection.add(java.lang.Enum.valueOf<T>(clazz, string.toUpperCase(Locale.ENGLISH)))
+                collection.add(java.lang.Enum.valueOf<T>(T::class.java, string.toUpperCase(Locale.ENGLISH)))
             } catch (e: IllegalArgumentException) {
                 throw ParseException("'$string' is unavailable value!")
             }
-
         }
     }
 

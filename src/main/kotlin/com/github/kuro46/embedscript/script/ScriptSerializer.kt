@@ -8,6 +8,7 @@ import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
 import com.google.common.collect.ListMultimap
 import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -130,21 +131,23 @@ object ScriptSerializer {
             val script = Script(
                     UUID.fromString(record.get("author").asString),
                     record.get("createdAt").asLong,
-                    gson.fromJson(record.get("moveTypes"),
-                            object : TypeToken<Set<Script.MoveType>>(){
-                            }.type),
-                    gson.fromJson(record.get("clickTypes"),
-                            object : TypeToken<Set<Script.ClickType>>(){
-                            }.type),
-                    gson.fromJson(record.get("pushTypes"),
-                            object : TypeToken<Set<Script.PushType>>(){
-                            }.type),
+                    gson.fromJson(record.get("moveTypes")),
+                    gson.fromJson(record.get("clickTypes")),
+                    gson.fromJson(record.get("pushTypes")),
                     ImmutableListMultimap.copyOf(scriptMultimap)
             )
 
             result.put(position, script)
         }
         return result
+    }
+
+    private inline fun <reified T> Gson.fromJson(jsonElement: JsonElement): T {
+        return this.fromJson(
+                jsonElement,
+                object : TypeToken<T>(){
+                }.type
+        )
     }
 
     private class LegacyParser private constructor(val filePath: Path) {
