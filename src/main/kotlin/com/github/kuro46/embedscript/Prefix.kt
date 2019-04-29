@@ -6,9 +6,7 @@ import org.bukkit.ChatColor
  * @author shirokuro
  */
 object Prefix {
-    val PREFIX = (ChatColor.GRAY.toString() + "<"
-            + ChatColor.DARK_GREEN + "E" + ChatColor.GREEN + "S" + ChatColor.GRAY + "> ")
-    val WARN_PREFIX = PREFIX + ChatColor.GOLD
-    val ERROR_PREFIX = PREFIX + ChatColor.RED
-    val SUCCESS_PREFIX = PREFIX + ChatColor.GREEN
+    const val INFO = "ES: "
+    val ERROR = INFO + ChatColor.RED.toString()
+    val SUCCESS = INFO + ChatColor.GREEN.toString()
 }
