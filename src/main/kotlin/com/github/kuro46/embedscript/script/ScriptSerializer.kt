@@ -1,20 +1,20 @@
 package com.github.kuro46.embedscript.script
 
-import com.github.kuro46.embedscript.GsonHolder
+import com.github.kuro46.embedscript.json.JsonTableReader
+import com.github.kuro46.embedscript.json.JsonTableWriter
+import com.github.kuro46.embedscript.json.Metadata
+import com.github.kuro46.embedscript.json.RecordWrite
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
 import com.google.common.collect.ListMultimap
+import com.google.gson.Gson
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
-import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.ArrayList
-import java.util.Collections
-import java.util.HashMap
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
@@ -31,33 +31,18 @@ object ScriptSerializer {
 
         thread
     }
-    private const val LATEST_VERSION = "0.2.0"
-    private val CREATORS: Map<String, (Path) -> Formatter>
     private var executing: ScheduledFuture<*>? = null
-
-    init {
-        val creators = HashMap<String, (Path) -> Formatter>()
-        creators["1.0"] = { path -> Formatter10(path) }
-        creators["0.2.0"] = { path -> Formatter020(path) }
-        CREATORS = Collections.unmodifiableMap(creators)
-    }
 
     @Synchronized
     fun deserialize(path: Path): ListMultimap<ScriptPosition, Script> {
-        if (Files.notExists(path)) {
-            return ArrayListMultimap.create()
+        return if (Files.notExists(path)) {
+            ArrayListMultimap.create()
         } else {
-            Files.newBufferedReader(path).use { reader ->
-                val version = readVersion(path)
-                val formatter = createFormatter(version, path)
-                        ?: throw UnsupportedOperationException("Unsupported version: $version")
-
-                val result = formatter.fromJson(reader)
-                if (version != LATEST_VERSION) {
-                    serialize(path, result)
-                }
-                return result
-            }
+            // exception if path is legacy format
+            val tableReader = runCatching { JsonTableReader(path) }
+            return tableReader.getOrNull()?.let { unwrappedTableWriter ->
+                unwrappedTableWriter.use { usableWriter -> read(usableWriter) }
+            } ?: LegacyParser.read(path)
         }
     }
 
@@ -67,10 +52,9 @@ object ScriptSerializer {
             Files.createFile(path)
         }
 
-        Files.newBufferedWriter(path).use { writer ->
-            val formatter = createFormatter(LATEST_VERSION, path) ?: throw IllegalStateException()
-            formatter.toJson(writer, scripts)
-        }
+        val metadata = Metadata()
+        metadata.addProperty("formatVersion", "0.2.0")
+        JsonTableWriter(path, metadata).use { write(it, scripts) }
     }
 
     @Synchronized
@@ -93,144 +77,80 @@ object ScriptSerializer {
         }, 1, TimeUnit.SECONDS)
     }
 
-    private fun createFormatter(version: String, path: Path): Formatter? {
-        val formatterCreator = CREATORS[version] ?: return null
-        return formatterCreator(path)
-    }
+    private fun write(writer: JsonTableWriter, value: ListMultimap<ScriptPosition, Script>) {
+        value.entries().forEach { scriptData ->
+            val position = scriptData.key
+            val script = scriptData.value
 
-    private fun readVersion(path: Path): String {
-        if (Files.notExists(path)) {
-            return LATEST_VERSION
-        }
+            val record = RecordWrite()
 
-        JsonReader(Files.newBufferedReader(path)).use { reader ->
-            var version: String? = null
+            record.add("world", position.world)
+            record.add("x", position.x)
+            record.add("y", position.y)
+            record.add("z", position.z)
+            record.add("author", script.author.toString())
+            record.add("createdAt", script.createdAt)
+            val gson = writer.gson
+            record.addJson("moveTypes", gson.toJson(script.moveTypes))
+            record.addJson("pushTypes", gson.toJson(script.pushTypes))
+            record.addJson("clickTypes", gson.toJson(script.clickTypes))
 
-            reader.beginObject()
-            while (reader.hasNext()) {
-                if (reader.nextName() == "formatVersion") {
-                    version = reader.nextString()
-                } else {
-                    reader.skipValue()
-                }
+            record.writer.name("script")
+            record.writer.beginObject()
+            script.script.asMap().forEach { (key, values) ->
+                record.addJson(key, gson.toJson(values))
             }
-            reader.endObject()
+            record.writer.endObject()
 
-            if (version == null) {
-                throw JsonSyntaxException("Illegal syntax")
-            }
-
-            return version
-        }
-    }
-
-    private abstract class Formatter(
-            protected val filePath: Path
-    ) : TypeAdapter<ListMultimap<ScriptPosition, Script>>() {
-
-        abstract fun version(): String
-    }
-
-    private class Formatter020(filePath: Path) : Formatter(filePath) {
-
-        override fun version(): String {
-            return "0.2.0"
-        }
-
-        override fun write(out: JsonWriter, value: ListMultimap<ScriptPosition, Script>) {
-            out.beginObject()
-            out.name("formatVersion").value(version())
-            out.name("coordinates")
-            writeCoordinates(out, value)
-            out.endObject()
-        }
-
-        private fun writeCoordinates(out: JsonWriter, value: ListMultimap<ScriptPosition, Script>) {
-            out.beginArray()
-            for (position in value.keySet()) {
-                val scripts = value.get(position)
-                out.beginObject()
-                out.name("coordinate").jsonValue(GsonHolder.get().toJson(position))
-                out.name("scripts")
-                writeScripts(out, scripts)
-                out.endObject()
-            }
-            out.endArray()
-        }
-
-        private fun writeScripts(out: JsonWriter, scripts: List<Script>) {
-            out.beginArray()
-            for (script in scripts) {
-                out.jsonValue(GsonHolder.get().toJson(script))
-            }
-            out.endArray()
-        }
-
-        override fun read(reader: JsonReader): ListMultimap<ScriptPosition, Script> {
-            var scripts: ListMultimap<ScriptPosition, Script>? = null
-
-            reader.beginObject()
-            while (reader.hasNext()) {
-                if (reader.nextName() == "coordinates") {
-                    scripts = readCoordinates(reader)
-                } else {
-                    reader.skipValue()
-                }
-            }
-            reader.endObject()
-
-            if (scripts == null)
-                throw JsonSyntaxException("Illegal syntax")
-            return scripts
-        }
-
-        private fun readCoordinates(reader: JsonReader): ListMultimap<ScriptPosition, Script> {
-            val coordinates: ListMultimap<ScriptPosition, Script> = ArrayListMultimap.create()
-
-            reader.beginArray()
-            while (reader.hasNext()) {
-                var position: ScriptPosition? = null
-                var scripts: MutableList<Script>? = null
-
-                reader.beginObject()
-                while (reader.hasNext()) {
-                    when (reader.nextName()) {
-                        "coordinate" -> position = GsonHolder.get().fromJson(reader,
-                                object : TypeToken<ScriptPosition>() {
-                                }.type)
-                        "scripts" -> {
-                            scripts = ArrayList()
-                            reader.beginArray()
-                            while (reader.hasNext()) {
-                                scripts.add(GsonHolder.get().fromJson(reader, object : TypeToken<Script>() {
-                                }.type))
-                            }
-                            reader.endArray()
-                        }
-                        else -> reader.skipValue()
-                    }
-                }
-                reader.endObject()
-
-                coordinates.putAll(position, scripts!!)
-            }
-            reader.endArray()
-
-            return coordinates
+            writer.addRecord(record)
         }
     }
 
-    private class Formatter10(filePath: Path) : Formatter(filePath) {
+    private fun read(reader: JsonTableReader): ListMultimap<ScriptPosition, Script> {
+        val result: ListMultimap<ScriptPosition, Script> = ArrayListMultimap.create()
 
-        override fun version(): String {
-            return "1.0"
+        reader.forEach { record ->
+            val position = ScriptPosition(
+                    record.get("world").asString,
+                    record.get("x").asInt,
+                    record.get("y").asInt,
+                    record.get("z").asInt
+            )
+            val scriptMultimap: ListMultimap<String, String> = ArrayListMultimap.create()
+            val scriptSection = record.getAsJsonObject("script")
+            scriptSection.entrySet().forEach { (key, value) ->
+                val jsonValues = value.asJsonArray
+                val values: MutableList<String> = ArrayList()
+                jsonValues.forEach { values.add(it.asString) }
+                scriptMultimap.putAll(key, values)
+            }
+
+            val gson = reader.gson
+
+            val script = Script(
+                    UUID.fromString(record.get("author").asString),
+                    record.get("createdAt").asLong,
+                    gson.fromJson(record.get("moveTypes"),
+                            object : TypeToken<Set<Script.MoveType>>(){
+                            }.type),
+                    gson.fromJson(record.get("clickTypes"),
+                            object : TypeToken<Set<Script.ClickType>>(){
+                            }.type),
+                    gson.fromJson(record.get("pushTypes"),
+                            object : TypeToken<Set<Script.PushType>>(){
+                            }.type),
+                    ImmutableListMultimap.copyOf(scriptMultimap)
+            )
+
+            result.put(position, script)
         }
+        return result
+    }
 
-        override fun write(out: JsonWriter, value: ListMultimap<ScriptPosition, Script>) {
-            throw UnsupportedOperationException("Outdated formatter.")
-        }
+    private class LegacyParser private constructor(val filePath: Path) {
+        private val gson = Gson()
 
-        override fun read(reader: JsonReader): ListMultimap<ScriptPosition, Script> {
+        fun read(reader: JsonReader): ListMultimap<ScriptPosition, Script> {
             var scripts: ListMultimap<ScriptPosition, Script>? = null
 
             reader.beginObject()
@@ -269,9 +189,9 @@ object ScriptSerializer {
             while (reader.hasNext()) {
                 when (reader.nextName()) {
                     "coordinate" -> {
-                        position = GsonHolder.get().fromJson(reader, object : TypeToken<ScriptPosition>() {
-
-                        }.type)
+                        position = gson.fromJson(reader,
+                                object : TypeToken<ScriptPosition>() {
+                                }.type)
                     }
                     "script" -> {
                         scripts = readScript(reader)
@@ -351,6 +271,13 @@ object ScriptSerializer {
             reader.endArray()
 
             return scripts
+        }
+
+        companion object {
+            fun read(filePath: Path): ListMultimap<ScriptPosition, Script> {
+                val parser = LegacyParser(filePath)
+                return JsonReader(Files.newBufferedReader(filePath)).use { parser.read(it) }
+            }
         }
     }
 }
