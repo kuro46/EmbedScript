@@ -4,11 +4,13 @@ import com.github.kuro46.embedscript.json.JsonTableReader
 import com.github.kuro46.embedscript.json.JsonTableWriter
 import com.github.kuro46.embedscript.json.Metadata
 import com.github.kuro46.embedscript.json.RecordWrite
+import com.github.kuro46.embedscript.json.asType
+import com.github.kuro46.embedscript.json.forEach
+import com.github.kuro46.embedscript.json.getAsType
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
 import com.google.common.collect.ListMultimap
 import com.google.gson.Gson
-import com.google.gson.JsonElement
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -91,15 +93,14 @@ object ScriptSerializer {
             record.add("z", position.z)
             record.add("author", script.author.toString())
             record.add("createdAt", script.createdAt)
-            val gson = writer.gson
-            record.addJson("moveTypes", gson.toJson(script.moveTypes))
-            record.addJson("pushTypes", gson.toJson(script.pushTypes))
-            record.addJson("clickTypes", gson.toJson(script.clickTypes))
+            record.addObject("moveTypes", script.moveTypes)
+            record.addObject("pushTypes", script.pushTypes)
+            record.addObject("clickTypes", script.clickTypes)
 
             record.writer.name("script")
             record.writer.beginObject()
             script.script.asMap().forEach { (key, values) ->
-                record.addJson(key, gson.toJson(values))
+                record.addObject(key, values)
             }
             record.writer.endObject()
 
@@ -112,38 +113,29 @@ object ScriptSerializer {
 
         reader.forEach { record ->
             val position = ScriptPosition(
-                    record.get("world").asString,
-                    record.get("x").asInt,
-                    record.get("y").asInt,
-                    record.get("z").asInt
+                    record.getAsType("world"),
+                    record.getAsType("x"),
+                    record.getAsType("y"),
+                    record.getAsType("z")
             )
 
-            val gson = reader.gson
             val scriptMultimap: ListMultimap<String, String> = ArrayListMultimap.create()
-            record.getAsJsonObject("script").entrySet().forEach { (key, value) ->
-                scriptMultimap.putAll(key, gson.fromJson<List<String>>(value))
+            record.getAsJsonObject("script").forEach { key, value ->
+                scriptMultimap.putAll(key, value.asType<List<String>>())
             }
 
             val script = Script(
-                    UUID.fromString(record.get("author").asString),
-                    record.get("createdAt").asLong,
-                    gson.fromJson(record.get("moveTypes")),
-                    gson.fromJson(record.get("clickTypes")),
-                    gson.fromJson(record.get("pushTypes")),
+                    record.getAsType("author"),
+                    record.getAsType("createdAt"),
+                    record.getAsType("moveTypes"),
+                    record.getAsType("clickTypes"),
+                    record.getAsType("pushTypes"),
                     ImmutableListMultimap.copyOf(scriptMultimap)
             )
 
             result.put(position, script)
         }
         return result
-    }
-
-    private inline fun <reified T> Gson.fromJson(jsonElement: JsonElement): T {
-        return this.fromJson(
-                jsonElement,
-                object : TypeToken<T>(){
-                }.type
-        )
     }
 
     private class LegacyParser private constructor(val filePath: Path) {
