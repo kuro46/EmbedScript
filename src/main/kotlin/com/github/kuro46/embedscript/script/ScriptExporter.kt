@@ -19,9 +19,9 @@ class ScriptExporter(dataFolder: Path, private val scriptManager: ScriptManager)
 
         val exportTo = ScriptManager(JsonLoader(filePath))
 
-        for ((position, script) in scriptManager.entries()) {
+        scriptManager.forEach { position, scriptList ->
             if (position.world == world) {
-                exportTo.putAll(position, script)
+                exportTo.putAll(position, scriptList)
             }
         }
     }
@@ -37,8 +37,8 @@ class ScriptExporter(dataFolder: Path, private val scriptManager: ScriptManager)
             throw IOException("'$filePath' not exists!")
         }
         val importFrom = ScriptManager(JsonLoader(filePath))
-        for ((position, script) in importFrom.entries()) {
-            scriptManager.putAll(position, script)
+        importFrom.forEach { position, scriptList ->
+            scriptManager.putAll(position, scriptList)
         }
     }
 

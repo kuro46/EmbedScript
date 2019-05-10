@@ -81,10 +81,7 @@ object ScriptSerializer {
     }
 
     private fun write(writer: JsonTableWriter, value: ScriptManager) {
-        value.entries().forEach { scriptData ->
-            val position = scriptData.key
-            val scriptList = scriptData.value
-
+        value.forEach { position, scriptList ->
             scriptList.forEach { script ->
                 val record = RecordWrite()
 

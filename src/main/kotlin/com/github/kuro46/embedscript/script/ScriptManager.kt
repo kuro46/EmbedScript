@@ -54,8 +54,8 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
         return scripts[position]
     }
 
-    fun entries(): Collection<Map.Entry<ScriptPosition, List<Script>>> {
-        return scripts.entries
+    fun forEach(function: (ScriptPosition, List<Script>) -> Unit) {
+        getScripts().forEach(function)
     }
 
     // ================
