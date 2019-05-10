@@ -17,9 +17,34 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
     @Volatile
     private var scripts: Map<ScriptPosition, List<Script>> = loader.initialValue()
 
+    private fun setScripts(scripts: Map<ScriptPosition, List<Script>>) {
+        this.scripts = scripts
+    }
+
     fun getScripts(): Map<ScriptPosition, List<Script>> {
         return scripts
     }
+
+    // =============
+    // IO OPERATIONS
+    // =============
+
+    fun reload() {
+        val loaded = loader.load()
+        setScripts(loaded.scripts)
+    }
+
+    fun save() {
+        loader.save(this)
+    }
+
+    fun saveAsync() {
+        loader.saveAsync(this)
+    }
+
+    // ===============
+    // READ OPERATIONS
+    // ===============
 
     operator fun contains(position: ScriptPosition): Boolean {
         return scripts.containsKey(position)
@@ -27,6 +52,40 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
 
     operator fun get(position: ScriptPosition): List<Script>? {
         return scripts[position]
+    }
+
+    fun keySet(): Set<ScriptPosition> {
+        return scripts.keys
+    }
+
+    fun entries(): Collection<Map.Entry<ScriptPosition, List<Script>>> {
+        return scripts.entries
+    }
+
+    // ================
+    // WRITE OPERATIONS
+    // ================
+
+    private fun deepCopy(): MutableMap<ScriptPosition, COWList<Script>> {
+        val copied = HashMap<ScriptPosition, COWList<Script>>()
+        scripts.forEach { (position, scriptList) ->
+            val cowList = if (scriptList is COWList<Script>)
+                scriptList
+            else COWList(scriptList)
+            copied[position] = cowList
+        }
+        return copied
+    }
+
+    fun remove(position: ScriptPosition): List<Script>? {
+        return lock.withLock {
+            val scripts = deepCopy()
+            val removed = scripts.remove(position)
+            setScripts(scripts)
+            loader.saveAsync(this, true)
+
+            removed
+        }
     }
 
     fun put(position: ScriptPosition, script: Script) {
@@ -38,32 +97,6 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
 
             loader.saveAsync(this, true)
         }
-    }
-
-    fun putAll(position: ScriptPosition, scripts: List<Script>) {
-        lock.withLock {
-            val copied = deepCopy()
-            val scriptList = copied.getOrPut(position) { COWList.empty() }
-            scriptList.addAll(scripts)
-            setScripts(copied)
-
-            loader.saveAsync(this, true)
-        }
-    }
-
-    private fun setScripts(scripts: Map<ScriptPosition, List<Script>>) {
-        this.scripts = scripts
-    }
-
-    private fun deepCopy(): MutableMap<ScriptPosition, COWList<Script>> {
-        val copied = HashMap<ScriptPosition, COWList<Script>>()
-        scripts.forEach { (position, scriptList) ->
-            val cowList = if (scriptList is COWList<Script>)
-                scriptList
-            else COWList(scriptList)
-            copied[position] = cowList
-        }
-        return copied
     }
 
     fun putIfAbsent(position: ScriptPosition, script: Script) {
@@ -79,36 +112,15 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
         }
     }
 
-    fun remove(position: ScriptPosition): List<Script>? {
-        return lock.withLock {
-            val scripts = deepCopy()
-            val removed = scripts.remove(position)
-            setScripts(scripts)
+    fun putAll(position: ScriptPosition, scripts: List<Script>) {
+        lock.withLock {
+            val copied = deepCopy()
+            val scriptList = copied.getOrPut(position) { COWList.empty() }
+            scriptList.addAll(scripts)
+            setScripts(copied)
+
             loader.saveAsync(this, true)
-
-            removed
         }
-    }
-
-    fun keySet(): Set<ScriptPosition> {
-        return scripts.keys
-    }
-
-    fun entries(): Collection<Map.Entry<ScriptPosition, List<Script>>> {
-        return scripts.entries
-    }
-
-    fun reload() {
-        val loaded = loader.load()
-        setScripts(loaded.scripts)
-    }
-
-    fun save() {
-        loader.save(this)
-    }
-
-    fun saveAsync() {
-        loader.saveAsync(this)
     }
 
     interface Loader {
