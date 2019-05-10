@@ -54,10 +54,6 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
         return scripts[position]
     }
 
-    fun keySet(): Set<ScriptPosition> {
-        return scripts.keys
-    }
-
     fun entries(): Collection<Map.Entry<ScriptPosition, List<Script>>> {
         return scripts.entries
     }
@@ -95,19 +91,6 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
             scriptList.add(script)
             setScripts(copied)
 
-            loader.saveAsync(this, true)
-        }
-    }
-
-    fun putIfAbsent(position: ScriptPosition, script: Script) {
-        lock.withLock {
-            if (contains(position)) {
-                return
-            }
-            val scripts = deepCopy()
-            val scriptList = scripts.getOrPut(position) { COWList.empty() }
-            scriptList.add(script)
-            setScripts(scripts)
             loader.saveAsync(this, true)
         }
     }
