@@ -6,14 +6,11 @@ import com.github.kuro46.embedscript.listener.InteractListener
 import com.github.kuro46.embedscript.listener.MoveListener
 import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.EventType
-import com.github.kuro46.embedscript.script.Script
+import com.github.kuro46.embedscript.script.JsonLoader
 import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
-import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptSerializer
 import com.github.kuro46.embedscript.script.processor.ScriptProcessor
-import com.google.common.collect.ArrayListMultimap
-import com.google.common.collect.ListMultimap
 import org.bukkit.Bukkit
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.ServicePriority
@@ -63,7 +60,7 @@ class EmbedScript private constructor(val plugin: Plugin) {
 
         migrateFromOldFormatIfNeeded(filePath)
 
-        return ScriptManager.load(filePath)
+        return ScriptManager(JsonLoader(filePath))
     }
 
     private fun migrateFromOldFormatIfNeeded(scriptFilePath: Path) {
@@ -71,23 +68,20 @@ class EmbedScript private constructor(val plugin: Plugin) {
             return
         }
 
-        val merged: ListMultimap<ScriptPosition, Script> = ArrayListMultimap.create()
+        val merged = ScriptManager()
         Arrays.stream(EventType.values())
                 .map { eventType -> dataFolder.resolve(eventType.fileName) }
                 .filter { path -> Files.exists(path) }
-                .map { path -> ScriptManager.load(path) }
-                .forEach { scriptManager ->
-                    for (position in scriptManager.keySet()) {
-                        val scripts = scriptManager[position]
-                        val mergeTo = merged.get(position)
-
-                        mergeTo.addAll(scripts)
+                .map { path -> Pair(path, ScriptManager(JsonLoader(path))) }
+                .forEach { (path, scriptManager) ->
+                    scriptManager.getScripts().forEach { (position, scriptList) ->
+                        merged.putAll(position, scriptList)
                     }
 
-                    Files.delete(scriptManager.path)
+                    Files.delete(path)
                 }
 
-        if (merged.isEmpty) {
+        if (merged.getScripts().isEmpty()) {
             return
         }
 

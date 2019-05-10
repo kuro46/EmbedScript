@@ -79,7 +79,7 @@ object ListHandlers {
     }
 
     fun list(scriptManager: ScriptManager, player: Player, scope: ListScope, filter: Script?, pageIndex: Int) {
-        val messages = scriptManager.scripts.asMap().entries.stream()
+        val messages = scriptManager.getScripts().entries.stream()
                 .filter { entry ->
                     when (scope) {
                         is ListScope.Server -> true
@@ -115,10 +115,10 @@ object ListHandlers {
     }
 
     private class ScriptPositionComparator :
-            Comparator<MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>>,
+            Comparator<Map.Entry<ScriptPosition, Collection<Script>>>,
             Serializable {
-        override fun compare(entry: MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>,
-                             entry1: MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>): Int {
+        override fun compare(entry: Map.Entry<ScriptPosition, Collection<Script>>,
+                             entry1: Map.Entry<ScriptPosition, Collection<Script>>): Int {
             val position = entry.key
             val position1 = entry1.key
 
@@ -130,15 +130,15 @@ object ListHandlers {
     }
 
     private class ScriptCollector(private val filter: Script?)
-        : Collector<MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>,
+        : Collector<Map.Entry<ScriptPosition, Collection<Script>>,
             MutableCollection<Array<BaseComponent>>,
-            MutableCollection<Array<BaseComponent>>> {
+            Collection<Array<BaseComponent>>> {
 
         override fun supplier(): Supplier<MutableCollection<Array<BaseComponent>>> {
             return Supplier { ArrayList<Array<BaseComponent>>() }
         }
 
-        override fun accumulator(): BiConsumer<MutableCollection<Array<BaseComponent>>, MutableMap.MutableEntry<ScriptPosition, MutableCollection<Script>>> {
+        override fun accumulator(): BiConsumer<MutableCollection<Array<BaseComponent>>, Map.Entry<ScriptPosition, Collection<Script>>> {
             return BiConsumer { messages, entry ->
                 val position = entry.key
                 val scripts = ArrayList(entry.value).filter { filter == null || isFilterable(it, filter) }
@@ -187,7 +187,7 @@ object ListHandlers {
             }
         }
 
-        override fun finisher(): JavaFunction<MutableCollection<Array<BaseComponent>>, MutableCollection<Array<BaseComponent>>> {
+        override fun finisher(): JavaFunction<MutableCollection<Array<BaseComponent>>, Collection<Array<BaseComponent>>> {
             return JavaFunction { message -> message }
         }
 

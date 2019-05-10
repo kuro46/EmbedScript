@@ -17,11 +17,11 @@ class ScriptExporter(dataFolder: Path, private val scriptManager: ScriptManager)
     fun export(world: String, filePath: Path) {
         createDirectoryIfNotExists()
 
-        val exportTo = ScriptManager.load(filePath)
+        val exportTo = ScriptManager(JsonLoader(filePath))
 
         for ((position, script) in scriptManager.entries()) {
             if (position.world == world) {
-                exportTo.put(position, script)
+                exportTo.putAll(position, script)
             }
         }
     }
@@ -36,9 +36,9 @@ class ScriptExporter(dataFolder: Path, private val scriptManager: ScriptManager)
         if (Files.notExists(filePath)) {
             throw IOException("'$filePath' not exists!")
         }
-        val importFrom = ScriptManager.load(filePath)
+        val importFrom = ScriptManager(JsonLoader(filePath))
         for ((position, script) in importFrom.entries()) {
-            scriptManager.put(position, script)
+            scriptManager.putAll(position, script)
         }
     }
 

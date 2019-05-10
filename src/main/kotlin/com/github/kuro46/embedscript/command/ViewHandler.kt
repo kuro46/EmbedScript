@@ -73,15 +73,20 @@ class ViewHandler(private val requests: Requests,
         val pageNumber = args.getInt(sender, 4, 1) ?: return
 
         val position = ScriptPosition(world, x, y, z)
-        if (!scriptManager.contains(position)) {
+        val scripts = scriptManager.getScripts()
+        if (!scripts.contains(position)) {
             sender.sendMessage(Prefix.ERROR + "Script not exists in that place.")
             return
         }
         val messages: MutableList<Array<BaseComponent>> = ArrayList()
-        for (script in scriptManager[position]) {
+        for (script in scripts.getValue(position)) {
             // null if failed to find name of author
             val author = getUserName(sender, script.author) ?: return
-            val timestamp = if (script.createdAt != -1L) { "at ${formatTime(script.createdAt)}" } else { "" }
+            val timestamp = if (script.createdAt != -1L) {
+                "at ${formatTime(script.createdAt)}"
+            } else {
+                ""
+            }
             messages.add(TextComponent.fromLegacyText("$author created $timestamp"))
             addMessageIfNeeded(messages, "@listen-move", script.moveTypes)
             addMessageIfNeeded(messages, "@listen-click", script.clickTypes)
