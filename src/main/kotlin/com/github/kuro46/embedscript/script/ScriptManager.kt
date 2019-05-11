@@ -62,7 +62,7 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
     // ================
 
     private fun deepCopy(): MutableMap<ScriptPosition, MutableList<Script>> {
-        val copied = HashMap<ScriptPosition, MutableList<Script>>()
+        val copied = HashMap<ScriptPosition, MutableList<Script>>(scripts.size)
         scripts.forEach { (position, scriptList) ->
             copied[position] = ArrayList(scriptList)
         }
