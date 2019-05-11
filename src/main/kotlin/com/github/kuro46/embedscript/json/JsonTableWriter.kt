@@ -1,6 +1,5 @@
 package com.github.kuro46.embedscript.json
 
-import com.google.gson.Gson
 import com.google.gson.stream.JsonWriter
 import java.io.StringWriter
 import java.nio.file.Files
@@ -28,6 +27,10 @@ class RecordWrite {
 
     fun addJson(key: String, value: String) {
         writer.name(key).jsonValue(value)
+    }
+
+    fun addObject(key: String, value: Any) {
+        writer.name(key).jsonValue(GsonExt.GSON.toJson(value))
     }
 
     /**
@@ -63,14 +66,12 @@ class JsonTableWriter(
         metadata: Metadata
 ) : AutoCloseable {
 
-    val gson = Gson()
-
-    constructor(path: Path, metadata: Metadata):
+    constructor(path: Path, metadata: Metadata) :
             this(JsonWriter(Files.newBufferedWriter(path)), metadata)
 
     init {
         writer.beginObject()
-        writer.name("metadata").jsonValue(gson.toJson(metadata))
+        writer.name("metadata").jsonValue(GsonExt.GSON.toJson(metadata))
         writer.name("body")
         writer.beginArray()
     }

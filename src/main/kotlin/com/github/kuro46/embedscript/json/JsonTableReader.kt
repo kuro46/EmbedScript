@@ -1,6 +1,5 @@
 package com.github.kuro46.embedscript.json
 
-import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonSyntaxException
 import com.google.gson.stream.JsonReader
@@ -17,17 +16,16 @@ typealias RecordRead = JsonObject
  */
 class JsonTableReader(private val reader: JsonReader) : AutoCloseable, Iterator<RecordRead> {
 
-    val gson = Gson()
     val metadata: Metadata
 
-    constructor(path: Path): this(JsonReader(Files.newBufferedReader(path)))
+    constructor(path: Path) : this(JsonReader(Files.newBufferedReader(path)))
 
     init {
         reader.beginObject()
         if (reader.nextName() != "metadata") {
             throw JsonSyntaxException("'metadata' section is must be placed at first object.")
         }
-        metadata = gson.fromJson(reader, JsonObject::class.java)
+        metadata = GsonExt.GSON.fromJson(reader, JsonObject::class.java)
         if (reader.nextName() != "body") {
             throw JsonSyntaxException("'body' section is must be placed at second object.")
         }
@@ -36,7 +34,7 @@ class JsonTableReader(private val reader: JsonReader) : AutoCloseable, Iterator<
 
     override fun hasNext(): Boolean = reader.hasNext()
 
-    override fun next(): RecordRead = gson.fromJson(reader, JsonObject::class.java)
+    override fun next(): RecordRead = GsonExt.GSON.fromJson(reader, JsonObject::class.java)
 
     override fun close() {
         reader.endArray()

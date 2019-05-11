@@ -1,10 +1,8 @@
 package com.github.kuro46.embedscript.script
 
-import com.google.common.collect.ListMultimap
-import com.google.common.collect.Multimaps
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * Script manager<br></br>
@@ -12,66 +10,151 @@ import java.util.concurrent.CopyOnWriteArrayList
  *
  * @author shirokuro
  */
-class ScriptManager
-private constructor(val scripts: ListMultimap<ScriptPosition, Script>, val path: Path) {
+class ScriptManager(private val loader: Loader = NoOpLoader) {
+
+    private val lock = ReentrantLock()
+    @Volatile
+    private var scripts: Map<ScriptPosition, List<Script>> = loader.initialValue()
+
+    private fun setScripts(scripts: Map<ScriptPosition, List<Script>>) {
+        this.scripts = scripts
+    }
+
+    fun getScripts(): Map<ScriptPosition, List<Script>> {
+        return scripts
+    }
+
+    // =============
+    // IO OPERATIONS
+    // =============
+
+    fun reload() {
+        val loaded = loader.load()
+        setScripts(loaded.scripts)
+    }
+
+    fun save() {
+        loader.save(this)
+    }
+
+    fun saveAsync() {
+        loader.saveAsync(this)
+    }
+
+    // ===============
+    // READ OPERATIONS
+    // ===============
+
     operator fun contains(position: ScriptPosition): Boolean {
         return scripts.containsKey(position)
     }
 
-    operator fun get(position: ScriptPosition): MutableList<Script> {
-        return scripts.get(position)
+    operator fun get(position: ScriptPosition): List<Script>? {
+        return scripts[position]
     }
 
-    fun put(position: ScriptPosition, script: Script) {
-        val scripts = scripts.get(position)
-        scripts.add(script)
-        ScriptSerializer.serializeLaterAsync(path, this.scripts)
+    fun forEach(function: (ScriptPosition, List<Script>) -> Unit) {
+        getScripts().forEach(function)
     }
 
-    fun putIfAbsent(position: ScriptPosition, script: Script) {
-        if (scripts.containsKey(position)) {
-            return
-        }
-        val scripts = scripts.get(position)
-        scripts.add(script)
-        ScriptSerializer.serializeLaterAsync(path, this.scripts)
+    // ================
+    // WRITE OPERATIONS
+    // ================
+
+    private fun shallowCopy(): MutableMap<ScriptPosition, List<Script>> {
+        return HashMap(scripts)
     }
 
     fun remove(position: ScriptPosition): List<Script>? {
-        val s = scripts.removeAll(position)
-        ScriptSerializer.serializeLaterAsync(path, scripts)
-        return s
-    }
+        return lock.withLock {
+            val scripts = shallowCopy()
+            val removed = scripts.remove(position)
+            setScripts(scripts)
+            loader.saveAsync(this, true)
 
-    fun keySet(): Set<ScriptPosition> {
-        return scripts.keySet()
-    }
-
-    fun entries(): MutableCollection<MutableMap.MutableEntry<ScriptPosition, Script>> {
-        return scripts.entries()
-    }
-
-    fun reload() {
-        val scripts = ScriptSerializer.deserialize(path)
-        this.scripts.clear()
-        this.scripts.putAll(scripts)
-    }
-
-    fun save() {
-        ScriptSerializer.serialize(path, scripts)
-    }
-
-    fun saveAsync() {
-        ScriptSerializer.serializeLaterAsync(path, scripts)
-    }
-
-    companion object {
-        fun load(filePath: Path): ScriptManager {
-            val multimap =
-                    Multimaps.newListMultimap(ConcurrentHashMap<ScriptPosition, CopyOnWriteArrayList<Script>>()
-                            as Map<ScriptPosition, MutableCollection<Script>>) { CopyOnWriteArrayList() }
-            multimap.putAll(ScriptSerializer.deserialize(filePath))
-            return ScriptManager(multimap, filePath)
+            removed
         }
+    }
+
+    fun add(position: ScriptPosition, script: Script) {
+        lock.withLock {
+            val copied = shallowCopy()
+            copied.compute(position) { _, current ->
+                val addTo = current?.let { ArrayList(it) } ?: ArrayList(1)
+                addTo.add(script)
+                addTo
+            }
+
+            setScripts(copied)
+
+            loader.saveAsync(this, true)
+        }
+    }
+
+    fun addAll(position: ScriptPosition, scripts: List<Script>) {
+        lock.withLock {
+            val copied = shallowCopy()
+            copied.compute(position) { _, current ->
+                val addTo: MutableList<Script> = current?.let {
+                    val copiedList: MutableList<Script> = ArrayList(it.size + scripts.size)
+                    copiedList.addAll(it)
+
+                    copiedList
+                } ?: ArrayList(scripts.size)
+
+                addTo.addAll(scripts)
+
+                addTo
+            }
+
+            setScripts(copied)
+
+            loader.saveAsync(this, true)
+        }
+    }
+
+    interface Loader {
+        fun save(scriptManager: ScriptManager, autoSave: Boolean = false)
+        fun saveAsync(scriptManager: ScriptManager, autoSave: Boolean = false)
+        fun load(): ScriptManager
+        fun initialValue(): Map<ScriptPosition, List<Script>>
+    }
+}
+
+object NoOpLoader : ScriptManager.Loader {
+    override fun save(scriptManager: ScriptManager, autoSave: Boolean) {
+        if (autoSave) return
+        throw UnsupportedOperationException()
+    }
+
+    override fun saveAsync(scriptManager: ScriptManager, autoSave: Boolean) {
+        if (autoSave) return
+        throw UnsupportedOperationException()
+    }
+
+    override fun load(): ScriptManager {
+        throw UnsupportedOperationException()
+    }
+
+    override fun initialValue(): Map<ScriptPosition, List<Script>> {
+        return emptyMap()
+    }
+}
+
+class JsonLoader(val path: Path) : ScriptManager.Loader {
+    override fun save(scriptManager: ScriptManager, autoSave: Boolean) {
+        ScriptSerializer.serialize(path, scriptManager)
+    }
+
+    override fun saveAsync(scriptManager: ScriptManager, autoSave: Boolean) {
+        ScriptSerializer.serializeLaterAsync(path, scriptManager)
+    }
+
+    override fun load(): ScriptManager {
+        return ScriptSerializer.deserialize(path)
+    }
+
+    override fun initialValue(): Map<ScriptPosition, List<Script>> {
+        return ScriptSerializer.deserialize(path).getScripts()
     }
 }

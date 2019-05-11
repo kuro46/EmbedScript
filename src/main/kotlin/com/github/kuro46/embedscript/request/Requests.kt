@@ -46,7 +46,7 @@ class Requests(private val scriptManager: ScriptManager) {
             return
         }
 
-        scriptManager.put(position, script)
+        scriptManager.add(position, script)
 
         sender.sendMessage(Prefix.SUCCESS + "Script was successfully embedded.")
     }
@@ -58,7 +58,7 @@ class Requests(private val scriptManager: ScriptManager) {
             sender.sendMessage(Prefix.ERROR + "Script not exists in that place.")
             return
         }
-        scriptManager.put(position, script)
+        scriptManager.add(position, script)
 
         sender.sendMessage(Prefix.SUCCESS + "Script was successfully added.")
     }
