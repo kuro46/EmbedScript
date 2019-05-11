@@ -82,13 +82,17 @@ object ScriptSerializer {
 
     private fun write(writer: JsonTableWriter, value: ScriptManager) {
         value.forEach { position, scriptList ->
-            scriptList.forEach { script ->
-                val record = RecordWrite()
+            val record = RecordWrite()
+            record.add("world", position.world)
+            record.add("x", position.x)
+            record.add("y", position.y)
+            record.add("z", position.z)
 
-                record.add("world", position.world)
-                record.add("x", position.x)
-                record.add("y", position.y)
-                record.add("z", position.z)
+            record.writer.name("scripts")
+            record.writer.beginArray()
+            scriptList.forEach { script ->
+                record.writer.beginObject()
+
                 record.add("author", script.author.toString())
                 record.add("createdAt", script.createdAt)
                 record.addObject("moveTypes", script.moveTypes)
@@ -102,8 +106,11 @@ object ScriptSerializer {
                 }
                 record.writer.endObject()
 
-                writer.addRecord(record)
+                record.writer.endObject()
             }
+            record.writer.endArray()
+
+            writer.addRecord(record)
         }
     }
 
@@ -118,21 +125,26 @@ object ScriptSerializer {
                     record.getAsType("z")
             )
 
-            val scriptMultimap: ListMultimap<String, String> = ArrayListMultimap.create()
-            record.getAsJsonObject("script").forEach { key, value ->
-                scriptMultimap.putAll(key, value.asType<List<String>>())
-            }
+            val scripts = record.getAsJsonArray("scripts")
+                    .map { it.asJsonObject }
+                    .map { jsonScript ->
+                        val scriptMultimap: ListMultimap<String, String> = ArrayListMultimap.create()
+                        jsonScript.getAsJsonObject("script").forEach { key, value ->
+                            scriptMultimap.putAll(key, value.asType<List<String>>())
+                        }
 
-            val script = Script(
-                    record.getAsType("author"),
-                    record.getAsType("createdAt"),
-                    record.getAsType("moveTypes"),
-                    record.getAsType("clickTypes"),
-                    record.getAsType("pushTypes"),
-                    ImmutableListMultimap.copyOf(scriptMultimap)
-            )
+                        Script(
+                                jsonScript.getAsType("author"),
+                                jsonScript.getAsType("createdAt"),
+                                jsonScript.getAsType("moveTypes"),
+                                jsonScript.getAsType("clickTypes"),
+                                jsonScript.getAsType("pushTypes"),
+                                ImmutableListMultimap.copyOf(scriptMultimap)
+                        )
+                    }
+                    .toList()
 
-            result.add(position, script)
+            result.addAll(position, scripts)
         }
         return result
     }
