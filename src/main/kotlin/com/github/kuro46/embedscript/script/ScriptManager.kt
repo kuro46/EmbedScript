@@ -61,17 +61,13 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
     // WRITE OPERATIONS
     // ================
 
-    private fun deepCopy(): MutableMap<ScriptPosition, MutableList<Script>> {
-        val copied = HashMap<ScriptPosition, MutableList<Script>>(scripts.size)
-        scripts.forEach { (position, scriptList) ->
-            copied[position] = ArrayList(scriptList)
-        }
-        return copied
+    private fun shallowCopy(): MutableMap<ScriptPosition, List<Script>> {
+        return HashMap(scripts)
     }
 
     fun remove(position: ScriptPosition): List<Script>? {
         return lock.withLock {
-            val scripts = deepCopy()
+            val scripts = shallowCopy()
             val removed = scripts.remove(position)
             setScripts(scripts)
             loader.saveAsync(this, true)
@@ -82,9 +78,13 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
 
     fun add(position: ScriptPosition, script: Script) {
         lock.withLock {
-            val copied = deepCopy()
-            val scriptList = copied.getOrPut(position) { ArrayList(1) }
-            scriptList.add(script)
+            val copied = shallowCopy()
+            copied.compute(position) { _, current ->
+                val addTo = current?.let { ArrayList(it) } ?: ArrayList(1)
+                addTo.add(script)
+                addTo
+            }
+
             setScripts(copied)
 
             loader.saveAsync(this, true)
@@ -93,9 +93,20 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
 
     fun addAll(position: ScriptPosition, scripts: List<Script>) {
         lock.withLock {
-            val copied = deepCopy()
-            val scriptList = copied.getOrPut(position) { ArrayList(1) }
-            scriptList.addAll(scripts)
+            val copied = shallowCopy()
+            copied.compute(position) { _, current ->
+                val addTo: MutableList<Script> = current?.let {
+                    val copiedList: MutableList<Script> = ArrayList(it.size + scripts.size)
+                    copiedList.addAll(it)
+
+                    copiedList
+                } ?: ArrayList(scripts.size)
+
+                addTo.addAll(scripts)
+
+                addTo
+            }
+
             setScripts(copied)
 
             loader.saveAsync(this, true)
