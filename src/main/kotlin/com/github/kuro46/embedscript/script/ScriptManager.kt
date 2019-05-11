@@ -1,6 +1,5 @@
 package com.github.kuro46.embedscript.script
 
-import com.github.kuro46.embedscript.util.COWList
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -62,13 +61,10 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
     // WRITE OPERATIONS
     // ================
 
-    private fun deepCopy(): MutableMap<ScriptPosition, COWList<Script>> {
-        val copied = HashMap<ScriptPosition, COWList<Script>>()
+    private fun deepCopy(): MutableMap<ScriptPosition, MutableList<Script>> {
+        val copied = HashMap<ScriptPosition, MutableList<Script>>()
         scripts.forEach { (position, scriptList) ->
-            val cowList = if (scriptList is COWList<Script>)
-                scriptList
-            else COWList(scriptList)
-            copied[position] = cowList
+            copied[position] = ArrayList(scriptList)
         }
         return copied
     }
@@ -87,7 +83,7 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
     fun put(position: ScriptPosition, script: Script) {
         lock.withLock {
             val copied = deepCopy()
-            val scriptList = copied.getOrPut(position) { COWList.empty() }
+            val scriptList = copied.getOrPut(position) { ArrayList(1) }
             scriptList.add(script)
             setScripts(copied)
 
@@ -98,7 +94,7 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
     fun putAll(position: ScriptPosition, scripts: List<Script>) {
         lock.withLock {
             val copied = deepCopy()
-            val scriptList = copied.getOrPut(position) { COWList.empty() }
+            val scriptList = copied.getOrPut(position) { ArrayList(1) }
             scriptList.addAll(scripts)
             setScripts(copied)
 
