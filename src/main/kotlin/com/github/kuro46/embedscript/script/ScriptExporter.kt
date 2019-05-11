@@ -21,7 +21,7 @@ class ScriptExporter(dataFolder: Path, private val scriptManager: ScriptManager)
 
         scriptManager.forEach { position, scriptList ->
             if (position.world == world) {
-                exportTo.putAll(position, scriptList)
+                exportTo.addAll(position, scriptList)
             }
         }
     }
@@ -38,7 +38,7 @@ class ScriptExporter(dataFolder: Path, private val scriptManager: ScriptManager)
         }
         val importFrom = ScriptManager(JsonLoader(filePath))
         importFrom.forEach { position, scriptList ->
-            scriptManager.putAll(position, scriptList)
+            scriptManager.addAll(position, scriptList)
         }
     }
 

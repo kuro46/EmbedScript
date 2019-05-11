@@ -49,7 +49,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
                 val script = createScriptFromLegacyFormat(author, eventType, dataList[1])
                 val position = createPositionFromRawLocation(world, coordinate)
 
-                mergeTo.put(position, script)
+                mergeTo.add(position, script)
             }
         }
     }

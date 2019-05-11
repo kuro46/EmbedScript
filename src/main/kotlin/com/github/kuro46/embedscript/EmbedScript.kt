@@ -75,7 +75,7 @@ class EmbedScript private constructor(val plugin: Plugin) {
                 .map { path -> Pair(path, ScriptManager(JsonLoader(path))) }
                 .forEach { (path, scriptManager) ->
                     scriptManager.getScripts().forEach { (position, scriptList) ->
-                        merged.putAll(position, scriptList)
+                        merged.addAll(position, scriptList)
                     }
 
                     Files.delete(path)

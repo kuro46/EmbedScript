@@ -80,7 +80,7 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
         }
     }
 
-    fun put(position: ScriptPosition, script: Script) {
+    fun add(position: ScriptPosition, script: Script) {
         lock.withLock {
             val copied = deepCopy()
             val scriptList = copied.getOrPut(position) { ArrayList(1) }
@@ -91,7 +91,7 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
         }
     }
 
-    fun putAll(position: ScriptPosition, scripts: List<Script>) {
+    fun addAll(position: ScriptPosition, scripts: List<Script>) {
         lock.withLock {
             val copied = deepCopy()
             val scriptList = copied.getOrPut(position) { ArrayList(1) }

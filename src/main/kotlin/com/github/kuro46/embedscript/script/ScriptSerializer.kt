@@ -132,7 +132,7 @@ object ScriptSerializer {
                     ImmutableListMultimap.copyOf(scriptMultimap)
             )
 
-            result.put(position, script)
+            result.add(position, script)
         }
         return result
     }
@@ -164,7 +164,7 @@ object ScriptSerializer {
             while (reader.hasNext()) {
                 val (position, scripts) = readPair(reader)
                 for (script in scripts) {
-                    scriptManager.put(position, script)
+                    scriptManager.add(position, script)
                 }
             }
             reader.endArray()
