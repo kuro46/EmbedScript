@@ -9,5 +9,7 @@
 *.iws
 *.ipr
 
-# Maven
-target
+# Gradle
+build
+.gradle
+!gradle-wrapper.jar
