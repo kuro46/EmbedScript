@@ -1,5 +1,5 @@
-name: ${project.name}
-version: ${project.version}
+name: EmbedScript
+version: $version
 author: shirokuro
 description: Script embedder
 load: STARTUP
