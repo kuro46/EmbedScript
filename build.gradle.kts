@@ -34,6 +34,10 @@ tasks.withType<ProcessResources> {
     filter { it.replace("\$version", version.toString()) }
 }
 
+tasks.withType<Wrapper> {
+    distributionType = Wrapper.DistributionType.ALL
+}
+
 tasks.withType<ShadowJar> {
     minimize()
     relocatePackage("kotlin")
