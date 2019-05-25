@@ -31,10 +31,12 @@ class MoveListener(embedScript: EmbedScript) : Listener {
         }
 
         val player = event.player
-        val scriptPosition = ScriptPosition(to.world.name,
+        val scriptPosition = ScriptPosition(
+                to.world.name,
                 to.blockX,
                 to.blockY - 1,
-                to.blockZ)
+                to.blockZ
+        )
 
         val scriptList = scriptManager[scriptPosition] ?: return
 

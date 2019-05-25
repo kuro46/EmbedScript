@@ -109,10 +109,12 @@ class EmbedScript private constructor(val plugin: Plugin) {
     }
 
     private fun registerESAPI() {
-        Bukkit.getServicesManager().register(EmbedScriptAPI::class.java,
+        Bukkit.getServicesManager().register(
+                EmbedScriptAPI::class.java,
                 EmbedScriptAPI(scriptExecutor),
                 plugin,
-                ServicePriority.Normal)
+                ServicePriority.Normal
+        )
     }
 
     companion object {

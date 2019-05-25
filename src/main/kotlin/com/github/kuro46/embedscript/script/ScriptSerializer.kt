@@ -135,6 +135,7 @@ object ScriptSerializer {
                             scriptMultimap.putAll(key, value.asType<List<String>>())
                         }
 
+                        @Suppress("UnstableApiUsage")
                         Script(
                                 jsonScript.getAsType("createdAt"),
                                 jsonScript.getAsType("author"),
@@ -192,7 +193,8 @@ object ScriptSerializer {
             while (reader.hasNext()) {
                 when (reader.nextName()) {
                     "coordinate" -> {
-                        position = gson.fromJson(reader,
+                        position = gson.fromJson(
+                                reader,
                                 object : TypeToken<ScriptPosition>() {
                                 }.type
                         )
@@ -244,14 +246,14 @@ object ScriptSerializer {
                                 when (reader.nextName()) {
                                     "type" -> {
                                         when (val nextString = reader.nextString()) {
-                                            "BYPASS_PERMISSION", "COMMAND" -> keys.add("command")
+                                            "BYPASS_PERMISSION", "COMMAND" -> keys.add("cmd")
                                             "CONSOLE" -> keys.add("console")
                                             "PLAYER" -> keys.add("say")
                                             "PLUGIN" -> throw JsonParseException("@plugin was removed since ver0.7.0!")
                                             else -> throw JsonParseException("'$nextString' is unknown type!")
                                         }
                                     }
-                                    "permission" -> multimap.put("give-permission", reader.nextString())
+                                    "permission" -> multimap.put("cmd.bypass", reader.nextString())
                                     else -> reader.skipValue()
                                 }
                             }
@@ -266,6 +268,7 @@ object ScriptSerializer {
                     multimap.put(key, command)
                 }
 
+                @Suppress("UnstableApiUsage")
                 val script = Script(
                         -1,
                         author!!,

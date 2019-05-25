@@ -1,6 +1,6 @@
-package com.github.kuro46.embedscript.script;
+package com.github.kuro46.embedscript.script
 
-import org.bukkit.Material;
+import org.bukkit.Material
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 

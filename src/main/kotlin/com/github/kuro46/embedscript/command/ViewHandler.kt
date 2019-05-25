@@ -26,8 +26,10 @@ import kotlin.streams.toList
 /**
  * @author shirokuro
  */
-class ViewHandler(private val requests: Requests,
-                  private val scriptManager: ScriptManager) : CommandHandler() {
+class ViewHandler(
+        private val requests: Requests,
+        private val scriptManager: ScriptManager
+) : CommandHandler() {
     override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
         return when {
             // pass to InteractListener

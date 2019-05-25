@@ -107,9 +107,11 @@ abstract class CommandHandler(
         // find child executors and execute if contains
         completedArgs.getOrNull(0)?.let { firstArg ->
             childHandlers[firstArg.toLowerCase(Locale.ENGLISH)]?.let { childHandler ->
-                return childHandler.handleTabComplete(sender, uncompletedArg,
+                return childHandler.handleTabComplete(
+                        sender, uncompletedArg,
                         uncompletedArgIndex - 1,
-                        Arguments(completedArgs.stream().skip(1).toList()))
+                        Arguments(completedArgs.stream().skip(1).toList())
+                )
             }
         }
 

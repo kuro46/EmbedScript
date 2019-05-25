@@ -1,9 +1,6 @@
 package com.github.kuro46.embedscript.util
 
-import java.util.Arrays
-import java.util.regex.Matcher
 import java.util.regex.Pattern
-import java.util.stream.Collectors
 
 /**
  * @author shirokuro
@@ -32,6 +29,7 @@ object Util {
             replacement: String,
             quote: Boolean
     ): String {
+        @Suppress("NAME_SHADOWING")
         var source = source
         val patterns = createPatterns(target, quote)
         val pattern = patterns.pattern
@@ -43,20 +41,8 @@ object Util {
         return source
     }
 
-    fun splitAndUnescape(source: String, target: String): List<String> {
-        var source = source
-        val patterns = createPatterns(target, true)
-        val pattern = patterns.pattern
-        val escapedPattern = patterns.escapedPattern
-
-        val quoteReplacementTarget = Matcher.quoteReplacement(target)
-        source = pattern.matcher(source).replaceAll("$1 $quoteReplacementTarget")
-        return Arrays.stream(pattern.split(source))
-                .map { s -> escapedPattern.matcher(s).replaceAll(quoteReplacementTarget) }
-                .collect(Collectors.toList())
-    }
-
     private fun createPatterns(target: String, quote: Boolean): Patterns {
+        @Suppress("NAME_SHADOWING")
         var target = target
         if (quote) {
             target = Pattern.quote(target)

@@ -16,7 +16,8 @@ class Script(
 
 data class KeyData(val key: AbsoluteKey, val values: List<String>)
 
-data class ParentKeyData(val key: AbsoluteKey, val values: List<String>, val children: List<KeyData>) : Iterable<KeyData> {
+data class ParentKeyData(val key: AbsoluteKey, val values: List<String>, val children: List<KeyData>) :
+        Iterable<KeyData> {
     override fun iterator(): Iterator<KeyData> {
         val base = ArrayList<KeyData>(children.size + 1)
         base.add(KeyData(key, values))

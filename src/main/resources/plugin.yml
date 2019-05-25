@@ -30,7 +30,7 @@ permissions:
     default: op
     description: EmbedScript main permission.
     children:
-      - embedscript.admin: true
+      embedscript.admin: true
   embedscript.admin:
     default: op
     description: EmbedScript administration permission.

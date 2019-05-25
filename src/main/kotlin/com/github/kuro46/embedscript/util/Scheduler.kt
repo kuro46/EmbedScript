@@ -31,6 +31,7 @@ object Scheduler {
 
     fun submit(forceOtherThread: Boolean = false, task: () -> Unit): Future<*> {
         return if (!forceOtherThread && threads.contains(Thread.currentThread())) {
+            @Suppress("UnstableApiUsage")
             Futures.immediateFuture(null)
         } else {
             executor.submit(wrapFunction(task))

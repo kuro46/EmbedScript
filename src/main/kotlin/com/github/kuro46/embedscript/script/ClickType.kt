@@ -1,4 +1,4 @@
-package com.github.kuro46.embedscript.script;
+package com.github.kuro46.embedscript.script
 
 import org.bukkit.event.block.Action
 

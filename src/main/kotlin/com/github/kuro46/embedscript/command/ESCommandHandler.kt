@@ -92,7 +92,8 @@ class ESCommandHandler constructor(
 
     private class HelpHandler : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            sender.sendMessage("""/es help - Displays this message.
+            sender.sendMessage(
+                    """/es help - Displays this message.
                     |/es reload - Reloads configuration and scripts
                     |/es migrate - Migrates from ScriptBlock to this plugin.
                     |/es list [world] [page] - Displays list of scripts in the [world] or current world.
@@ -103,7 +104,8 @@ class ESCommandHandler constructor(
                     |/es embed <script> - Embeds a script to the clicked block.
                     |/es add <script> - Adds a script to the clicked block
                     |/es export <world> [fileName] - Exports all scripts in the <world> to [fileName] or <world>.
-                    |/es import <fileName> Imports all scripts in the <fileName>.""".trimMargin())
+                    |/es import <fileName> Imports all scripts in the <fileName>.""".trimMargin()
+            )
             return true
         }
     }
@@ -138,8 +140,10 @@ class ESCommandHandler constructor(
                 sender.sendMessage(Prefix.ERROR + "File: '$fileName' already exists!")
             } else {
                 scriptExporter.export(world, filePath)
-                sender.sendMessage(Prefix.SUCCESS +
-                        "All scripts in the '$world' was successfully exported to '$fileName'!")
+                sender.sendMessage(
+                        Prefix.SUCCESS +
+                                "All scripts in the '$world' was successfully exported to '$fileName'!"
+                )
             }
             return true
         }
@@ -235,12 +239,16 @@ class ESCommandHandler constructor(
             val x = args.getInt(sender, 1) ?: return true
             val y = args.getInt(sender, 2) ?: return true
             val z = args.getInt(sender, 3) ?: return true
-            player.teleport(Location(world,
-                    x + 0.5,
-                    y.toDouble(),
-                    z + 0.5,
-                    playerLocation.yaw,
-                    playerLocation.pitch))
+            player.teleport(
+                    Location(
+                            world,
+                            x + 0.5,
+                            y.toDouble(),
+                            z + 0.5,
+                            playerLocation.yaw,
+                            playerLocation.pitch
+                    )
+            )
 
             player.sendMessage(Prefix.SUCCESS + "Teleported.")
             return true

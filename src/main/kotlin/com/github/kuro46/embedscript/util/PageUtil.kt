@@ -42,19 +42,27 @@ object PageUtil {
         val previousPageIndex = if (pageIndex - 1 < 0) pages.size - 1 else pageIndex - 1
         val nextPageIndex = if (pageIndex + 1 >= pages.size) 0 else pageIndex + 1
 
-        sender.spigot().sendMessage(*ComponentBuilder("")
-                .append(ComponentBuilder("<<Previous>>")
-                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, commandGenerator(previousPageIndex)))
-                        .create())
-                .append("   ")
-                .append(ComponentBuilder("<<Next>>")
-                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, commandGenerator(nextPageIndex)))
-                        .create())
-                .append("   ")
-                .append(ComponentBuilder("<<Page ${pageIndex + 1} of ${pages.size}>>")
-                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, ""))
-                        .create())
-                .create())
+        sender.spigot().sendMessage(
+                *ComponentBuilder("")
+                        .append(
+                                ComponentBuilder("<<Previous>>")
+                                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, commandGenerator(previousPageIndex)))
+                                        .create()
+                        )
+                        .append("   ")
+                        .append(
+                                ComponentBuilder("<<Next>>")
+                                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, commandGenerator(nextPageIndex)))
+                                        .create()
+                        )
+                        .append("   ")
+                        .append(
+                                ComponentBuilder("<<Page ${pageIndex + 1} of ${pages.size}>>")
+                                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, ""))
+                                        .create()
+                        )
+                        .create()
+        )
         sender.sendMessage(separator)
     }
 
