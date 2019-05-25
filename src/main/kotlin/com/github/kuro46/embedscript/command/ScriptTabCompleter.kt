@@ -21,20 +21,10 @@ class ScriptTabCompleter(private val scriptExecutor: ScriptExecutor) : TabComple
         } else {
             // uncompleted arg is value
 
-            val key = completedArgs.last()
+            // TODO: suggest
 
-            getValueSuggestions(sender, key, uncompletedArg)
+            listOf("[]")
         }
-    }
-
-    private fun getValueSuggestions(sender: CommandSender, key: String, value: String): List<String> {
-        // TODO: suggest!!!!!!
-
-        return listOf("[]")
-    }
-
-    private fun removeFirstChar(str: String): String {
-        return str.substring(1)
     }
 
     /**
