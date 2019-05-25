@@ -7,9 +7,9 @@ import com.github.kuro46.embedscript.json.RecordWrite
 import com.github.kuro46.embedscript.json.asType
 import com.github.kuro46.embedscript.json.forEach
 import com.github.kuro46.embedscript.json.getAsType
-import com.google.common.collect.ArrayListMultimap
-import com.google.common.collect.ImmutableListMultimap
+import com.github.kuro46.embedscript.util.ArrayListLinkedMultimap
 import com.google.common.collect.ListMultimap
+import com.google.common.collect.Multimaps
 import com.google.gson.Gson
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
@@ -101,8 +101,10 @@ object ScriptSerializer {
 
                 record.writer.name("script")
                 record.writer.beginObject()
-                script.script.asMap().forEach { (key, values) ->
-                    record.addObject(key, values)
+                script.keys.forEach { parentKeyData ->
+                    parentKeyData.forEach { (key, values) ->
+                        record.addObject(key, values)
+                    }
                 }
                 record.writer.endObject()
 
@@ -128,18 +130,18 @@ object ScriptSerializer {
             val scripts = record.getAsJsonArray("scripts")
                     .map { it.asJsonObject }
                     .map { jsonScript ->
-                        val scriptMultimap: ListMultimap<String, String> = ArrayListMultimap.create()
+                        val scriptMultimap: ListMultimap<String, String> = ArrayListLinkedMultimap.create()
                         jsonScript.getAsJsonObject("script").forEach { key, value ->
                             scriptMultimap.putAll(key, value.asType<List<String>>())
                         }
 
                         Script(
-                                jsonScript.getAsType("author"),
                                 jsonScript.getAsType("createdAt"),
-                                jsonScript.getAsType("moveTypes"),
+                                jsonScript.getAsType("author"),
+                                ParentKeyData.fromMap(Multimaps.asMap(scriptMultimap)),
                                 jsonScript.getAsType("clickTypes"),
-                                jsonScript.getAsType("pushTypes"),
-                                ImmutableListMultimap.copyOf(scriptMultimap)
+                                jsonScript.getAsType("moveTypes"),
+                                jsonScript.getAsType("pushTypes")
                         )
                     }
                     .toList()
@@ -192,7 +194,8 @@ object ScriptSerializer {
                     "coordinate" -> {
                         position = gson.fromJson(reader,
                                 object : TypeToken<ScriptPosition>() {
-                                }.type)
+                                }.type
+                        )
                     }
                     "script" -> {
                         scripts = readScript(reader)
@@ -226,7 +229,7 @@ object ScriptSerializer {
             while (reader.hasNext()) {
                 var author: UUID? = null
                 var command: String? = null
-                val multimap: ListMultimap<String, String> = ArrayListMultimap.create()
+                val multimap: ListMultimap<String, String> = ArrayListLinkedMultimap.create()
                 val keys: MutableList<String> = ArrayList()
 
                 reader.beginObject()
@@ -263,11 +266,16 @@ object ScriptSerializer {
                     multimap.put(key, command)
                 }
 
-                scripts.add(Script(author!!, -1,
-                        if (eventType == EventType.WALK) setOf(Script.MoveType.GROUND) else setOf(),
-                        if (eventType == EventType.INTERACT) setOf(Script.ClickType.ALL) else setOf(),
-                        if (eventType == EventType.INTERACT) setOf(Script.PushType.ALL) else setOf(),
-                        ImmutableListMultimap.copyOf(multimap)))
+                val script = Script(
+                        -1,
+                        author!!,
+                        ParentKeyData.fromMap(Multimaps.asMap(multimap)),
+                        if (eventType == EventType.INTERACT) setOf(ClickType.ALL) else setOf(),
+                        if (eventType == EventType.WALK) setOf(MoveType.GROUND) else setOf(),
+                        if (eventType == EventType.INTERACT) setOf(PushType.ALL) else setOf()
+                )
+
+                scripts.add(script)
             }
             reader.endArray()
 

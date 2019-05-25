@@ -37,7 +37,7 @@ object Scheduler {
         }
     }
 
-    private fun wrapFunction(task: () -> Unit): ()-> Unit {
+    private fun wrapFunction(task: () -> Unit): () -> Unit {
         return {
             try {
                 task()

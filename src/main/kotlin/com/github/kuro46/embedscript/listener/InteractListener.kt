@@ -1,8 +1,11 @@
 package com.github.kuro46.embedscript.listener
 
 import com.github.kuro46.embedscript.EmbedScript
+import com.github.kuro46.embedscript.script.ClickType
+import com.github.kuro46.embedscript.script.PushType
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
+import com.github.kuro46.embedscript.script.executor.ScriptExecutor
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import org.bukkit.entity.Player
@@ -25,7 +28,7 @@ class InteractListener(embedScript: EmbedScript) : Listener {
             .expireAfterWrite(EXECUTION_INTERVAL, TimeUnit.MILLISECONDS)
             .build()
     private val scriptManager = embedScript.scriptManager
-    private val scriptProcessor = embedScript.scriptProcessor
+    private val scriptExecutor: ScriptExecutor = embedScript.scriptExecutor
     private val requests = embedScript.requests
 
     @EventHandler
@@ -50,7 +53,7 @@ class InteractListener(embedScript: EmbedScript) : Listener {
         }
 
         if (filteredScriptList.isNotEmpty()) {
-            scriptProcessor.execute(player, filteredScriptList, position)
+            scriptExecutor.execute(player, filteredScriptList, position)
             event.isCancelled = true
         }
     }
@@ -61,11 +64,11 @@ class InteractListener(embedScript: EmbedScript) : Listener {
             return false
         }
 
-        val clickTypeOfEvent = Script.ClickType.getByAction(action) ?: return false
+        val clickTypeOfEvent = ClickType.getByAction(action) ?: return false
         // PHYSICAL action
 
         for (clickType in clickTypes) {
-            if (clickType == Script.ClickType.ALL || clickType == clickTypeOfEvent) {
+            if (clickType == ClickType.ALL || clickType == clickTypeOfEvent) {
                 return true
             }
         }
@@ -79,11 +82,11 @@ class InteractListener(embedScript: EmbedScript) : Listener {
             return false
         }
 
-        val pushTypeOfEvent = Script.PushType.getByEvent(event) ?: return false
+        val pushTypeOfEvent = PushType.getByEvent(event) ?: return false
         //Not PHYSICAL or Unknown material
 
         for (pushType in pushTypes) {
-            if (pushType == Script.PushType.ALL || pushType == pushTypeOfEvent) {
+            if (pushType == PushType.ALL || pushType == pushTypeOfEvent) {
                 return true
             }
         }

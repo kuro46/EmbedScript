@@ -91,10 +91,10 @@ class ViewHandler(private val requests: Requests,
             addMessageIfNeeded(messages, "@listen-move", script.moveTypes)
             addMessageIfNeeded(messages, "@listen-click", script.clickTypes)
             addMessageIfNeeded(messages, "@listen-push", script.pushTypes)
-            val scriptMap = script.script
-            for (key in scriptMap.keySet()) {
-                val value = scriptMap.get(key)
-                messages.add(TextComponent.fromLegacyText("@$key ${ScriptUtil.toString(value)}"))
+            for (parent in script.keys) {
+                for ((key, values) in parent) {
+                    messages.add(TextComponent.fromLegacyText("@$key ${ScriptUtil.toString(values)}"))
+                }
             }
         }
         PageUtil.sendPage("Script information", sender, messages, pageNumber - 1, 12) { index ->

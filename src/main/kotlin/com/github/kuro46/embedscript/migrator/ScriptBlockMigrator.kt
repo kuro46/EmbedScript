@@ -12,7 +12,6 @@ import org.bukkit.configuration.file.YamlConfiguration
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.HashMap
 import java.util.Locale
 import java.util.UUID
 import java.util.regex.Pattern
@@ -21,7 +20,7 @@ import java.util.regex.Pattern
  * @author shirokuro
  */
 class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
-    private val processor = embedScript.scriptProcessor
+    private val executor = embedScript.scriptExecutor
     private val mergeTo = embedScript.scriptManager
 
     init {
@@ -93,7 +92,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
         val key = pair.first
         val value = "[${pair.second}]"
 
-        val formatBuilder = HashMap<String, String>()
+        val formatBuilder = LinkedHashMap<String, String>()
 
         formatBuilder["@preset"] = "[${eventType.presetName}]"
 
@@ -121,7 +120,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
         // trim a space character at end of string
         val substring = formattedByNewVersion.substring(0, formattedByNewVersion.length - 1)
 
-        return processor.parse(author, substring, -1)
+        return executor.parse(-1, author, substring)
     }
 
     private fun createPositionFromRawLocation(world: String, rawLocation: String): ScriptPosition {
