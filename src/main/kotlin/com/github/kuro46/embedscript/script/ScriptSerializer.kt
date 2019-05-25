@@ -1,12 +1,6 @@
 package com.github.kuro46.embedscript.script
 
-import com.github.kuro46.embedscript.json.JsonTableReader
-import com.github.kuro46.embedscript.json.JsonTableWriter
-import com.github.kuro46.embedscript.json.Metadata
-import com.github.kuro46.embedscript.json.RecordWrite
-import com.github.kuro46.embedscript.json.asType
-import com.github.kuro46.embedscript.json.forEach
-import com.github.kuro46.embedscript.json.getAsType
+import com.github.kuro46.embedscript.json.*
 import com.github.kuro46.embedscript.util.ArrayListLinkedMultimap
 import com.google.common.collect.ListMultimap
 import com.google.common.collect.Multimaps
@@ -17,8 +11,7 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.ArrayList
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -244,14 +237,14 @@ object ScriptSerializer {
                                 when (reader.nextName()) {
                                     "type" -> {
                                         when (val nextString = reader.nextString()) {
-                                            "BYPASS_PERMISSION", "COMMAND" -> keys.add("command")
+                                            "BYPASS_PERMISSION", "COMMAND" -> keys.add("cmd")
                                             "CONSOLE" -> keys.add("console")
                                             "PLAYER" -> keys.add("say")
                                             "PLUGIN" -> throw JsonParseException("@plugin was removed since ver0.7.0!")
                                             else -> throw JsonParseException("'$nextString' is unknown type!")
                                         }
                                     }
-                                    "permission" -> multimap.put("give-permission", reader.nextString())
+                                    "permission" -> multimap.put("cmd.bypass", reader.nextString())
                                     else -> reader.skipValue()
                                 }
                             }

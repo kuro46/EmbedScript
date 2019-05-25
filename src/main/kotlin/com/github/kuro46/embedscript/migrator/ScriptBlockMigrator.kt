@@ -15,6 +15,10 @@ import java.nio.file.Paths
 import java.util.Locale
 import java.util.UUID
 import java.util.regex.Pattern
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 
 /**
  * @author shirokuro
@@ -97,7 +101,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
         formatBuilder["@preset"] = "[${eventType.presetName}]"
 
         when (key.toLowerCase(Locale.ENGLISH)) {
-            "@command" -> formatBuilder["@command"] = value
+            "@command" -> formatBuilder["@cmd"] = value
             "@player" -> formatBuilder["@say"] = value
             "@bypass" -> formatBuilder["@preset"] = "[alternative-bypass]"
             else -> {
@@ -105,8 +109,8 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
                 val bypassPermPatternMatcher = bypassPermPattern.matcher(key)
 
                 if (bypassPermPatternMatcher.find()) {
-                    formatBuilder["@command"] = value
-                    formatBuilder["@give-permission"] = "[${bypassPermPatternMatcher.group(1)}]"
+                    formatBuilder["@cmd"] = value
+                    formatBuilder["@cmd.bypass"] = "[${bypassPermPatternMatcher.group(1)}]"
                 } else {
                     throw ParseException("'$key' is unsupported action type!")
                 }
