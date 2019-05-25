@@ -15,7 +15,6 @@ import java.nio.file.Paths
 import java.util.Locale
 import java.util.UUID
 import java.util.regex.Pattern
-import kotlin.collections.LinkedHashMap
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -81,9 +80,11 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
      * @param legacy legacy format of script
      * @return script
      */
-    private fun createScriptFromLegacyFormat(author: UUID,
-                                             eventType: EventType,
-                                             legacy: String): Script {
+    private fun createScriptFromLegacyFormat(
+            author: UUID,
+            eventType: EventType,
+            legacy: String
+    ): Script {
         /*
          * Targets
          * @bypassperm:permission action
@@ -130,10 +131,12 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
     private fun createPositionFromRawLocation(world: String, rawLocation: String): ScriptPosition {
         //index0: world, 1: x, 2: y, 3: z
         val coordinates = rawLocation.split(',').dropLastWhile { it.isEmpty() }
-        return ScriptPosition(world,
+        return ScriptPosition(
+                world,
                 Integer.parseInt(coordinates[0]),
                 Integer.parseInt(coordinates[1]),
-                Integer.parseInt(coordinates[2]))
+                Integer.parseInt(coordinates[2])
+        )
     }
 
     companion object {

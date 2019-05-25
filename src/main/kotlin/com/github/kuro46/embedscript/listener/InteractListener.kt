@@ -42,7 +42,8 @@ class InteractListener(embedScript: EmbedScript) : Listener {
 
         val position = ScriptPosition(event.clickedBlock)
         if (event.action == Action.RIGHT_CLICK_BLOCK &&
-                requests.executeRequest(player, position)) {
+                requests.executeRequest(player, position)
+        ) {
             return
         }
 

@@ -1,7 +1,8 @@
 package com.github.kuro46.embedscript.util
 
 import com.google.common.util.concurrent.Futures
-import java.util.*
+import java.util.Collections
+import java.util.WeakHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 

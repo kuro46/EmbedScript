@@ -103,10 +103,12 @@ object ListHandlers {
             } else {
                 "listAll"
             }
-            PageUtil.sendPage("List of scripts in $target",
+            PageUtil.sendPage(
+                    "List of scripts in $target",
                     player,
                     messages,
-                    pageIndex) { index ->
+                    pageIndex
+            ) { index ->
                 val pageNumber = index + 1
                 "/embedscript $command $pageNumber"
             }
@@ -121,8 +123,10 @@ object ListHandlers {
     private class ScriptPositionComparator :
             Comparator<Map.Entry<ScriptPosition, Collection<Script>>>,
             Serializable {
-        override fun compare(entry: Map.Entry<ScriptPosition, Collection<Script>>,
-                             entry1: Map.Entry<ScriptPosition, Collection<Script>>): Int {
+        override fun compare(
+                entry: Map.Entry<ScriptPosition, Collection<Script>>,
+                entry1: Map.Entry<ScriptPosition, Collection<Script>>
+        ): Int {
             val position = entry.key
             val position1 = entry1.key
 
@@ -133,10 +137,10 @@ object ListHandlers {
         }
     }
 
-    private class ScriptCollector(private val filter: Script?)
-        : Collector<Map.Entry<ScriptPosition, Collection<Script>>,
-            MutableCollection<Array<BaseComponent>>,
-            Collection<Array<BaseComponent>>> {
+    private class ScriptCollector(private val filter: Script?) :
+            Collector<Map.Entry<ScriptPosition, Collection<Script>>,
+                    MutableCollection<Array<BaseComponent>>,
+                    Collection<Array<BaseComponent>>> {
 
         override fun supplier(): Supplier<MutableCollection<Array<BaseComponent>>> {
             return Supplier { ArrayList<Array<BaseComponent>>() }
@@ -156,27 +160,39 @@ object ListHandlers {
                 val mainMessage = "[${messages.size + 1}] ${position.world}, ${position.x}, " +
                         "${position.y}, ${position.z} "
                 val message = ComponentBuilder(mainMessage)
-                        .append(ComponentBuilder("[detail]")
-                                .event(HoverEvent(
-                                        HoverEvent.Action.SHOW_TEXT,
-                                        TextComponent.fromLegacyText(viewCommand)
-                                ))
-                                .event(ClickEvent(
-                                        ClickEvent.Action.RUN_COMMAND,
-                                        viewCommand
-                                ))
-                                .create())
+                        .append(
+                                ComponentBuilder("[detail]")
+                                        .event(
+                                                HoverEvent(
+                                                        HoverEvent.Action.SHOW_TEXT,
+                                                        TextComponent.fromLegacyText(viewCommand)
+                                                )
+                                        )
+                                        .event(
+                                                ClickEvent(
+                                                        ClickEvent.Action.RUN_COMMAND,
+                                                        viewCommand
+                                                )
+                                        )
+                                        .create()
+                        )
                         .append(" ")
-                        .append(ComponentBuilder("[teleport]")
-                                .event(HoverEvent(
-                                        HoverEvent.Action.SHOW_TEXT,
-                                        TextComponent.fromLegacyText(tpCommand)
-                                ))
-                                .event(ClickEvent(
-                                        ClickEvent.Action.RUN_COMMAND,
-                                        tpCommand
-                                ))
-                                .create())
+                        .append(
+                                ComponentBuilder("[teleport]")
+                                        .event(
+                                                HoverEvent(
+                                                        HoverEvent.Action.SHOW_TEXT,
+                                                        TextComponent.fromLegacyText(tpCommand)
+                                                )
+                                        )
+                                        .event(
+                                                ClickEvent(
+                                                        ClickEvent.Action.RUN_COMMAND,
+                                                        tpCommand
+                                                )
+                                        )
+                                        .create()
+                        )
                         .create()
                 messages.add(message)
             }

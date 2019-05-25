@@ -1,6 +1,12 @@
 package com.github.kuro46.embedscript.script
 
-import com.github.kuro46.embedscript.json.*
+import com.github.kuro46.embedscript.json.JsonTableReader
+import com.github.kuro46.embedscript.json.JsonTableWriter
+import com.github.kuro46.embedscript.json.Metadata
+import com.github.kuro46.embedscript.json.RecordWrite
+import com.github.kuro46.embedscript.json.asType
+import com.github.kuro46.embedscript.json.forEach
+import com.github.kuro46.embedscript.json.getAsType
 import com.github.kuro46.embedscript.util.ArrayListLinkedMultimap
 import com.google.common.collect.ListMultimap
 import com.google.common.collect.Multimaps
@@ -11,7 +17,8 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
+import java.util.ArrayList
+import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -186,7 +193,8 @@ object ScriptSerializer {
             while (reader.hasNext()) {
                 when (reader.nextName()) {
                     "coordinate" -> {
-                        position = gson.fromJson(reader,
+                        position = gson.fromJson(
+                                reader,
                                 object : TypeToken<ScriptPosition>() {
                                 }.type
                         )

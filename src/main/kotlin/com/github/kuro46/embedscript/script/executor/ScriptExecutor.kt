@@ -162,7 +162,12 @@ class ScriptExecutor(
 
     }
 
-    fun registerExecutor(key: String, executionMode: ExecutionMode, executor: Executor, parser: Parser = DEFAULT_PARSER) {
+    fun registerExecutor(
+            key: String,
+            executionMode: ExecutionMode,
+            executor: Executor,
+            parser: Parser = DEFAULT_PARSER
+    ) {
         if (key.contains('.')) {
             throw IllegalArgumentException("Please don't use '.' for key of registerExecutor")
         }
