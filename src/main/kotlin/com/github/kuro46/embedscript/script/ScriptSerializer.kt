@@ -128,6 +128,7 @@ object ScriptSerializer {
                             scriptMultimap.putAll(key, value.asType<List<String>>())
                         }
 
+                        @Suppress("UnstableApiUsage")
                         Script(
                                 jsonScript.getAsType("createdAt"),
                                 jsonScript.getAsType("author"),
@@ -259,6 +260,7 @@ object ScriptSerializer {
                     multimap.put(key, command)
                 }
 
+                @Suppress("UnstableApiUsage")
                 val script = Script(
                         -1,
                         author!!,
