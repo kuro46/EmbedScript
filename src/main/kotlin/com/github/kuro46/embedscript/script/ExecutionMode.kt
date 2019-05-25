@@ -1,4 +1,4 @@
-package com.github.kuro46.embedscript.script.processor.executor
+package com.github.kuro46.embedscript.script
 
 /**
  * @author shirokuro

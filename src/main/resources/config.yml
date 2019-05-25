@@ -1,7 +1,7 @@
 presets:
-  interact: "@listen-click [ALL] @listen-push [ALL]"
-  walk: "@listen-move [GROUND]"
-  alternative-bypass: "@give-permission"
+  interact: "@listenClick [ALL] @listenPush [ALL]"
+  walk: "@listenMove [GROUND]"
+  alternative-bypass: "@cmd.bypass"
 logging:
   enabled: true
   format: "<trigger> executed '<script>' at <trigger_world>: <trigger_x>, <trigger_y>, <trigger_z>"

@@ -5,7 +5,7 @@ import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtil
-import com.github.kuro46.embedscript.script.processor.ScriptProcessor
+import com.github.kuro46.embedscript.script.executor.ScriptExecutor
 import com.github.kuro46.embedscript.util.PageUtil
 import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.CommandHandler
@@ -31,15 +31,17 @@ import java.util.function.Function as JavaFunction
  * @author shirokuro
  */
 object ListHandlers {
-    class ListHandler(private val presetName: String?,
-                      private val scriptProcessor: ScriptProcessor,
-                      private val scriptManager: ScriptManager) : CommandHandler(SenderType.Player()) {
+    class ListHandler(
+            private val presetName: String?,
+            private val scriptExecutor: ScriptExecutor,
+            private val scriptManager: ScriptManager
+    ) : CommandHandler(SenderType.Player()) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             val world = args.getOrElse(0) { player.world.name }
             val pageNumber = args.getInt(sender, 1, 1) ?: return true
             val filter = presetName?.let {
-                scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
+                scriptExecutor.parse(System.currentTimeMillis(), player.uniqueId, "@preset " + ScriptUtil.toString(it))
             }
             val scope = ListScope.World(world)
             list(scriptManager, player, scope, filter, pageNumber - 1)
@@ -63,14 +65,16 @@ object ListHandlers {
         }
     }
 
-    class ListAllHandler(private val presetName: String?,
-                         private val scriptProcessor: ScriptProcessor,
-                         private val scriptManager: ScriptManager) : CommandHandler(SenderType.Player()) {
+    class ListAllHandler(
+            private val presetName: String?,
+            private val scriptExecutor: ScriptExecutor,
+            private val scriptManager: ScriptManager
+    ) : CommandHandler(SenderType.Player()) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             val pageNumber = args.getInt(sender, 0, 1) ?: return true
             val filter = presetName?.let {
-                scriptProcessor.parse(player.uniqueId, "@preset " + ScriptUtil.toString(it))
+                scriptExecutor.parse(System.currentTimeMillis(), player.uniqueId, "@preset " + ScriptUtil.toString(it))
             }
             val scope = ListScope.Server
             list(scriptManager, player, scope, filter, pageNumber - 1)
@@ -195,27 +199,30 @@ object ListHandlers {
             return emptySet()
         }
 
-        private fun isFilterable(script: Script, filter: Script): Boolean {
-            if (isFilterable(script.moveTypes, filter.moveTypes)) {
-                return true
-            }
-            if (isFilterable(script.clickTypes, filter.clickTypes)) {
-                return true
-            }
-            if (isFilterable(script.pushTypes, filter.pushTypes)) {
+        private fun isFilterable(target: Script, filter: Script): Boolean {
+            val firstCheck = isFilterable(target.clickTypes, filter.clickTypes) ||
+                    isFilterable(target.moveTypes, filter.moveTypes) ||
+                    isFilterable(target.pushTypes, filter.pushTypes)
+            if (firstCheck) {
                 return true
             }
 
-            val scriptMap = script.script
-            for (key in scriptMap.keySet()) {
-                val scriptValues = scriptMap.get(key)
-                val filterMap = filter.script
-                val filterValues = filterMap.get(key)
+            for (filterParentKeyData in filter.keys) {
+                for (targetParentKeyData in target.keys) {
+                    if (isFilterable(filterParentKeyData.values, targetParentKeyData.values)) {
+                        return true
+                    }
 
-                if (isFilterable(scriptValues, filterValues)) {
-                    return true
+                    for (filterChildKeyData in filterParentKeyData.children) {
+                        for (targetChildKeyData in targetParentKeyData.children) {
+                            if (isFilterable(filterChildKeyData.values, targetChildKeyData.values)) {
+                                return true
+                            }
+                        }
+                    }
                 }
             }
+
             return false
         }
 
@@ -230,6 +237,8 @@ object ListHandlers {
                     }
                 }
             }
+
+            // All filter's entries are exist in target
             return false
         }
     }

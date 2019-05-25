@@ -1,9 +1,5 @@
 package com.github.kuro46.embedscript.script
 
-import com.google.gson.JsonParseException
-import com.google.gson.TypeAdapter
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonWriter
 import org.bukkit.Location
 import org.bukkit.block.Block
 

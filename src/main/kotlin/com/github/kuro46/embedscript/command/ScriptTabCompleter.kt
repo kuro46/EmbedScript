@@ -1,7 +1,6 @@
 package com.github.kuro46.embedscript.command
 
-import com.github.kuro46.embedscript.Prefix
-import com.github.kuro46.embedscript.script.processor.ScriptProcessor
+import com.github.kuro46.embedscript.script.executor.ScriptExecutor
 import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.TabCompleter
 import org.bukkit.command.CommandSender
@@ -9,7 +8,7 @@ import org.bukkit.command.CommandSender
 /**
  * @author shirokuro
  */
-class ScriptTabCompleter(private val scriptProcessor: ScriptProcessor) : TabCompleter {
+class ScriptTabCompleter(private val scriptExecutor: ScriptExecutor) : TabCompleter {
     override fun onTabComplete(
             sender: CommandSender,
             uncompletedArg: String,
@@ -18,35 +17,20 @@ class ScriptTabCompleter(private val scriptProcessor: ScriptProcessor) : TabComp
     ): List<String> {
         return if (isKey(completedArgs)) {
             // uncompleted arg is key
-            scriptProcessor.getProcessors().keys.map { "@$it" }
+            scriptExecutor.getKeys().map { "@$it" }
         } else {
             // uncompleted arg is value
 
             val key = completedArgs.last()
-            
+
             getValueSuggestions(sender, key, uncompletedArg)
         }
     }
 
     private fun getValueSuggestions(sender: CommandSender, key: String, value: String): List<String> {
-        // remove '@'
-        val processorName = scriptProcessor.scriptParser.unOmitValue(removeFirstChar(key))
-                ?: run {
-                    sender.sendMessage(Prefix.ERROR + "'$key' is unknown key!")
-                    return emptyList()
-                }
-        val suggestions =
-                scriptProcessor.getProcessors().getValue(processorName).parser.getSuggestions(value)
+        // TODO: suggest!!!!!!
 
-        return if (suggestions.isNotEmpty()) {
-            val surrounded: MutableList<String> = ArrayList(suggestions.size + 1)
-            suggestions.forEach { surrounded.add("[$it]") }
-            surrounded.add("[]")
-
-            surrounded
-        } else {
-            listOf("[]")
-        }
+        return listOf("[]")
     }
 
     private fun removeFirstChar(str: String): String {

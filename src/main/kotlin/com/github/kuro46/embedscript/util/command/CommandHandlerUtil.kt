@@ -34,18 +34,22 @@ object CommandHandlerUtil {
     }
 
     fun castToPlayer(sender: CommandSender, castFailed: String =
-                                           "Cannot perform this command from the console."): Player? {
+            "Cannot perform this command from the console."): Player? {
         return if (sender !is Player) {
             sender.sendMessage(Prefix.ERROR + castFailed)
             null
-        } else { sender }
+        } else {
+            sender
+        }
     }
 
     fun castToConsole(sender: CommandSender, castFailed: String =
-                                            "Cannot perform this command from the game."): ConsoleCommandSender? {
-        return if(sender !is ConsoleCommandSender) {
+            "Cannot perform this command from the game."): ConsoleCommandSender? {
+        return if (sender !is ConsoleCommandSender) {
             sender.sendMessage(Prefix.ERROR + castFailed)
             null
-        } else { sender }
+        } else {
+            sender
+        }
     }
 }

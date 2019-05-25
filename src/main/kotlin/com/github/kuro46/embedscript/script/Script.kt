@@ -1,71 +1,58 @@
 package com.github.kuro46.embedscript.script
 
-import com.google.common.collect.ImmutableListMultimap
-import org.bukkit.Material
-import org.bukkit.event.block.Action
-import org.bukkit.event.player.PlayerInteractEvent
 import java.util.UUID
 
 /**
  * @author shirokuro
  */
-class Script(val author: UUID,
-             val createdAt: Long,
-             val moveTypes: Set<MoveType>,
-             val clickTypes: Set<ClickType>,
-             val pushTypes: Set<PushType>,
-             val script: ImmutableListMultimap<String, String>) {
+class Script(
+        val createdAt: Long,
+        val author: UUID,
+        val keys: List<ParentKeyData>,
+        val clickTypes: Set<ClickType>,
+        val moveTypes: Set<MoveType>,
+        val pushTypes: Set<PushType>
+)
 
-    enum class MoveType {
-        ALL,
-        GROUND
+data class KeyData(val key: AbsoluteKey, val values: List<String>)
+
+data class ParentKeyData(val key: AbsoluteKey, val values: List<String>, val children: List<KeyData>) : Iterable<KeyData> {
+    override fun iterator(): Iterator<KeyData> {
+        val base = ArrayList<KeyData>(children.size + 1)
+        base.add(KeyData(key, values))
+        base.addAll(children)
+
+        return base.iterator()
     }
 
-    enum class ClickType {
-        ALL,
-        RIGHT,
-        LEFT;
-
-
-        companion object {
-
-            fun getByAction(action: Action): ClickType? {
-                return if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
-                    RIGHT
-                } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
-                    LEFT
-                } else {
-                    null
+    companion object {
+        fun fromMap(from: Map<String, List<String>>): List<ParentKeyData> {
+            // fill parents
+            val parents = LinkedHashMap<String, ParentKeyData>()
+            for ((key, values) in from) {
+                if (key.contains('.')) {
+                    continue
                 }
+                parents[key] = ParentKeyData(key, values, emptyList())
             }
-        }
-    }
 
-    enum class PushType {
-        ALL,
-        BUTTON,
-        PLATE;
-
-
-        companion object {
-
-            fun getByEvent(event: PlayerInteractEvent): PushType? {
-                if (event.action != Action.PHYSICAL) {
-                    return null
+            // fill children
+            for ((key, values) in from) {
+                if (!key.contains('.')) {
+                    continue
                 }
+                val split = key.split('.', limit = 2)
+                val parentKey = split[0]
 
-                val clickedBlockType = event.clickedBlock.type
-                return if (clickedBlockType == Material.STONE_BUTTON || clickedBlockType == Material.WOOD_BUTTON) {
-                    BUTTON
-                } else if (clickedBlockType == Material.GOLD_PLATE ||
-                        clickedBlockType == Material.IRON_PLATE ||
-                        clickedBlockType == Material.STONE_PLATE ||
-                        clickedBlockType == Material.WOOD_PLATE) {
-                    PLATE
-                } else {
-                    null
-                }
+                val parent = parents.getValue(parentKey)
+                val added = ArrayList<KeyData>(parent.children.size + 1)
+                added.addAll(parent.children)
+                added.add(KeyData(key, values))
+
+                parents.replace(parentKey, parent.copy(children = added))
             }
+
+            return ArrayList(parents.values)
         }
     }
 }
