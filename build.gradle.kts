@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.github.kuro46"
-version = "0.7.0"
+version = "0.7.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
