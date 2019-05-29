@@ -23,11 +23,11 @@ object Util {
     }
 
     fun replaceAndUnescape(
-            source: String,
-            target: String,
-            escapeTo: String,
-            replacement: String,
-            quote: Boolean
+        source: String,
+        target: String,
+        escapeTo: String,
+        replacement: String,
+        quote: Boolean
     ): String {
         @Suppress("NAME_SHADOWING")
         var source = source

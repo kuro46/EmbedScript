@@ -7,9 +7,9 @@ import org.bukkit.command.CommandSender
  */
 interface TabCompleter {
     fun onTabComplete(
-            sender: CommandSender,
-            uncompletedArg: String,
-            uncompletedArgIndex: Int,
-            completedArgs: Arguments
+        sender: CommandSender,
+        uncompletedArg: String,
+        uncompletedArgIndex: Int,
+        completedArgs: Arguments
     ): List<String>
 }

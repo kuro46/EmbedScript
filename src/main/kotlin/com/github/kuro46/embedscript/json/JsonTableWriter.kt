@@ -62,12 +62,12 @@ class RecordWrite {
  * @author shirokuro
  */
 class JsonTableWriter(
-        private val writer: JsonWriter,
-        metadata: Metadata
+    private val writer: JsonWriter,
+    metadata: Metadata
 ) : AutoCloseable {
 
     constructor(path: Path, metadata: Metadata) :
-            this(JsonWriter(Files.newBufferedWriter(path)), metadata)
+        this(JsonWriter(Files.newBufferedWriter(path)), metadata)
 
     init {
         writer.beginObject()

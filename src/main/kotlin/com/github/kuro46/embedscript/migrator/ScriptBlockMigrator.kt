@@ -81,9 +81,9 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
      * @return script
      */
     private fun createScriptFromLegacyFormat(
-            author: UUID,
-            eventType: EventType,
-            legacy: String
+        author: UUID,
+        eventType: EventType,
+        legacy: String
     ): Script {
         /*
          * Targets
@@ -132,10 +132,10 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
         //index0: world, 1: x, 2: y, 3: z
         val coordinates = rawLocation.split(',').dropLastWhile { it.isEmpty() }
         return ScriptPosition(
-                world,
-                Integer.parseInt(coordinates[0]),
-                Integer.parseInt(coordinates[1]),
-                Integer.parseInt(coordinates[2])
+            world,
+            Integer.parseInt(coordinates[0]),
+            Integer.parseInt(coordinates[1]),
+            Integer.parseInt(coordinates[2])
         )
     }
 

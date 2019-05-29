@@ -10,10 +10,10 @@ import org.bukkit.command.CommandSender
  */
 class ScriptTabCompleter(private val scriptExecutor: ScriptExecutor) : TabCompleter {
     override fun onTabComplete(
-            sender: CommandSender,
-            uncompletedArg: String,
-            uncompletedArgIndex: Int,
-            completedArgs: Arguments
+        sender: CommandSender,
+        uncompletedArg: String,
+        uncompletedArgIndex: Int,
+        completedArgs: Arguments
     ): List<String> {
         return if (isKey(completedArgs)) {
             // uncompleted arg is key

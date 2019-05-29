@@ -24,9 +24,9 @@ import java.util.logging.Logger
  * @author shirokuro
  */
 class ScriptExecutor(
-        val logger: Logger,
-        val plugin: Plugin,
-        val configuration: Configuration
+    val logger: Logger,
+    val plugin: Plugin,
+    val configuration: Configuration
 ) {
     private val executors = ConcurrentHashMap<AbsoluteKey, Pair<ExecutionMode, Executor>>()
     private val childExecutors = ConcurrentHashMap<AbsoluteKey, Executor>()
@@ -163,10 +163,10 @@ class ScriptExecutor(
     }
 
     fun registerExecutor(
-            key: String,
-            executionMode: ExecutionMode,
-            executor: Executor,
-            parser: Parser = DEFAULT_PARSER
+        key: String,
+        executionMode: ExecutionMode,
+        executor: Executor,
+        parser: Parser = DEFAULT_PARSER
     ) {
         if (key.contains('.')) {
             throw IllegalArgumentException("Please don't use '.' for key of registerExecutor")

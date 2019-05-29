@@ -100,10 +100,10 @@ object Registrator {
     val BROADCAST_RAW_EXECUTOR = object : Executor() {
         override fun execute(task: Task, player: Player, values: List<String>): ExecutionResult {
             values.stream()
-                    .map { json -> ComponentSerializer.parse(json) }
-                    .forEach {
-                        Bukkit.getOnlinePlayers().forEach { sendTo -> sendTo.spigot().sendMessage(*it) }
-                    }
+                .map { json -> ComponentSerializer.parse(json) }
+                .forEach {
+                    Bukkit.getOnlinePlayers().forEach { sendTo -> sendTo.spigot().sendMessage(*it) }
+                }
             return ExecutionResult.CONTINUE
         }
     }
@@ -111,27 +111,27 @@ object Registrator {
     val COMMAND_PARSER = object : Parser {
         override fun parse(key: String, parseFrom: List<String>, parseTo: ScriptBuilder) {
             val modifiedForCommand = parseFrom.stream()
-                    // remove slash char if needed
-                    .map { commandWithArgs ->
-                        if (commandWithArgs.startsWith("/"))
-                            commandWithArgs.substring(1)
-                        else
-                            commandWithArgs
-                    }
-                    // canonicalize the command
-                    .map { commandWithArgs ->
-                        val splitCommandWithArgs = commandWithArgs.split(" ")
-                        val pluginCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0])
-                        val canonicalizedCommand = if (pluginCommand == null)
-                            splitCommandWithArgs[0]
-                        else
-                            pluginCommand.name
-                        val args = splitCommandWithArgs.stream()
-                                .skip(1)
-                                .collect(Collectors.joining(" "))
-                        "$canonicalizedCommand $args"
-                    }
-                    .collect(Collectors.toList())
+                // remove slash char if needed
+                .map { commandWithArgs ->
+                    if (commandWithArgs.startsWith("/"))
+                        commandWithArgs.substring(1)
+                    else
+                        commandWithArgs
+                }
+                // canonicalize the command
+                .map { commandWithArgs ->
+                    val splitCommandWithArgs = commandWithArgs.split(" ")
+                    val pluginCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0])
+                    val canonicalizedCommand = if (pluginCommand == null)
+                        splitCommandWithArgs[0]
+                    else
+                        pluginCommand.name
+                    val args = splitCommandWithArgs.stream()
+                        .skip(1)
+                        .collect(Collectors.joining(" "))
+                    "$canonicalizedCommand $args"
+                }
+                .collect(Collectors.toList())
             parseTo.flatRootEntry.getOrPut(key) { ArrayList() }.addAll(modifiedForCommand)
         }
     }
@@ -155,8 +155,8 @@ object Registrator {
     }
 
     private inline fun <reified T : Enum<T>> addEnumToCollection(
-            collection: MutableCollection<T>,
-            strings: List<String>
+        collection: MutableCollection<T>,
+        strings: List<String>
     ) {
         for (string in strings) {
             try {

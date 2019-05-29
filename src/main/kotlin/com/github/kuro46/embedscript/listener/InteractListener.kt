@@ -25,8 +25,8 @@ class InteractListener(embedScript: EmbedScript) : Listener {
     }
 
     private val coolTime: Cache<UUID, Boolean> = CacheBuilder.newBuilder()
-            .expireAfterWrite(EXECUTION_INTERVAL, TimeUnit.MILLISECONDS)
-            .build()
+        .expireAfterWrite(EXECUTION_INTERVAL, TimeUnit.MILLISECONDS)
+        .build()
     private val scriptManager = embedScript.scriptManager
     private val scriptExecutor: ScriptExecutor = embedScript.scriptExecutor
     private val requests = embedScript.requests
@@ -42,7 +42,7 @@ class InteractListener(embedScript: EmbedScript) : Listener {
 
         val position = ScriptPosition(event.clickedBlock)
         if (event.action == Action.RIGHT_CLICK_BLOCK &&
-                requests.executeRequest(player, position)
+            requests.executeRequest(player, position)
         ) {
             return
         }
