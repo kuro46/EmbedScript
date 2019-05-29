@@ -1,9 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.3.31"
     id("com.github.johnrengelman.shadow") version "5.0.0"
+    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC14"
     java
     maven
 }
@@ -12,6 +14,7 @@ group = "com.github.kuro46"
 version = "0.7.0-SNAPSHOT"
 
 repositories {
+    jcenter()
     mavenCentral()
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
@@ -32,6 +35,10 @@ tasks.withType<Jar> {
 
 tasks.withType<ProcessResources> {
     filter { it.replace("\$version", version.toString()) }
+}
+
+tasks.withType<Detekt> {
+    input = files("src/main/kotlin")
 }
 
 tasks.withType<Wrapper> {
