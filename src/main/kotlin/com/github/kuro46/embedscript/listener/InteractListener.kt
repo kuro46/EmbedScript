@@ -55,7 +55,6 @@ class InteractListener(embedScript: EmbedScript) : Listener {
 
         if (filteredScriptList.isNotEmpty()) {
             scriptExecutor.execute(player, filteredScriptList, position)
-            event.isCancelled = true
         }
     }
 
