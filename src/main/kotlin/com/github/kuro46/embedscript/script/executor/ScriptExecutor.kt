@@ -33,7 +33,7 @@ class ScriptExecutor(
     private val parsers = ConcurrentHashMap<AbsoluteKey, Parser>()
 
     init {
-        Registrator.register(this)
+        Executors.registerAll(this)
         // dummy parser for preset feature
         registerParser("preset", object : Parser {
             override fun parse(key: String, parseFrom: List<String>, parseTo: ScriptBuilder) {

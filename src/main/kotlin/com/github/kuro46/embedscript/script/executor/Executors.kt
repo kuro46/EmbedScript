@@ -9,12 +9,13 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import java.util.Locale
 import java.util.stream.Collectors
+import kotlin.collections.ArrayList
 
 /**
  * @author shirokuro
  */
-object Registrator {
-    fun register(executor: ScriptExecutor) {
+object Executors {
+    fun registerAll(executor: ScriptExecutor) {
         val execModeForPermOP = if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
             ExecutionMode.ASYNCHRONOUS
         } else {
