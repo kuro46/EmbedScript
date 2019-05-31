@@ -32,10 +32,10 @@ class MoveListener(embedScript: EmbedScript) : Listener {
 
         val player = event.player
         val scriptPosition = ScriptPosition(
-                to.world.name,
-                to.blockX,
-                to.blockY - 1,
-                to.blockZ
+            to.world.name,
+            to.blockX,
+            to.blockY - 1,
+            to.blockZ
         )
 
         val scriptList = scriptManager[scriptPosition] ?: return
@@ -71,13 +71,13 @@ class MoveListener(embedScript: EmbedScript) : Listener {
         val downerSurface = upperSurface.getRelative(BlockFace.DOWN)
 
         return upperSurface.type == Material.AIR &&
-                downerSurface.type != Material.AIR &&
-                to.y - upperSurface.y <= GROUND_ACCEPTABLE_MAXIMUM_RANGE
+            downerSurface.type != Material.AIR &&
+            to.y - upperSurface.y <= GROUND_ACCEPTABLE_MAXIMUM_RANGE
     }
 
     private fun equalsBlock(location: Location, location1: Location): Boolean {
         return location.blockX == location1.blockX &&
-                location.blockY == location1.blockY &&
-                location.blockZ == location1.blockZ
+            location.blockY == location1.blockY &&
+            location.blockZ == location1.blockZ
     }
 }

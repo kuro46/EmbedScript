@@ -26,8 +26,8 @@ import kotlin.streams.toList
  * @author shirokuro
  */
 class ESCommandHandler constructor(
-        embedScript: EmbedScript,
-        private val presetName: String? = null
+    embedScript: EmbedScript,
+    private val presetName: String? = null
 ) : RootCommandHandler() {
     private val configuration = embedScript.configuration
     private val scriptExecutor = embedScript.scriptExecutor
@@ -93,7 +93,7 @@ class ESCommandHandler constructor(
     private class HelpHandler : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             sender.sendMessage(
-                    """/es help - Displays this message.
+                """/es help - Displays this message.
                     |/es reload - Reloads configuration and scripts
                     |/es migrate - Migrates from ScriptBlock to this plugin.
                     |/es list [world] [page] - Displays list of scripts in the [world] or current world.
@@ -141,24 +141,24 @@ class ESCommandHandler constructor(
             } else {
                 scriptExporter.export(world, filePath)
                 sender.sendMessage(
-                        Prefix.SUCCESS +
-                                "All scripts in the '$world' was successfully exported to '$fileName'!"
+                    Prefix.SUCCESS +
+                        "All scripts in the '$world' was successfully exported to '$fileName'!"
                 )
             }
             return true
         }
 
         override fun onTabComplete(
-                sender: CommandSender,
-                uncompletedArg: String,
-                uncompletedArgIndex: Int,
-                completedArgs: Arguments
+            sender: CommandSender,
+            uncompletedArg: String,
+            uncompletedArgIndex: Int,
+            completedArgs: Arguments
         ): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()
-                        .map { it.name }
-                        .toList()
+                    .map { it.name }
+                    .toList()
             } else {
                 emptyList()
             }
@@ -185,10 +185,10 @@ class ESCommandHandler constructor(
         }
 
         override fun onTabComplete(
-                sender: CommandSender,
-                uncompletedArg: String,
-                uncompletedArgIndex: Int,
-                completedArgs: Arguments
+            sender: CommandSender,
+            uncompletedArg: String,
+            uncompletedArgIndex: Int,
+            completedArgs: Arguments
         ): List<String> {
             // TODO: Returns list of files in the EmbedScript/export
             return emptyList()
@@ -196,8 +196,8 @@ class ESCommandHandler constructor(
     }
 
     private class ReloadHandler(
-            val configuration: Configuration,
-            val scriptManager: ScriptManager
+        val configuration: Configuration,
+        val scriptManager: ScriptManager
     ) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             sender.sendMessage(Prefix.INFO + "Reloading configuration and scripts...")
@@ -222,7 +222,7 @@ class ESCommandHandler constructor(
     }
 
     private class TeleportHandler(plugin: Plugin) :
-            CommandHandler(SenderType.Player(), HandlingMode.Synchronous(plugin)) {
+        CommandHandler(SenderType.Player(), HandlingMode.Synchronous(plugin)) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             if (args.isElementNotEnough(3)) {
@@ -240,14 +240,14 @@ class ESCommandHandler constructor(
             val y = args.getInt(sender, 2) ?: return true
             val z = args.getInt(sender, 3) ?: return true
             player.teleport(
-                    Location(
-                            world,
-                            x + 0.5,
-                            y.toDouble(),
-                            z + 0.5,
-                            playerLocation.yaw,
-                            playerLocation.pitch
-                    )
+                Location(
+                    world,
+                    x + 0.5,
+                    y.toDouble(),
+                    z + 0.5,
+                    playerLocation.yaw,
+                    playerLocation.pitch
+                )
             )
 
             player.sendMessage(Prefix.SUCCESS + "Teleported.")

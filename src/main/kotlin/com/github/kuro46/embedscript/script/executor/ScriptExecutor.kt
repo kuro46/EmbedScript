@@ -24,16 +24,16 @@ import java.util.logging.Logger
  * @author shirokuro
  */
 class ScriptExecutor(
-        val logger: Logger,
-        val plugin: Plugin,
-        val configuration: Configuration
+    val logger: Logger,
+    val plugin: Plugin,
+    val configuration: Configuration
 ) {
     private val executors = ConcurrentHashMap<AbsoluteKey, Pair<ExecutionMode, Executor>>()
     private val childExecutors = ConcurrentHashMap<AbsoluteKey, Executor>()
     private val parsers = ConcurrentHashMap<AbsoluteKey, Parser>()
 
     init {
-        Registrator.register(this)
+        Executors.registerAll(this)
         // dummy parser for preset feature
         registerParser("preset", object : Parser {
             override fun parse(key: String, parseFrom: List<String>, parseTo: ScriptBuilder) {
@@ -163,10 +163,10 @@ class ScriptExecutor(
     }
 
     fun registerExecutor(
-            key: String,
-            executionMode: ExecutionMode,
-            executor: Executor,
-            parser: Parser = DEFAULT_PARSER
+        key: String,
+        executionMode: ExecutionMode,
+        executor: Executor,
+        parser: Parser = DEFAULT_PARSER
     ) {
         if (key.contains('.')) {
             throw IllegalArgumentException("Please don't use '.' for key of registerExecutor")

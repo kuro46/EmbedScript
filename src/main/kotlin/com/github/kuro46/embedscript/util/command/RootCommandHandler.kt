@@ -15,10 +15,10 @@ abstract class RootCommandHandler : CommandHandler(), BukkitCommandExecutor, Tab
     }
 
     override fun onTabComplete(
-            sender: CommandSender,
-            command: Command,
-            alias: String,
-            args: Array<String>
+        sender: CommandSender,
+        command: Command,
+        alias: String,
+        args: Array<String>
     ): List<String> {
         return super.handleTabCompleteAsRoot(sender, args.toList())
     }

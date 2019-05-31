@@ -121,31 +121,31 @@ object ScriptSerializer {
 
         reader.forEach { record ->
             val position = ScriptPosition(
-                    record.getAsType("world"),
-                    record.getAsType("x"),
-                    record.getAsType("y"),
-                    record.getAsType("z")
+                record.getAsType("world"),
+                record.getAsType("x"),
+                record.getAsType("y"),
+                record.getAsType("z")
             )
 
             val scripts = record.getAsJsonArray("scripts")
-                    .map { it.asJsonObject }
-                    .map { jsonScript ->
-                        val scriptMultimap: ListMultimap<String, String> = ArrayListLinkedMultimap.create()
-                        jsonScript.getAsJsonObject("script").forEach { key, value ->
-                            scriptMultimap.putAll(key, value.asType<List<String>>())
-                        }
-
-                        @Suppress("UnstableApiUsage")
-                        Script(
-                                jsonScript.getAsType("createdAt"),
-                                jsonScript.getAsType("author"),
-                                ParentKeyData.fromMap(Multimaps.asMap(scriptMultimap)),
-                                jsonScript.getAsType("clickTypes"),
-                                jsonScript.getAsType("moveTypes"),
-                                jsonScript.getAsType("pushTypes")
-                        )
+                .map { it.asJsonObject }
+                .map { jsonScript ->
+                    val scriptMultimap: ListMultimap<String, String> = ArrayListLinkedMultimap.create()
+                    jsonScript.getAsJsonObject("script").forEach { key, value ->
+                        scriptMultimap.putAll(key, value.asType<List<String>>())
                     }
-                    .toList()
+
+                    @Suppress("UnstableApiUsage")
+                    Script(
+                        jsonScript.getAsType("createdAt"),
+                        jsonScript.getAsType("author"),
+                        ParentKeyData.fromMap(Multimaps.asMap(scriptMultimap)),
+                        jsonScript.getAsType("clickTypes"),
+                        jsonScript.getAsType("moveTypes"),
+                        jsonScript.getAsType("pushTypes")
+                    )
+                }
+                .toList()
 
             result.addAll(position, scripts)
         }
@@ -172,8 +172,8 @@ object ScriptSerializer {
         }
 
         private fun readScripts(
-                scriptManager: ScriptManager,
-                reader: JsonReader
+            scriptManager: ScriptManager,
+            reader: JsonReader
         ) {
             reader.beginArray()
             while (reader.hasNext()) {
@@ -194,9 +194,9 @@ object ScriptSerializer {
                 when (reader.nextName()) {
                     "coordinate" -> {
                         position = gson.fromJson(
-                                reader,
-                                object : TypeToken<ScriptPosition>() {
-                                }.type
+                            reader,
+                            object : TypeToken<ScriptPosition>() {
+                            }.type
                         )
                     }
                     "script" -> {
@@ -270,12 +270,12 @@ object ScriptSerializer {
 
                 @Suppress("UnstableApiUsage")
                 val script = Script(
-                        -1,
-                        author!!,
-                        ParentKeyData.fromMap(Multimaps.asMap(multimap)),
-                        if (eventType == EventType.INTERACT) setOf(ClickType.ALL) else setOf(),
-                        if (eventType == EventType.WALK) setOf(MoveType.GROUND) else setOf(),
-                        if (eventType == EventType.INTERACT) setOf(PushType.ALL) else setOf()
+                    -1,
+                    author!!,
+                    ParentKeyData.fromMap(Multimaps.asMap(multimap)),
+                    if (eventType == EventType.INTERACT) setOf(ClickType.ALL) else setOf(),
+                    if (eventType == EventType.WALK) setOf(MoveType.GROUND) else setOf(),
+                    if (eventType == EventType.INTERACT) setOf(PushType.ALL) else setOf()
                 )
 
                 scripts.add(script)

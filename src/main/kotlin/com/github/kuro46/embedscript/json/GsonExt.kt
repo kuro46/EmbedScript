@@ -24,9 +24,9 @@ inline fun <reified T> JsonObject.getAsType(key: String): T {
 
 inline fun <reified T> JsonElement.asType(): T {
     return GsonExt.GSON.fromJson(
-            this,
-            object : TypeToken<T>() {
-            }.type
+        this,
+        object : TypeToken<T>() {
+        }.type
     )
 }
 

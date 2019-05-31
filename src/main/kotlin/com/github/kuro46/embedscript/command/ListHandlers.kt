@@ -32,9 +32,9 @@ import java.util.function.Function as JavaFunction
  */
 object ListHandlers {
     class ListHandler(
-            private val presetName: String?,
-            private val scriptExecutor: ScriptExecutor,
-            private val scriptManager: ScriptManager
+        private val presetName: String?,
+        private val scriptExecutor: ScriptExecutor,
+        private val scriptManager: ScriptManager
     ) : CommandHandler(SenderType.Player()) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
@@ -49,16 +49,16 @@ object ListHandlers {
         }
 
         override fun onTabComplete(
-                sender: CommandSender,
-                uncompletedArg: String,
-                uncompletedArgIndex: Int,
-                completedArgs: Arguments
+            sender: CommandSender,
+            uncompletedArg: String,
+            uncompletedArgIndex: Int,
+            completedArgs: Arguments
         ): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
                 Bukkit.getWorlds().stream()
-                        .map { it.name }
-                        .toList()
+                    .map { it.name }
+                    .toList()
             } else {
                 emptyList()
             }
@@ -66,9 +66,9 @@ object ListHandlers {
     }
 
     class ListAllHandler(
-            private val presetName: String?,
-            private val scriptExecutor: ScriptExecutor,
-            private val scriptManager: ScriptManager
+        private val presetName: String?,
+        private val scriptExecutor: ScriptExecutor,
+        private val scriptManager: ScriptManager
     ) : CommandHandler(SenderType.Player()) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
@@ -84,14 +84,14 @@ object ListHandlers {
 
     fun list(scriptManager: ScriptManager, player: Player, scope: ListScope, filter: Script?, pageIndex: Int) {
         val messages = scriptManager.getScripts().entries.stream()
-                .filter { entry ->
-                    when (scope) {
-                        is ListScope.Server -> true
-                        is ListScope.World -> scope.name.equals(entry.key.world, true)
-                    }
+            .filter { entry ->
+                when (scope) {
+                    is ListScope.Server -> true
+                    is ListScope.World -> scope.name.equals(entry.key.world, true)
                 }
-                .sorted(ScriptPositionComparator())
-                .collect(ScriptCollector(filter))
+            }
+            .sorted(ScriptPositionComparator())
+            .collect(ScriptCollector(filter))
 
         val target = if (scope is ListScope.World) scope.name else "this server"
 
@@ -104,10 +104,10 @@ object ListHandlers {
                 "listAll"
             }
             PageUtil.sendPage(
-                    "List of scripts in $target",
-                    player,
-                    messages,
-                    pageIndex
+                "List of scripts in $target",
+                player,
+                messages,
+                pageIndex
             ) { index ->
                 val pageNumber = index + 1
                 "/embedscript $command $pageNumber"
@@ -121,11 +121,11 @@ object ListHandlers {
     }
 
     private class ScriptPositionComparator :
-            Comparator<Map.Entry<ScriptPosition, Collection<Script>>>,
-            Serializable {
+        Comparator<Map.Entry<ScriptPosition, Collection<Script>>>,
+        Serializable {
         override fun compare(
-                entry: Map.Entry<ScriptPosition, Collection<Script>>,
-                entry1: Map.Entry<ScriptPosition, Collection<Script>>
+            entry: Map.Entry<ScriptPosition, Collection<Script>>,
+            entry1: Map.Entry<ScriptPosition, Collection<Script>>
         ): Int {
             val position = entry.key
             val position1 = entry1.key
@@ -138,9 +138,9 @@ object ListHandlers {
     }
 
     private class ScriptCollector(private val filter: Script?) :
-            Collector<Map.Entry<ScriptPosition, Collection<Script>>,
-                    MutableCollection<Array<BaseComponent>>,
-                    Collection<Array<BaseComponent>>> {
+        Collector<Map.Entry<ScriptPosition, Collection<Script>>,
+            MutableCollection<Array<BaseComponent>>,
+            Collection<Array<BaseComponent>>> {
 
         override fun supplier(): Supplier<MutableCollection<Array<BaseComponent>>> {
             return Supplier { ArrayList<Array<BaseComponent>>() }
@@ -158,42 +158,42 @@ object ListHandlers {
                 val viewCommand = "/embedscript view ${position.world} ${position.x} ${position.y} ${position.z}"
                 val tpCommand = "/embedscript teleport ${position.world} ${position.x} ${position.y} ${position.z}"
                 val mainMessage = "[${messages.size + 1}] ${position.world}, ${position.x}, " +
-                        "${position.y}, ${position.z} "
+                    "${position.y}, ${position.z} "
                 val message = ComponentBuilder(mainMessage)
-                        .append(
-                                ComponentBuilder("[detail]")
-                                        .event(
-                                                HoverEvent(
-                                                        HoverEvent.Action.SHOW_TEXT,
-                                                        TextComponent.fromLegacyText(viewCommand)
-                                                )
-                                        )
-                                        .event(
-                                                ClickEvent(
-                                                        ClickEvent.Action.RUN_COMMAND,
-                                                        viewCommand
-                                                )
-                                        )
-                                        .create()
-                        )
-                        .append(" ")
-                        .append(
-                                ComponentBuilder("[teleport]")
-                                        .event(
-                                                HoverEvent(
-                                                        HoverEvent.Action.SHOW_TEXT,
-                                                        TextComponent.fromLegacyText(tpCommand)
-                                                )
-                                        )
-                                        .event(
-                                                ClickEvent(
-                                                        ClickEvent.Action.RUN_COMMAND,
-                                                        tpCommand
-                                                )
-                                        )
-                                        .create()
-                        )
-                        .create()
+                    .append(
+                        ComponentBuilder("[detail]")
+                            .event(
+                                HoverEvent(
+                                    HoverEvent.Action.SHOW_TEXT,
+                                    TextComponent.fromLegacyText(viewCommand)
+                                )
+                            )
+                            .event(
+                                ClickEvent(
+                                    ClickEvent.Action.RUN_COMMAND,
+                                    viewCommand
+                                )
+                            )
+                            .create()
+                    )
+                    .append(" ")
+                    .append(
+                        ComponentBuilder("[teleport]")
+                            .event(
+                                HoverEvent(
+                                    HoverEvent.Action.SHOW_TEXT,
+                                    TextComponent.fromLegacyText(tpCommand)
+                                )
+                            )
+                            .event(
+                                ClickEvent(
+                                    ClickEvent.Action.RUN_COMMAND,
+                                    tpCommand
+                                )
+                            )
+                            .create()
+                    )
+                    .create()
                 messages.add(message)
             }
         }
@@ -217,8 +217,8 @@ object ListHandlers {
 
         private fun isFilterable(target: Script, filter: Script): Boolean {
             val firstCheck = isFilterable(target.clickTypes, filter.clickTypes) ||
-                    isFilterable(target.moveTypes, filter.moveTypes) ||
-                    isFilterable(target.pushTypes, filter.pushTypes)
+                isFilterable(target.moveTypes, filter.moveTypes) ||
+                isFilterable(target.pushTypes, filter.pushTypes)
             if (firstCheck) {
                 return true
             }

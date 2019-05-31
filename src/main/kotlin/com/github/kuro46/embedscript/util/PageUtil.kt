@@ -19,12 +19,12 @@ object PageUtil {
     private const val CHAT_WIDTH = 50
 
     fun sendPage(
-            title: String,
-            sender: CommandSender,
-            messages: Collection<Array<BaseComponent>>,
-            pageIndex: Int,
-            chatHeight: Int = UNFOCUSED_CHAT_HEIGHT,
-            commandGenerator: (Int) -> String
+        title: String,
+        sender: CommandSender,
+        messages: Collection<Array<BaseComponent>>,
+        pageIndex: Int,
+        chatHeight: Int = UNFOCUSED_CHAT_HEIGHT,
+        commandGenerator: (Int) -> String
     ) {
         val availableMessageHeight = chatHeight - UI_LINES
         val pages = splitMessages(messages, availableMessageHeight)
@@ -43,25 +43,25 @@ object PageUtil {
         val nextPageIndex = if (pageIndex + 1 >= pages.size) 0 else pageIndex + 1
 
         sender.spigot().sendMessage(
-                *ComponentBuilder("")
-                        .append(
-                                ComponentBuilder("<<Previous>>")
-                                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, commandGenerator(previousPageIndex)))
-                                        .create()
-                        )
-                        .append("   ")
-                        .append(
-                                ComponentBuilder("<<Next>>")
-                                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, commandGenerator(nextPageIndex)))
-                                        .create()
-                        )
-                        .append("   ")
-                        .append(
-                                ComponentBuilder("<<Page ${pageIndex + 1} of ${pages.size}>>")
-                                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, ""))
-                                        .create()
-                        )
+            *ComponentBuilder("")
+                .append(
+                    ComponentBuilder("<<Previous>>")
+                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, commandGenerator(previousPageIndex)))
                         .create()
+                )
+                .append("   ")
+                .append(
+                    ComponentBuilder("<<Next>>")
+                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, commandGenerator(nextPageIndex)))
+                        .create()
+                )
+                .append("   ")
+                .append(
+                    ComponentBuilder("<<Page ${pageIndex + 1} of ${pages.size}>>")
+                        .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, ""))
+                        .create()
+                )
+                .create()
         )
         sender.sendMessage(separator)
     }
@@ -74,8 +74,8 @@ object PageUtil {
     }
 
     private fun splitMessages(
-            messages: Collection<Array<BaseComponent>>,
-            maximumLines: Int
+        messages: Collection<Array<BaseComponent>>,
+        maximumLines: Int
     ): List<List<Array<BaseComponent>>> {
         val pages: MutableList<List<Array<BaseComponent>>> = ArrayList()
         val buffer: MutableList<Array<BaseComponent>> = ArrayList()

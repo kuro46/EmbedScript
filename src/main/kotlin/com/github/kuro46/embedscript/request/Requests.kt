@@ -39,9 +39,9 @@ class Requests(private val scriptManager: ScriptManager) {
     }
 
     fun embed(
-            sender: CommandSender,
-            position: ScriptPosition,
-            script: Script
+        sender: CommandSender,
+        position: ScriptPosition,
+        script: Script
     ) {
         if (scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR + "Script already exists in that place.")
@@ -54,9 +54,9 @@ class Requests(private val scriptManager: ScriptManager) {
     }
 
     fun add(
-            sender: CommandSender,
-            position: ScriptPosition,
-            script: Script
+        sender: CommandSender,
+        position: ScriptPosition,
+        script: Script
     ) {
         if (!scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR + "Script not exists in that place.")

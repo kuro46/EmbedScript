@@ -27,8 +27,8 @@ import kotlin.streams.toList
  * @author shirokuro
  */
 class ViewHandler(
-        private val requests: Requests,
-        private val scriptManager: ScriptManager
+    private val requests: Requests,
+    private val scriptManager: ScriptManager
 ) : CommandHandler() {
     override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
         return when {
@@ -48,10 +48,10 @@ class ViewHandler(
     }
 
     override fun onTabComplete(
-            sender: CommandSender,
-            uncompletedArg: String,
-            uncompletedArgIndex: Int,
-            completedArgs: Arguments
+        sender: CommandSender,
+        uncompletedArg: String,
+        uncompletedArgIndex: Int,
+        completedArgs: Arguments
     ): List<String> {
         return if (uncompletedArgIndex == 0) {
             // wants suggest worlds
@@ -126,7 +126,7 @@ class ViewHandler(
 
     private fun formatTime(time: Long): String {
         val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
-                .withZone(ZoneId.systemDefault())
+            .withZone(ZoneId.systemDefault())
         return dateTimeFormatter.format(Instant.ofEpochMilli(time))
     }
 }

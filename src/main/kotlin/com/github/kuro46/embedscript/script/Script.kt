@@ -6,18 +6,18 @@ import java.util.UUID
  * @author shirokuro
  */
 class Script(
-        val createdAt: Long,
-        val author: UUID,
-        val keys: List<ParentKeyData>,
-        val clickTypes: Set<ClickType>,
-        val moveTypes: Set<MoveType>,
-        val pushTypes: Set<PushType>
+    val createdAt: Long,
+    val author: UUID,
+    val keys: List<ParentKeyData>,
+    val clickTypes: Set<ClickType>,
+    val moveTypes: Set<MoveType>,
+    val pushTypes: Set<PushType>
 )
 
 data class KeyData(val key: AbsoluteKey, val values: List<String>)
 
 data class ParentKeyData(val key: AbsoluteKey, val values: List<String>, val children: List<KeyData>) :
-        Iterable<KeyData> {
+    Iterable<KeyData> {
     override fun iterator(): Iterator<KeyData> {
         val base = ArrayList<KeyData>(children.size + 1)
         base.add(KeyData(key, values))

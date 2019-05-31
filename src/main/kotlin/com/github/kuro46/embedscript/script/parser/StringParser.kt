@@ -31,7 +31,7 @@ class StringParser private constructor(target: String) {
     private fun flushIfNeeded() {
         if (keyBuf.isNotEmpty() && valueBuf.isNotEmpty()) {
             result[keyBuf.toString().toLowerCase()] =
-                    ValueParser.parse(valueBuf.toString())
+                ValueParser.parse(valueBuf.toString())
 
             keyBuf.clear()
             valueBuf.clear()
@@ -53,9 +53,9 @@ class StringParser private constructor(target: String) {
         }
         // value to other
         if (currentState == State.VALUE
-                && iterator.peekPrev() != '\\'
-                && iterator.current() == ']'
-                && iterator.peekNext() == ' '
+            && iterator.peekPrev() != '\\'
+            && iterator.current() == ']'
+            && iterator.peekNext() == ' '
         ) {
             return State.OTHER
         }
@@ -119,7 +119,7 @@ private class ValueParser private constructor(target: String) {
         }
 
         if (currentState == State.DELIMITER
-                && iterator.current() == '['
+            && iterator.current() == '['
         ) {
 
             return if (iterator.peekNext() == ']') {
@@ -129,8 +129,8 @@ private class ValueParser private constructor(target: String) {
             }
         }
         if (currentState == State.VALUE
-                && iterator.current() != '\\'
-                && iterator.peekNext() == ']'
+            && iterator.current() != '\\'
+            && iterator.peekNext() == ']'
         ) {
             return State.DELIMITER
         }
