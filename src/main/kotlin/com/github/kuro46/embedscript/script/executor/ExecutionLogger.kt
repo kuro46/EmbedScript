@@ -1,6 +1,6 @@
 package com.github.kuro46.embedscript.script.executor
 
-import com.github.kuro46.embedscript.Configuration
+import com.github.kuro46.embedscript.LogConfiguration
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtils
@@ -13,7 +13,7 @@ import java.util.logging.Logger
 /**
  * @author shirokuro
  */
-class ExecutionLogger(val logger: Logger, val configuration: Configuration) {
+class ExecutionLogger(val logger: Logger, val configuration: LogConfiguration) {
     val replacer = Replacer<LogData>()
 
     init {
@@ -39,7 +39,11 @@ class ExecutionLogger(val logger: Logger, val configuration: Configuration) {
     }
 
     fun log(logData: LogData) {
-        logger.info(replacer.execute(configuration.logFormat!!, logData))
+        if (!configuration.enabled) {
+            return
+        }
+
+        logger.info(replacer.execute(configuration.format, logData))
     }
 }
 

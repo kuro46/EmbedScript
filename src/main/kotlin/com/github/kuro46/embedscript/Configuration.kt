@@ -10,41 +10,48 @@ import java.util.HashMap
  * @author shirokuro
  */
 class Configuration private constructor(dataFolder: Path) {
-
+    private var configurationData: ConfigurationData
     private val configPath: Path = dataFolder.resolve("config.yml")
-    var presets: Map<String, String>? = null
-        private set
-    var isLogEnabled: Boolean = false
-        private set
-    var logFormat: String? = null
-        private set
+    val presets: Presets
+        get() = configurationData.presets
+    val logConfiguration: LogConfiguration
+        get() = configurationData.logConfiguration
 
     init {
-        load()
+        configurationData = load()
     }
 
-    fun load() {
-        val configuration = YamlConfiguration()
-        Files.newBufferedReader(configPath).use { reader -> configuration.load(reader) }
-
-        loadLogging(configuration)
-
-        loadPresets(configuration)
+    fun reload() {
+        configurationData = load()
     }
 
-    private fun loadLogging(configuration: org.bukkit.configuration.Configuration) {
-        isLogEnabled = configuration.getBoolean(KEY_LOGGING_ENABLED)
-        logFormat = configuration.getString(KEY_LOGGING_FORMAT)
+    private fun load(): ConfigurationData {
+        val configuration =
+            Files.newBufferedReader(configPath)
+                .use { reader -> YamlConfiguration.loadConfiguration(reader) }
+
+        return ConfigurationData(
+            loadPresets(configuration),
+            loadLogging(configuration)
+        )
     }
 
-    private fun loadPresets(configuration: org.bukkit.configuration.Configuration) {
+    private fun loadLogging(configuration: org.bukkit.configuration.Configuration): LogConfiguration {
+        return LogConfiguration(
+            configuration.getBoolean(KEY_LOGGING_ENABLED),
+            configuration.getString(KEY_LOGGING_FORMAT)
+        )
+    }
+
+    private fun loadPresets(configuration: org.bukkit.configuration.Configuration): Presets {
         val presets = HashMap<String, String>()
         val presetsSection = configuration.getConfigurationSection(KEY_PRESETS)
         for (presetName in presetsSection.getKeys(false)) {
             val presetValue = presetsSection.getString(presetName)
             presets[presetName] = presetValue
         }
-        this.presets = Collections.unmodifiableMap(presets)
+
+        return Collections.unmodifiableMap(presets)
     }
 
     companion object {
@@ -57,3 +64,9 @@ class Configuration private constructor(dataFolder: Path) {
         }
     }
 }
+
+private data class ConfigurationData(val presets: Presets, val logConfiguration: LogConfiguration)
+
+data class LogConfiguration(val enabled: Boolean, val format: String)
+
+typealias Presets = Map<String, String>

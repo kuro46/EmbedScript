@@ -202,7 +202,7 @@ class ESCommandHandler constructor(
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             sender.sendMessage(Prefix.INFO + "Reloading configuration and scripts...")
 
-            val cfgReloadResult = runCatching { configuration.load() }
+            val cfgReloadResult = runCatching { configuration.reload() }
             cfgReloadResult.exceptionOrNull()?.let {
                 sender.sendMessage(Prefix.ERROR + "Reload failed! (error: " + it.message + ")")
                 it.printStackTrace()

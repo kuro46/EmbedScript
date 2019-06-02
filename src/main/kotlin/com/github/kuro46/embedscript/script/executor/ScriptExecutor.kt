@@ -31,7 +31,7 @@ class ScriptExecutor(
     private val executors = ConcurrentHashMap<AbsoluteKey, Pair<ExecutionMode, Executor>>()
     private val childExecutors = ConcurrentHashMap<AbsoluteKey, Executor>()
     private val parsers = ConcurrentHashMap<AbsoluteKey, Parser>()
-    val executionLogger = ExecutionLogger(logger, configuration)
+    val executionLogger = ExecutionLogger(logger, configuration.logConfiguration)
     val scriptReplacer = Replacer<Player>()
 
     init {
@@ -202,7 +202,7 @@ class ScriptExecutor(
 
         val applied = StringJoiner(" ")
         for (preset in presets) {
-            applied.add(configuration.presets!!.getValue(preset))
+            applied.add(configuration.presets.getValue(preset))
         }
         applied.add(target)
 
