@@ -9,7 +9,7 @@ import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
-import com.github.kuro46.embedscript.script.ScriptUtil
+import com.github.kuro46.embedscript.script.ScriptUtils
 import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.CommandHandler
 import com.github.kuro46.embedscript.util.command.CommandHandlerUtil
@@ -76,7 +76,7 @@ class ESCommandHandler constructor(
             val preset = if (presetName == null)
                 ""
             else
-                "@preset " + ScriptUtil.toString(presetName) + " "
+                "@preset " + ScriptUtils.toString(presetName) + " "
             script = scriptExecutor.parse(System.currentTimeMillis(), player.uniqueId, preset + stringScript)
         } catch (e: ParseException) {
             player.sendMessage(Prefix.ERROR + "Failed to parse script. (error: ${e.message})")

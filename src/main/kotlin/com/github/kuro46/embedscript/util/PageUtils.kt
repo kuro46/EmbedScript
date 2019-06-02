@@ -12,7 +12,7 @@ import java.util.ArrayList
 /**
  * @author shirokuro
  */
-object PageUtil {
+object PageUtils {
     // upper title, under title and navigation bar
     private const val UI_LINES = 3
     private const val UNFOCUSED_CHAT_HEIGHT = 10

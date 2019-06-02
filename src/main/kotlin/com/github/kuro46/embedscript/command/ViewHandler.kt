@@ -5,9 +5,9 @@ import com.github.kuro46.embedscript.request.Request
 import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
-import com.github.kuro46.embedscript.script.ScriptUtil
-import com.github.kuro46.embedscript.util.MojangUtil
-import com.github.kuro46.embedscript.util.PageUtil
+import com.github.kuro46.embedscript.script.ScriptUtils
+import com.github.kuro46.embedscript.util.MojangUtils
+import com.github.kuro46.embedscript.util.PageUtils
 import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.CommandHandler
 import com.github.kuro46.embedscript.util.command.CommandHandlerUtil
@@ -95,11 +95,11 @@ class ViewHandler(
             addMessageIfNeeded(messages, "@listen-push", script.pushTypes)
             for (parent in script.keys) {
                 for ((key, values) in parent) {
-                    messages.add(TextComponent.fromLegacyText("@$key ${ScriptUtil.toString(values)}"))
+                    messages.add(TextComponent.fromLegacyText("@$key ${ScriptUtils.toString(values)}"))
                 }
             }
         }
-        PageUtil.sendPage("Script information", sender, messages, pageNumber - 1, 12) { index ->
+        PageUtils.sendPage("Script information", sender, messages, pageNumber - 1, 12) { index ->
             val pageNum = index + 1
             "/embedscript view $world $x $y $z $pageNum"
         }
@@ -110,13 +110,13 @@ class ViewHandler(
             return
         }
 
-        val string = ScriptUtil.toString(values.map { it.toString() + ChatColor.RESET })
+        val string = ScriptUtils.toString(values.map { it.toString() + ChatColor.RESET })
         addTo.add(TextComponent.fromLegacyText("$key $string"))
     }
 
     private fun getUserName(sender: CommandSender, uuid: UUID): String? {
         return Bukkit.getPlayer(uuid)?.name ?: run {
-            val result = MojangUtil.getName(uuid)
+            val result = MojangUtils.getName(uuid)
             if (result == null) {
                 sender.sendMessage(Prefix.ERROR + "Failed to find user name")
             }

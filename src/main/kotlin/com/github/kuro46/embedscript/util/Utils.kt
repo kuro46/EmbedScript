@@ -5,7 +5,7 @@ import java.util.regex.Pattern
 /**
  * @author shirokuro
  */
-object Util {
+object Utils {
     private val PATTERN_SPLIT_BY_FIRST_SPACE = Pattern.compile("(?<left>[^ ]+) (?<right>.+)")
 
     private class Patterns(val pattern: Pattern, val escapedPattern: Pattern)

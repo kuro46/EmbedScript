@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author shirokuro
  */
-object MojangUtil {
+object MojangUtils {
     private val NAME_CACHE: Cache<UUID, String> = CacheBuilder.newBuilder()
         .expireAfterAccess(1, TimeUnit.HOURS)
         .build()

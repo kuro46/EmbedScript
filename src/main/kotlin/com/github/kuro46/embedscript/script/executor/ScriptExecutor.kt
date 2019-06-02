@@ -7,11 +7,11 @@ import com.github.kuro46.embedscript.script.KeyData
 import com.github.kuro46.embedscript.script.ParentKeyData
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
-import com.github.kuro46.embedscript.script.ScriptUtil
+import com.github.kuro46.embedscript.script.ScriptUtils
 import com.github.kuro46.embedscript.script.parser.ScriptBuilder
 import com.github.kuro46.embedscript.script.parser.StringParser
 import com.github.kuro46.embedscript.util.Scheduler
-import com.github.kuro46.embedscript.util.Util
+import com.github.kuro46.embedscript.util.Utils
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
@@ -136,7 +136,7 @@ class ScriptExecutor(
             val joiner = StringJoiner(" ")
             for (parentKeyData in script.keys) {
                 for ((key, values) in parentKeyData) {
-                    joiner.add("@$key ${ScriptUtil.toString(values)}")
+                    joiner.add("@$key ${ScriptUtils.toString(values)}")
                 }
             }
             joiner.toString()
@@ -158,7 +158,7 @@ class ScriptExecutor(
     private fun replaceAndUnescape(source: String, target: String, messageFactory: () -> String): String {
         return if (!source.contains(target)) {
             source
-        } else Util.replaceAndUnescape(source, target, messageFactory())
+        } else Utils.replaceAndUnescape(source, target, messageFactory())
 
     }
 
