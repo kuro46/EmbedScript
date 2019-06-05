@@ -7,11 +7,11 @@ import com.github.kuro46.embedscript.script.KeyData
 import com.github.kuro46.embedscript.script.ParentKeyData
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
-import com.github.kuro46.embedscript.script.ScriptUtil
 import com.github.kuro46.embedscript.script.parser.ScriptBuilder
 import com.github.kuro46.embedscript.script.parser.StringParser
+import com.github.kuro46.embedscript.util.PlaceholderData
+import com.github.kuro46.embedscript.util.Replacer
 import com.github.kuro46.embedscript.util.Scheduler
-import com.github.kuro46.embedscript.util.Util
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
@@ -31,6 +31,8 @@ class ScriptExecutor(
     private val executors = ConcurrentHashMap<AbsoluteKey, Pair<ExecutionMode, Executor>>()
     private val childExecutors = ConcurrentHashMap<AbsoluteKey, Executor>()
     private val parsers = ConcurrentHashMap<AbsoluteKey, Parser>()
+    val executionLogger = ExecutionLogger(logger, configuration.logConfiguration)
+    val scriptReplacer = Replacer<Player>()
 
     init {
         Executors.registerAll(this)
@@ -40,6 +42,9 @@ class ScriptExecutor(
                 // do-nothing
             }
         })
+
+        scriptReplacer.add(PlaceholderData("<player>") { it.name })
+        scriptReplacer.add(PlaceholderData("<world>") { it.world.name })
     }
 
     fun getKeys(): Set<String> {
@@ -78,7 +83,7 @@ class ScriptExecutor(
             }
         }
 
-        log(player, script, position)
+        executionLogger.log(LogData(player, position, script))
     }
 
     private fun executeKeyData(rootTask: Task, player: Player, keyData: ParentKeyData): ExecutionResult {
@@ -117,49 +122,12 @@ class ScriptExecutor(
     private fun compileKeyData(player: Player, parentKeyData: ParentKeyData): ParentKeyData {
         fun compileValues(values: List<String>): List<String> {
             return values.map {
-                // replace place holders
-                var varIt = it
-                varIt = replaceAndUnescape(varIt, "<player>") { player.name }
-                varIt = replaceAndUnescape(varIt, "<world>") { player.world.name }
-                varIt
+                scriptReplacer.execute(it, player)
             }
         }
 
         val children = parentKeyData.children.map { KeyData(it.key, compileValues(it.values)) }
         return ParentKeyData(parentKeyData.key, compileValues(parentKeyData.values), children)
-    }
-
-    private fun log(trigger: Player, script: Script, scriptPosition: ScriptPosition) {
-        var message = configuration.logFormat
-        message = replaceAndUnescape(message!!, "<trigger>") { trigger.name }
-        message = replaceAndUnescape(message, "<script>") {
-            val joiner = StringJoiner(" ")
-            for (parentKeyData in script.keys) {
-                for ((key, values) in parentKeyData) {
-                    joiner.add("@$key ${ScriptUtil.toString(values)}")
-                }
-            }
-            joiner.toString()
-        }
-        val location = trigger.location
-        val worldName = location.world.name
-        message = replaceAndUnescape(message, "<trigger_world>") { worldName }
-        message = replaceAndUnescape(message, "<trigger_x>") { location.blockX.toString() }
-        message = replaceAndUnescape(message, "<trigger_y>") { location.blockY.toString() }
-        message = replaceAndUnescape(message, "<trigger_z>") { location.blockZ.toString() }
-        message = replaceAndUnescape(message, "<script_world>") { worldName }
-        message = replaceAndUnescape(message, "<script_x>") { scriptPosition.x.toString() }
-        message = replaceAndUnescape(message, "<script_y>") { scriptPosition.y.toString() }
-        message = replaceAndUnescape(message, "<script_z>") { scriptPosition.z.toString() }
-
-        logger.info(message)
-    }
-
-    private fun replaceAndUnescape(source: String, target: String, messageFactory: () -> String): String {
-        return if (!source.contains(target)) {
-            source
-        } else Util.replaceAndUnescape(source, target, messageFactory())
-
     }
 
     fun registerExecutor(
@@ -234,7 +202,7 @@ class ScriptExecutor(
 
         val applied = StringJoiner(" ")
         for (preset in presets) {
-            applied.add(configuration.presets!!.getValue(preset))
+            applied.add(configuration.presets.getValue(preset))
         }
         applied.add(target)
 

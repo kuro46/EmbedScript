@@ -11,8 +11,9 @@ import kotlin.concurrent.withLock
  * @author shirokuro
  */
 class ScriptManager(private val loader: Loader = NoOpLoader) {
+    // Copy On Write Pattern
 
-    private val lock = ReentrantLock()
+    private val writeLock = ReentrantLock()
     @Volatile
     private var scripts: Map<ScriptPosition, List<Script>> = loader.initialValue()
 
@@ -66,7 +67,7 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
     }
 
     fun remove(position: ScriptPosition): List<Script>? {
-        return lock.withLock {
+        return writeLock.withLock {
             val scripts = shallowCopy()
             val removed = scripts.remove(position)
             setScripts(scripts)
@@ -77,7 +78,7 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
     }
 
     fun add(position: ScriptPosition, script: Script) {
-        lock.withLock {
+        writeLock.withLock {
             val copied = shallowCopy()
             copied.compute(position) { _, current ->
                 val addTo = current?.let { ArrayList(it) } ?: ArrayList(1)
@@ -92,7 +93,7 @@ class ScriptManager(private val loader: Loader = NoOpLoader) {
     }
 
     fun addAll(position: ScriptPosition, scripts: List<Script>) {
-        lock.withLock {
+        writeLock.withLock {
             val copied = shallowCopy()
             copied.compute(position) { _, current ->
                 val addTo: MutableList<Script> = current?.let {

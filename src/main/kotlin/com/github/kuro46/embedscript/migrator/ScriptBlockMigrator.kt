@@ -5,8 +5,8 @@ import com.github.kuro46.embedscript.script.EventType
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
-import com.github.kuro46.embedscript.util.MojangUtil
-import com.github.kuro46.embedscript.util.Util
+import com.github.kuro46.embedscript.util.MojangUtils
+import com.github.kuro46.embedscript.util.Utils
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import java.nio.file.Files
@@ -63,7 +63,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
             throw ParseException("Illegal data")
         }
         val mcid = matcher.group(1)
-        return MojangUtil.getUUID(mcid)
+        return MojangUtils.getUUID(mcid)
     }
 
     private fun loadScriptFile(path: Path): FileConfiguration {
@@ -93,7 +93,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
          * @bypass action
          */
 
-        val pair = Util.splitByFirstSpace(legacy) ?: throw ParseException("Illegal script")
+        val pair = Utils.splitByFirstSpace(legacy) ?: throw ParseException("Illegal script")
         val key = pair.first
         val value = "[${pair.second}]"
 

@@ -3,7 +3,7 @@ package com.github.kuro46.embedscript.script
 /**
  * @author shirokuro
  */
-object ScriptUtil {
+object ScriptUtils {
 
     fun toString(values: Iterable<String>): String {
         return values.joinToString("][", "[", "]")
