@@ -9,7 +9,6 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import java.util.Locale
 import java.util.stream.Collectors
-import kotlin.collections.ArrayList
 
 /**
  * @author shirokuro
@@ -26,7 +25,7 @@ object Executors {
         executor.registerExecutor("unneededPerm", execModeForPermOP, UNNEEDED_PERMISSION_EXECUTOR)
         executor.registerExecutor("cmd", ExecutionMode.SYNCHRONOUS, COMMAND_EXECUTOR, COMMAND_PARSER)
         executor.registerChildExecutor("cmd", "bypass", CommandBypassExecutor(executor.plugin))
-        executor.registerExecutor("console", ExecutionMode.SYNCHRONOUS, CONSOLE_EXECUTOR)
+        executor.registerExecutor("console", ExecutionMode.SYNCHRONOUS, CONSOLE_EXECUTOR, COMMAND_PARSER)
         executor.registerExecutor("say", ExecutionMode.ASYNCHRONOUS, SAY_EXECUTOR)
         executor.registerExecutor("sayRaw", ExecutionMode.ASYNCHRONOUS, SAY_RAW_EXECUTOR)
         executor.registerExecutor("broadcast", ExecutionMode.ASYNCHRONOUS, BROADCAST_EXECUTOR)
