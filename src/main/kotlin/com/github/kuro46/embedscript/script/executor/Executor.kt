@@ -6,10 +6,31 @@ import org.bukkit.entity.Player
  * @author shirokuro
  */
 abstract class Executor {
-    abstract fun execute(task: Task, player: Player, values: List<String>): ExecutionResult
+    abstract fun execute(player: Player, values: List<String>): ExecutionResult
 }
 
-enum class ExecutionResult {
+class ExecutionResultBuilder {
+    var endListener: EndListener? = null
+
+    fun build(action: AfterExecuteAction): ExecutionResult {
+        return ExecutionResult(action, endListener)
+    }
+}
+
+class ExecutionResult(
+    val action: AfterExecuteAction,
+    var endListener: EndListener? = null
+)
+
+typealias EndListener = () -> Unit
+
+enum class AfterExecuteAction {
+    /**
+     * Continue the execution after execute
+     */
     CONTINUE,
-    CANCEL
+    /**
+     * Stop the execution after execute
+     */
+    STOP
 }

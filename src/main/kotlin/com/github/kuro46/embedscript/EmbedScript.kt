@@ -10,7 +10,7 @@ import com.github.kuro46.embedscript.script.JsonLoader
 import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptSerializer
-import com.github.kuro46.embedscript.script.executor.ScriptExecutor
+import com.github.kuro46.embedscript.script.executor.ScriptProcessor
 import org.bukkit.Bukkit
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.ServicePriority
@@ -24,7 +24,7 @@ import java.util.logging.Logger
  */
 class EmbedScript private constructor(val plugin: Plugin) {
     val dataFolder: Path = plugin.dataFolder.toPath()
-    val scriptExecutor: ScriptExecutor
+    val scriptProcessor: ScriptProcessor
     val logger: Logger = plugin.logger
     val scriptManager: ScriptManager
     val configuration: Configuration
@@ -37,10 +37,10 @@ class EmbedScript private constructor(val plugin: Plugin) {
 
         this.configuration = loadConfiguration()
 
-        this.scriptExecutor = ScriptExecutor(logger, plugin, configuration)
-
         this.scriptExporter = ScriptExporter(dataFolder, scriptManager)
         this.requests = Requests(scriptManager)
+
+        this.scriptProcessor = ScriptProcessor(this)
 
         registerCommands()
         registerListeners()
@@ -111,7 +111,7 @@ class EmbedScript private constructor(val plugin: Plugin) {
     private fun registerESAPI() {
         Bukkit.getServicesManager().register(
             EmbedScriptAPI::class.java,
-            EmbedScriptAPI(scriptExecutor),
+            EmbedScriptAPI(scriptProcessor),
             plugin,
             ServicePriority.Normal
         )

@@ -23,7 +23,7 @@ import kotlin.collections.set
  * @author shirokuro
  */
 class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
-    private val executor = embedScript.scriptExecutor
+    private val processor = embedScript.scriptProcessor
     private val mergeTo = embedScript.scriptManager
 
     init {
@@ -125,7 +125,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
         // trim a space character at end of string
         val substring = formattedByNewVersion.substring(0, formattedByNewVersion.length - 1)
 
-        return executor.parse(-1, author, substring)
+        return processor.parse(-1, author, substring)
     }
 
     private fun createPositionFromRawLocation(world: String, rawLocation: String): ScriptPosition {

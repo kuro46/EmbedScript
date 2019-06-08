@@ -5,7 +5,6 @@ import com.github.kuro46.embedscript.script.ClickType
 import com.github.kuro46.embedscript.script.PushType
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
-import com.github.kuro46.embedscript.script.executor.ScriptExecutor
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import org.bukkit.entity.Player
@@ -28,7 +27,7 @@ class InteractListener(embedScript: EmbedScript) : Listener {
         .expireAfterWrite(EXECUTION_INTERVAL, TimeUnit.MILLISECONDS)
         .build()
     private val scriptManager = embedScript.scriptManager
-    private val scriptExecutor: ScriptExecutor = embedScript.scriptExecutor
+    private val scriptProcessor = embedScript.scriptProcessor
     private val requests = embedScript.requests
 
     @EventHandler
@@ -54,7 +53,7 @@ class InteractListener(embedScript: EmbedScript) : Listener {
         }
 
         if (filteredScriptList.isNotEmpty()) {
-            scriptExecutor.execute(player, filteredScriptList, position)
+            scriptProcessor.execute(player, filteredScriptList, position)
         }
     }
 

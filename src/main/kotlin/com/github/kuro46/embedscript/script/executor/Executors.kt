@@ -14,97 +14,134 @@ import java.util.stream.Collectors
  * @author shirokuro
  */
 object Executors {
-    fun registerAll(executor: ScriptExecutor) {
+    fun registerAll(processor: ScriptProcessor) {
         val execModeForPermOP = if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
             ExecutionMode.ASYNCHRONOUS
         } else {
             ExecutionMode.SYNCHRONOUS
         }
 
-        executor.registerExecutor("neededPerm", execModeForPermOP, NEEDED_PERMISSION_EXECUTOR)
-        executor.registerExecutor("unneededPerm", execModeForPermOP, UNNEEDED_PERMISSION_EXECUTOR)
-        executor.registerExecutor("cmd", ExecutionMode.SYNCHRONOUS, COMMAND_EXECUTOR, COMMAND_PARSER)
-        executor.registerChildExecutor("cmd", "bypass", CommandBypassExecutor(executor.plugin))
-        executor.registerExecutor("console", ExecutionMode.SYNCHRONOUS, CONSOLE_EXECUTOR, COMMAND_PARSER)
-        executor.registerExecutor("say", ExecutionMode.ASYNCHRONOUS, SAY_EXECUTOR)
-        executor.registerExecutor("sayRaw", ExecutionMode.ASYNCHRONOUS, SAY_RAW_EXECUTOR)
-        executor.registerExecutor("broadcast", ExecutionMode.ASYNCHRONOUS, BROADCAST_EXECUTOR)
-        executor.registerExecutor("broadcastRaw", ExecutionMode.ASYNCHRONOUS, BROADCAST_RAW_EXECUTOR)
-
-        executor.registerParser("listenClick", LISTEN_CLICK_PARSER)
-        executor.registerParser("listenMove", LISTEN_MOVE_PARSER)
-        executor.registerParser("listenPush", LISTEN_PUSH_PARSER)
+        processor.registerKey(KeyData.parent(
+            "neededPerm",
+            ExecutorData.parent(execModeForPermOP, NEEDED_PERMISSION_EXECUTOR)
+        ))
+        processor.registerKey(KeyData.parent(
+            "unneededPerm",
+            ExecutorData.parent(execModeForPermOP, UNNEEDED_PERMISSION_EXECUTOR)
+        ))
+        processor.registerKey(KeyData.parent(
+            "cmd",
+            ExecutorData.parent(execModeForPermOP, UNNEEDED_PERMISSION_EXECUTOR),
+            COMMAND_PARSER
+        ))
+        processor.registerKey(KeyData.child(
+            "cmd.bypass",
+            ExecutorData.child(CommandBypassExecutor(processor.embedScript.plugin))
+        ))
+        processor.registerKey(KeyData.parent(
+            "console",
+            ExecutorData.parent(ExecutionMode.SYNCHRONOUS, CONSOLE_EXECUTOR),
+            COMMAND_PARSER
+        ))
+        processor.registerKey(KeyData.parent(
+            "say",
+            ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, SAY_EXECUTOR)
+        ))
+        processor.registerKey(KeyData.parent(
+            "sayRaw",
+            ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, SAY_RAW_EXECUTOR)
+        ))
+        processor.registerKey(KeyData.parent(
+            "broadcast",
+            ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, BROADCAST_EXECUTOR)
+        ))
+        processor.registerKey(KeyData.parent(
+            "broadcastRaw",
+            ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, BROADCAST_RAW_EXECUTOR)
+        ))
+        processor.registerKey(KeyData.parent(
+            key = "listenClick",
+            parser = LISTEN_CLICK_PARSER
+        ))
+        processor.registerKey(KeyData.parent(
+            key = "listenMove",
+            parser = LISTEN_MOVE_PARSER
+        ))
+        processor.registerKey(KeyData.parent(
+            key = "listenPush",
+            parser = LISTEN_PUSH_PARSER
+        ))
     }
 
     val NEEDED_PERMISSION_EXECUTOR = object : Executor() {
-        override fun execute(task: Task, player: Player, values: List<String>): ExecutionResult {
+        override fun execute(player: Player, values: List<String>): ExecutionResult {
             for (value in values) {
                 if (!player.hasPermission(value)) {
-                    return ExecutionResult.CANCEL
+                    return ExecutionResult(AfterExecuteAction.STOP)
                 }
             }
-            return ExecutionResult.CONTINUE
+            return ExecutionResult(AfterExecuteAction.CONTINUE)
         }
     }
 
     val UNNEEDED_PERMISSION_EXECUTOR = object : Executor() {
-        override fun execute(task: Task, player: Player, values: List<String>): ExecutionResult {
+        override fun execute(player: Player, values: List<String>): ExecutionResult {
             for (value in values) {
                 if (player.hasPermission(value)) {
-                    return ExecutionResult.CANCEL
+                    return ExecutionResult(AfterExecuteAction.STOP)
                 }
             }
-            return ExecutionResult.CONTINUE
+            return ExecutionResult(AfterExecuteAction.CONTINUE)
         }
     }
 
     val COMMAND_EXECUTOR = object : Executor() {
-        override fun execute(task: Task, player: Player, values: List<String>): ExecutionResult {
+        override fun execute(player: Player, values: List<String>): ExecutionResult {
             values.forEach { player.performCommand(it) }
-            return ExecutionResult.CONTINUE
+            return ExecutionResult(AfterExecuteAction.CONTINUE)
         }
     }
 
     val CONSOLE_EXECUTOR = object : Executor() {
-        override fun execute(task: Task, player: Player, values: List<String>): ExecutionResult {
+        override fun execute(player: Player, values: List<String>): ExecutionResult {
             values.forEach { string -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), string) }
-            return ExecutionResult.CONTINUE
+            return ExecutionResult(AfterExecuteAction.CONTINUE)
         }
     }
 
     val SAY_EXECUTOR = object : Executor() {
-        override fun execute(task: Task, player: Player, values: List<String>): ExecutionResult {
+        override fun execute(player: Player, values: List<String>): ExecutionResult {
             values.forEach { player.sendMessage(it) }
-            return ExecutionResult.CONTINUE
+            return ExecutionResult(AfterExecuteAction.CONTINUE)
         }
     }
 
     val SAY_RAW_EXECUTOR = object : Executor() {
-        override fun execute(task: Task, player: Player, values: List<String>): ExecutionResult {
+        override fun execute(player: Player, values: List<String>): ExecutionResult {
             values.forEach { string -> player.spigot().sendMessage(*ComponentSerializer.parse(string)) }
-            return ExecutionResult.CONTINUE
+            return ExecutionResult(AfterExecuteAction.CONTINUE)
         }
     }
 
     val BROADCAST_EXECUTOR = object : Executor() {
-        override fun execute(task: Task, player: Player, values: List<String>): ExecutionResult {
+        override fun execute(player: Player, values: List<String>): ExecutionResult {
             Bukkit.getOnlinePlayers().forEach { sendTo ->
                 for (string in values) {
                     sendTo.sendMessage(string)
                 }
             }
-            return ExecutionResult.CONTINUE
+            return ExecutionResult(AfterExecuteAction.CONTINUE)
         }
     }
 
     val BROADCAST_RAW_EXECUTOR = object : Executor() {
-        override fun execute(task: Task, player: Player, values: List<String>): ExecutionResult {
+        override fun execute(player: Player, values: List<String>): ExecutionResult {
             values.stream()
                 .map { json -> ComponentSerializer.parse(json) }
                 .forEach {
                     Bukkit.getOnlinePlayers().forEach { sendTo -> sendTo.spigot().sendMessage(*it) }
                 }
-            return ExecutionResult.CONTINUE
+            return ExecutionResult(AfterExecuteAction.CONTINUE)
         }
     }
 
@@ -173,16 +210,15 @@ object Executors {
  * @author shirokuro
  */
 private class CommandBypassExecutor(val plugin: Plugin) : Executor() {
-    override fun execute(task: Task, player: Player, values: List<String>): ExecutionResult {
+    override fun execute(player: Player, values: List<String>): ExecutionResult {
         if (values.isEmpty()) {
-            return ExecutionResult.CONTINUE
+            return ExecutionResult(AfterExecuteAction.CONTINUE)
         }
 
         val attachment = player.addAttachment(plugin)
 
-        task.onEnd {
-            attachment.remove()
-        }
+        val resultBuilder = ExecutionResultBuilder()
+        resultBuilder.endListener = { attachment.remove() }
 
         for (value in values) {
             if (player.hasPermission(value)) {
@@ -191,6 +227,6 @@ private class CommandBypassExecutor(val plugin: Plugin) : Executor() {
             attachment.setPermission(value, true)
         }
 
-        return ExecutionResult.CONTINUE
+        return resultBuilder.build(AfterExecuteAction.CONTINUE)
     }
 }

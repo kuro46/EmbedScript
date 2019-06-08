@@ -1,6 +1,6 @@
 package com.github.kuro46.embedscript.command
 
-import com.github.kuro46.embedscript.script.executor.ScriptExecutor
+import com.github.kuro46.embedscript.script.executor.ScriptProcessor
 import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.TabCompleter
 import org.bukkit.command.CommandSender
@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender
 /**
  * @author shirokuro
  */
-class ScriptTabCompleter(private val scriptExecutor: ScriptExecutor) : TabCompleter {
+class ScriptTabCompleter(private val scriptProcessor: ScriptProcessor) : TabCompleter {
     override fun onTabComplete(
         sender: CommandSender,
         uncompletedArg: String,
@@ -17,7 +17,7 @@ class ScriptTabCompleter(private val scriptExecutor: ScriptExecutor) : TabComple
     ): List<String> {
         return if (isKey(completedArgs)) {
             // uncompleted arg is key
-            scriptExecutor.getKeys().map { "@$it" }
+            scriptProcessor.keys.keys.map { "@$it" }
         } else {
             // uncompleted arg is value
 
