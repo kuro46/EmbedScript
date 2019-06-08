@@ -62,21 +62,20 @@ class PermissionDetector(parentPath: Path, fileName: String = "command_permissio
 
     fun getPreferredPermission(args: List<String>): List<String>? {
         val absolute = StringBuilder()
-        var filtered: List<CommandData> = commandDataList
+        var permissions: List<String>? = null
         for (arg in args) {
+            if (absolute.isNotEmpty()) {
+                absolute.append(' ')
+            }
             absolute.append(arg)
 
-            val preFiltered =  filtered.filter { it.name.startsWith(absolute) }
-            if (preFiltered.isEmpty()) {
-                if (filtered.size > 1) {
-                    throw IllegalStateException("Same named entries found.")
-                }
-                return filtered.flatMap { it.permissions }
+            val filtered = commandDataList.filter { it.name.contentEquals(absolute) }
+            if (filtered.isNotEmpty()) {
+                permissions = filtered.single().permissions
             }
-            filtered = preFiltered
         }
 
-        return null
+        return permissions
     }
 }
 
