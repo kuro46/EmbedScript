@@ -4,6 +4,7 @@ import com.github.kuro46.embedscript.api.EmbedScriptAPI
 import com.github.kuro46.embedscript.command.ESCommandHandler
 import com.github.kuro46.embedscript.listener.InteractListener
 import com.github.kuro46.embedscript.listener.MoveListener
+import com.github.kuro46.embedscript.permission.PermissionDetector
 import com.github.kuro46.embedscript.request.Requests
 import com.github.kuro46.embedscript.script.EventType
 import com.github.kuro46.embedscript.script.JsonLoader
@@ -30,8 +31,10 @@ class EmbedScript private constructor(val plugin: Plugin) {
     val configuration: Configuration
     val requests: Requests
     val scriptExporter: ScriptExporter
+    val permissionDetector: PermissionDetector
 
     init {
+        this.permissionDetector = PermissionDetector(dataFolder)
 
         this.scriptManager = loadScripts()
 
