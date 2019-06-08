@@ -5,7 +5,7 @@ import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtils
-import com.github.kuro46.embedscript.script.executor.ScriptExecutor
+import com.github.kuro46.embedscript.script.executor.ScriptProcessor
 import com.github.kuro46.embedscript.util.PageUtils
 import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.CommandHandler
@@ -33,7 +33,7 @@ import java.util.function.Function as JavaFunction
 object ListHandlers {
     class ListHandler(
         private val presetName: String?,
-        private val scriptExecutor: ScriptExecutor,
+        private val scriptProcessor: ScriptProcessor,
         private val scriptManager: ScriptManager
     ) : CommandHandler(SenderType.Player()) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
@@ -41,7 +41,7 @@ object ListHandlers {
             val world = args.getOrElse(0) { player.world.name }
             val pageNumber = args.getInt(sender, 1, 1) ?: return true
             val filter = presetName?.let {
-                scriptExecutor.parse(System.currentTimeMillis(), player.uniqueId, "@preset " + ScriptUtils.toString(it))
+                scriptProcessor.parse(System.currentTimeMillis(), player.uniqueId, "@preset " + ScriptUtils.toString(it))
             }
             val scope = ListScope.World(world)
             list(scriptManager, player, scope, filter, pageNumber - 1)
@@ -67,14 +67,14 @@ object ListHandlers {
 
     class ListAllHandler(
         private val presetName: String?,
-        private val scriptExecutor: ScriptExecutor,
+        private val scriptProcessor: ScriptProcessor,
         private val scriptManager: ScriptManager
     ) : CommandHandler(SenderType.Player()) {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             val player = sender as Player
             val pageNumber = args.getInt(sender, 0, 1) ?: return true
             val filter = presetName?.let {
-                scriptExecutor.parse(System.currentTimeMillis(), player.uniqueId, "@preset " + ScriptUtils.toString(it))
+                scriptProcessor.parse(System.currentTimeMillis(), player.uniqueId, "@preset " + ScriptUtils.toString(it))
             }
             val scope = ListScope.Server
             list(scriptManager, player, scope, filter, pageNumber - 1)

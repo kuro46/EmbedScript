@@ -30,7 +30,7 @@ class ESCommandHandler constructor(
     private val presetName: String? = null
 ) : RootCommandHandler() {
     private val configuration = embedScript.configuration
-    private val scriptExecutor = embedScript.scriptExecutor
+    private val scriptProcessor = embedScript.scriptProcessor
     private val requests = embedScript.requests
     private val scriptManager = embedScript.scriptManager
     private val scriptExporter = embedScript.scriptExporter
@@ -42,8 +42,8 @@ class ESCommandHandler constructor(
         registerChildHandler("import", ImportHandler(scriptExporter))
         registerChildHandler("reload", ReloadHandler(configuration, scriptManager))
         registerChildHandler("teleport", TeleportHandler(embedScript.plugin))
-        registerChildHandler("list", ListHandlers.ListHandler(presetName, scriptExecutor, scriptManager))
-        registerChildHandler("listAll", ListHandlers.ListAllHandler(presetName, scriptExecutor, scriptManager))
+        registerChildHandler("list", ListHandlers.ListHandler(presetName, scriptProcessor, scriptManager))
+        registerChildHandler("listAll", ListHandlers.ListAllHandler(presetName, scriptProcessor, scriptManager))
         registerChildHandler("view", ViewHandler(requests, scriptManager))
         registerChildHandler("remove", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
@@ -51,7 +51,7 @@ class ESCommandHandler constructor(
             requests.putRequest(player, Request.Remove)
             true
         })
-        val scriptTabCompleter = ScriptTabCompleter(scriptExecutor)
+        val scriptTabCompleter = ScriptTabCompleter(scriptProcessor)
         registerChildHandler("embed", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, args ->
             val player = sender as Player
             modifyAction(player, args, false)
@@ -77,7 +77,7 @@ class ESCommandHandler constructor(
                 ""
             else
                 "@preset " + ScriptUtils.toString(presetName) + " "
-            script = scriptExecutor.parse(System.currentTimeMillis(), player.uniqueId, preset + stringScript)
+            script = scriptProcessor.parse(System.currentTimeMillis(), player.uniqueId, preset + stringScript)
         } catch (e: ParseException) {
             player.sendMessage(Prefix.ERROR + "Failed to parse script. (error: ${e.message})")
             return true

@@ -4,7 +4,6 @@ import com.github.kuro46.embedscript.EmbedScript
 import com.github.kuro46.embedscript.script.MoveType
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
-import com.github.kuro46.embedscript.script.executor.ScriptExecutor
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -20,7 +19,7 @@ class MoveListener(embedScript: EmbedScript) : Listener {
         private const val GROUND_ACCEPTABLE_MAXIMUM_RANGE = 0.2
     }
 
-    private val scriptExecutor: ScriptExecutor = embedScript.scriptExecutor
+    private val scriptProcessor = embedScript.scriptProcessor
     private val scriptManager = embedScript.scriptManager
 
     @EventHandler
@@ -42,7 +41,7 @@ class MoveListener(embedScript: EmbedScript) : Listener {
 
         val filteredScriptList = scriptList.filter { validateMoveType(it, event) }
         if (filteredScriptList.isNotEmpty()) {
-            scriptExecutor.execute(player, filteredScriptList, scriptPosition)
+            scriptProcessor.execute(player, filteredScriptList, scriptPosition)
         }
     }
 
