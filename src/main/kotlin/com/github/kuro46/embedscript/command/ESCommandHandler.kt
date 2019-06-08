@@ -4,6 +4,7 @@ import com.github.kuro46.embedscript.Configuration
 import com.github.kuro46.embedscript.EmbedScript
 import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
+import com.github.kuro46.embedscript.permission.PermissionDetector
 import com.github.kuro46.embedscript.request.Request
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
@@ -29,18 +30,22 @@ class ESCommandHandler constructor(
     embedScript: EmbedScript,
     private val presetName: String? = null
 ) : RootCommandHandler() {
-    private val configuration = embedScript.configuration
     private val scriptProcessor = embedScript.scriptProcessor
     private val requests = embedScript.requests
-    private val scriptManager = embedScript.scriptManager
-    private val scriptExporter = embedScript.scriptExporter
 
     init {
+        val scriptManager = embedScript.scriptManager
+        val scriptExporter = embedScript.scriptExporter
+
         registerChildHandler("help", HelpHandler())
         registerChildHandler("migrate", MigrateHandler(embedScript))
         registerChildHandler("export", ExportHandler(scriptExporter))
         registerChildHandler("import", ImportHandler(scriptExporter))
-        registerChildHandler("reload", ReloadHandler(configuration, scriptManager))
+        registerChildHandler("reload", ReloadHandler(
+            embedScript.configuration,
+            scriptManager,
+            embedScript.permissionDetector
+        ))
         registerChildHandler("teleport", TeleportHandler(embedScript.plugin))
         registerChildHandler("list", ListHandlers.ListHandler(presetName, scriptProcessor, scriptManager))
         registerChildHandler("listAll", ListHandlers.ListAllHandler(presetName, scriptProcessor, scriptManager))
@@ -197,7 +202,8 @@ class ESCommandHandler constructor(
 
     private class ReloadHandler(
         val configuration: Configuration,
-        val scriptManager: ScriptManager
+        val scriptManager: ScriptManager,
+        val permissionDetector: PermissionDetector
     ) : CommandHandler() {
         override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
             sender.sendMessage(Prefix.INFO + "Reloading configuration and scripts...")
@@ -212,6 +218,12 @@ class ESCommandHandler constructor(
             val scriptReloadResult = runCatching { scriptManager.reload() }
             scriptReloadResult.exceptionOrNull()?.let {
                 sender.sendMessage(Prefix.ERROR + "Reload failed! (error: " + it.message + ")")
+                it.printStackTrace()
+                return true
+            }
+
+            runCatching { permissionDetector.reload() }.exceptionOrNull()?.let {
+                sender.sendMessage(Prefix.ERROR + "Reload failed! (error: ${it.message})")
                 it.printStackTrace()
                 return true
             }

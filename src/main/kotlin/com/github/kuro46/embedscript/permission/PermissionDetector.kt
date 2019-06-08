@@ -12,7 +12,7 @@ import java.util.Collections
  * @author shirokuro
  */
 class PermissionDetector(parentPath: Path, fileName: String = "command_permissions.yml") {
-    private val commandDataList: List<CommandData>
+    private var commandDataList: List<CommandData>
     val filePath = parentPath.resolve(fileName)
 
     init {
@@ -24,6 +24,10 @@ class PermissionDetector(parentPath: Path, fileName: String = "command_permissio
             Files.newBufferedWriter(filePath).use { it.write(configuration.saveToString()) }
         }
 
+        commandDataList = load()
+    }
+
+    private fun load(): List<CommandData> {
         val configuration = Files.newBufferedReader(filePath)
             .use { YamlConfiguration.loadConfiguration(it) }
         @Suppress("UNCHECKED_CAST")
@@ -37,7 +41,11 @@ class PermissionDetector(parentPath: Path, fileName: String = "command_permissio
             ))
         }
 
-        commandDataList = result
+        return result
+    }
+
+    fun reload() {
+        commandDataList = load()
     }
 
     private fun fillPermissions(configuration: YamlConfiguration) {
