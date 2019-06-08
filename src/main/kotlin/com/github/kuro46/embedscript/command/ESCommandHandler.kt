@@ -84,7 +84,7 @@ class ESCommandHandler constructor(
                 "@preset " + ScriptUtils.toString(presetName) + " "
             script = scriptProcessor.parse(System.currentTimeMillis(), player.uniqueId, preset + stringScript)
         } catch (e: ParseException) {
-            player.sendMessage(Prefix.ERROR + "Failed to parse script. (error: ${e.message})")
+            player.sendMessage(Prefix.ERROR + "Failed to parse script. ${e.message}")
             return true
         }
 

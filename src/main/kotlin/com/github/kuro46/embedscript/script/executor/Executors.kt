@@ -246,7 +246,9 @@ private class CommandBypassExecutor(
                 .map { it.split(' ') }
                 .flatMap {
                     permissionDetector.getPreferredPermission(it)
-                        ?: throw IllegalStateException("Preferred Permission not found.")
+                        ?: throw ParseException("Could not detect permissions for" +
+                            " '${it.joinToString(" ")}'\n" +
+                            "Please add command information to command_permissions.yml")
                 }
         } else {
             parseFrom
