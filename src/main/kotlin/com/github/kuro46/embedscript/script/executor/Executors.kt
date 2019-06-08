@@ -31,7 +31,7 @@ object Executors {
         ))
         processor.registerKey(KeyData.parent(
             "cmd",
-            ExecutorData.parent(execModeForPermOP, COMMAND_EXECUTOR),
+            ExecutorData.parent(ExecutionMode.SYNCHRONOUS, COMMAND_EXECUTOR),
             COMMAND_PARSER
         ))
         processor.registerKey(KeyData.child(
