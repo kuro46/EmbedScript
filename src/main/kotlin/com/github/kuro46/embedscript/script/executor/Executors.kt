@@ -1,5 +1,6 @@
 package com.github.kuro46.embedscript.script.executor
 
+import com.github.kuro46.embedscript.permission.PermissionDetector
 import com.github.kuro46.embedscript.script.ExecutionMode
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.parser.ScriptBuilder
@@ -34,10 +35,16 @@ object Executors {
             ExecutorData.parent(ExecutionMode.SYNCHRONOUS, COMMAND_EXECUTOR),
             COMMAND_PARSER
         ))
-        processor.registerKey(KeyData.child(
-            "cmd.bypass",
-            ExecutorData.child(CommandBypassExecutor(processor.embedScript.plugin))
-        ))
+        CommandBypassExecutor(
+            processor.embedScript.plugin,
+            processor.embedScript.permissionDetector
+        ).apply {
+            processor.registerKey(KeyData.child(
+                "cmd.bypass",
+                ExecutorData.child(this),
+                this
+            ))
+        }
         processor.registerKey(KeyData.parent(
             "console",
             ExecutorData.parent(ExecutionMode.SYNCHRONOUS, CONSOLE_EXECUTOR),
@@ -209,7 +216,10 @@ object Executors {
 /**
  * @author shirokuro
  */
-private class CommandBypassExecutor(val plugin: Plugin) : Executor() {
+private class CommandBypassExecutor(
+    val plugin: Plugin,
+    val permissionDetector: PermissionDetector
+) : Executor(), Parser {
     override fun execute(player: Player, values: List<String>): ExecutionResult {
         if (values.isEmpty()) {
             return ExecutionResult(AfterExecuteAction.CONTINUE)
@@ -228,5 +238,19 @@ private class CommandBypassExecutor(val plugin: Plugin) : Executor() {
         }
 
         return resultBuilder.build(AfterExecuteAction.CONTINUE)
+    }
+
+    override fun parse(key: String, parseFrom: List<String>, parseTo: ScriptBuilder) {
+        val add = if (parseFrom.size == 1 && parseFrom.last().isEmpty()) {
+            parseTo.flatRootEntry.getValue("cmd")
+                .map { it.split(' ') }
+                .flatMap {
+                    permissionDetector.getPreferredPermission(it)
+                        ?: throw IllegalStateException("Preferred Permission not found.")
+                }
+        } else {
+            parseFrom
+        }
+        parseTo.flatRootEntry[key] = ArrayList(add)
     }
 }
