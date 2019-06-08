@@ -3,21 +3,16 @@ package com.github.kuro46.embedscript.migrator
 import com.github.kuro46.embedscript.EmbedScript
 import com.github.kuro46.embedscript.script.EventType
 import com.github.kuro46.embedscript.script.ParseException
-import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
+import com.github.kuro46.embedscript.script.ScriptUtils
 import com.github.kuro46.embedscript.util.MojangUtils
-import com.github.kuro46.embedscript.util.Utils
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.Locale
 import java.util.UUID
 import java.util.regex.Pattern
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.set
 
 /**
  * @author shirokuro
@@ -48,7 +43,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
                 val dataList = worldSection.getStringList(coordinate)
 
                 val author = getAuthorFromData(dataList[0]) ?: throw ParseException("Failed to find author")
-                val script = createScriptFromLegacyFormat(author, eventType, dataList[1])
+                val script = ScriptUtils.createScriptFromLegacyFormat(processor, author, eventType, dataList[1])
                 val position = createPositionFromRawLocation(world, coordinate)
 
                 mergeTo.add(position, script)
@@ -70,62 +65,6 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
         val configuration = YamlConfiguration()
         Files.newBufferedReader(path).use { reader -> configuration.load(reader) }
         return configuration
-    }
-
-    /**
-     * Convert from legacy(ScriptBlock) format(e.g. '@command /cmd arg')<br></br>
-     * Array(e.g. [@command /cmd1 arg][@bypass /cmd2 arg]) is unsupported
-     *
-     * @param author author of this script
-     * @param legacy legacy format of script
-     * @return script
-     */
-    private fun createScriptFromLegacyFormat(
-        author: UUID,
-        eventType: EventType,
-        legacy: String
-    ): Script {
-        /*
-         * Targets
-         * @bypassperm:permission action
-         * @command action
-         * @player action
-         * @bypass action
-         */
-
-        val pair = Utils.splitByFirstSpace(legacy) ?: throw ParseException("Illegal script")
-        val key = pair.first
-        val value = "[${pair.second}]"
-
-        val formatBuilder = LinkedHashMap<String, String>()
-
-        formatBuilder["@preset"] = "[${eventType.presetName}]"
-
-        when (key.toLowerCase(Locale.ENGLISH)) {
-            "@command" -> formatBuilder["@cmd"] = value
-            "@player" -> formatBuilder["@say"] = value
-            "@bypass" -> formatBuilder["@preset"] = "[alternative-bypass]"
-            else -> {
-                val bypassPermPattern = Pattern.compile("^@bypassperm:(.+)", Pattern.CASE_INSENSITIVE)
-                val bypassPermPatternMatcher = bypassPermPattern.matcher(key)
-
-                if (bypassPermPatternMatcher.find()) {
-                    formatBuilder["@cmd"] = value
-                    formatBuilder["@cmd.bypass"] = "[${bypassPermPatternMatcher.group(1)}]"
-                } else {
-                    throw ParseException("'$key' is unsupported action type!")
-                }
-            }
-        }
-
-        val formattedByNewVersion = StringBuilder()
-        for ((key1, value1) in formatBuilder) {
-            formattedByNewVersion.append(key1).append(" ").append(value1).append(" ")
-        }
-        // trim a space character at end of string
-        val substring = formattedByNewVersion.substring(0, formattedByNewVersion.length - 1)
-
-        return processor.parse(-1, author, substring)
     }
 
     private fun createPositionFromRawLocation(world: String, rawLocation: String): ScriptPosition {
