@@ -1,6 +1,7 @@
 package com.github.kuro46.embedscript
 
 import com.github.kuro46.embedscript.api.EmbedScriptAPI
+import com.github.kuro46.embedscript.command.AliasCommandHandler
 import com.github.kuro46.embedscript.command.ESCommandHandler
 import com.github.kuro46.embedscript.listener.InteractListener
 import com.github.kuro46.embedscript.listener.MoveListener
@@ -100,10 +101,10 @@ class EmbedScript private constructor(val plugin: Plugin) {
 
     private fun registerCommands() {
         for (eventType in EventType.values()) {
-            val executor = ESCommandHandler(this, eventType.presetName)
+            val handler = AliasCommandHandler(eventType, scriptProcessor, requests)
             val pluginCommand = Bukkit.getPluginCommand(eventType.commandName)
-            pluginCommand.executor = executor
-            pluginCommand.tabCompleter = executor
+            pluginCommand.executor = handler
+            pluginCommand.tabCompleter = handler
         }
         val pluginCommand = Bukkit.getPluginCommand("embedscript")
         val esCommandExecutor = ESCommandHandler(this)

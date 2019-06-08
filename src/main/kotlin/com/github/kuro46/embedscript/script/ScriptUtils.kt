@@ -1,5 +1,11 @@
 package com.github.kuro46.embedscript.script
 
+import com.github.kuro46.embedscript.script.executor.ScriptProcessor
+import com.github.kuro46.embedscript.util.Utils
+import java.util.Locale
+import java.util.UUID
+import java.util.regex.Pattern
+
 /**
  * @author shirokuro
  */
@@ -11,5 +17,62 @@ object ScriptUtils {
 
     fun toString(value: String): String {
         return "[$value]"
+    }
+
+    /**
+     * Convert from legacy(ScriptBlock) format(e.g. '@command /cmd arg')<br></br>
+     * Array(e.g. [@command /cmd1 arg][@bypass /cmd2 arg]) is unsupported
+     *
+     * @param author author of this script
+     * @param legacy legacy format of script
+     * @return script
+     */
+    fun createScriptFromLegacyFormat(
+        processor: ScriptProcessor,
+        author: UUID,
+        eventType: EventType,
+        legacy: String
+    ): Script {
+        /*
+         * Targets
+         * @bypassperm:permission action
+         * @command action
+         * @player action
+         * @bypass action
+         */
+
+        val pair = Utils.splitByFirstSpace(legacy) ?: throw ParseException("Illegal script")
+        val key = pair.first
+        val value = "[${pair.second}]"
+
+        val formatBuilder = LinkedHashMap<String, String>()
+
+        formatBuilder["@preset"] = "[${eventType.presetName}]"
+
+        when (key.toLowerCase(Locale.ENGLISH)) {
+            "@command" -> formatBuilder["@cmd"] = value
+            "@player" -> formatBuilder["@say"] = value
+            "@bypass" -> formatBuilder["@preset"] = "[alternative-bypass]"
+            else -> {
+                val bypassPermPattern = Pattern.compile("^@bypassperm:(.+)", Pattern.CASE_INSENSITIVE)
+                val bypassPermPatternMatcher = bypassPermPattern.matcher(key)
+
+                if (bypassPermPatternMatcher.find()) {
+                    formatBuilder["@cmd"] = value
+                    formatBuilder["@cmd.bypass"] = "[${bypassPermPatternMatcher.group(1)}]"
+                } else {
+                    throw ParseException("'$key' is unsupported action type!")
+                }
+            }
+        }
+
+        val formattedByNewVersion = StringBuilder()
+        for ((key1, value1) in formatBuilder) {
+            formattedByNewVersion.append(key1).append(" ").append(value1).append(" ")
+        }
+        // trim a space character at end of string
+        val substring = formattedByNewVersion.substring(0, formattedByNewVersion.length - 1)
+
+        return processor.parse(-1, author, substring)
     }
 }

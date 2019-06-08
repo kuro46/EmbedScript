@@ -7,10 +7,8 @@ import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
 import com.github.kuro46.embedscript.permission.PermissionDetector
 import com.github.kuro46.embedscript.request.Request
 import com.github.kuro46.embedscript.script.ParseException
-import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
-import com.github.kuro46.embedscript.script.ScriptUtils
 import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.CommandHandler
 import com.github.kuro46.embedscript.util.command.CommandHandlerUtil
@@ -27,8 +25,7 @@ import kotlin.streams.toList
  * @author shirokuro
  */
 class ESCommandHandler constructor(
-    embedScript: EmbedScript,
-    private val presetName: String? = null
+    embedScript: EmbedScript
 ) : RootCommandHandler() {
     private val scriptProcessor = embedScript.scriptProcessor
     private val requests = embedScript.requests
@@ -47,8 +44,8 @@ class ESCommandHandler constructor(
             embedScript.permissionDetector
         ))
         registerChildHandler("teleport", TeleportHandler(embedScript.plugin))
-        registerChildHandler("list", ListHandlers.ListHandler(presetName, scriptProcessor, scriptManager))
-        registerChildHandler("listAll", ListHandlers.ListAllHandler(presetName, scriptProcessor, scriptManager))
+        registerChildHandler("list", ListHandlers.ListHandler(scriptManager))
+        registerChildHandler("listAll", ListHandlers.ListAllHandler(scriptManager))
         registerChildHandler("view", ViewHandler(requests, scriptManager))
         registerChildHandler("remove", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
             val player = sender as Player
@@ -75,14 +72,8 @@ class ESCommandHandler constructor(
         if (args.isEmpty()) {
             return false
         }
-        val stringScript = args.joinToString(" ")
-        val script: Script
-        try {
-            val preset = if (presetName == null)
-                ""
-            else
-                "@preset " + ScriptUtils.toString(presetName) + " "
-            script = scriptProcessor.parse(System.currentTimeMillis(), player.uniqueId, preset + stringScript)
+        val script = try {
+            scriptProcessor.parse(System.currentTimeMillis(), player.uniqueId, args.joinToString(" "))
         } catch (e: ParseException) {
             player.sendMessage(Prefix.ERROR + "Failed to parse script. ${e.message}")
             return true
