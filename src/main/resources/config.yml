@@ -1,3 +1,4 @@
+cancel-interact-event: true
 presets:
   interact: "@listenClick [ALL] @listenPush [ALL]"
   walk: "@listenMove [GROUND]"

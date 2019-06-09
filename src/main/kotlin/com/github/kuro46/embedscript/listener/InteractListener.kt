@@ -29,6 +29,7 @@ class InteractListener(embedScript: EmbedScript) : Listener {
     private val scriptManager = embedScript.scriptManager
     private val scriptProcessor = embedScript.scriptProcessor
     private val requests = embedScript.requests
+    private val configuration = embedScript.configuration
 
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
@@ -54,6 +55,7 @@ class InteractListener(embedScript: EmbedScript) : Listener {
 
         if (filteredScriptList.isNotEmpty()) {
             scriptProcessor.execute(player, filteredScriptList, position)
+            event.isCancelled = configuration.cancelInteractEvent
         }
     }
 

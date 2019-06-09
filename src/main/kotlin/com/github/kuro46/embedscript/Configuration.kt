@@ -16,6 +16,8 @@ class Configuration private constructor(dataFolder: Path) {
         get() = configurationData.presets
     val logConfiguration: LogConfiguration
         get() = configurationData.logConfiguration
+    val cancelInteractEvent: Boolean
+        get() = configurationData.cancelInteractEvent
 
     init {
         configurationData = load()
@@ -31,6 +33,7 @@ class Configuration private constructor(dataFolder: Path) {
                 .use { reader -> YamlConfiguration.loadConfiguration(reader) }
 
         return ConfigurationData(
+            configuration.getBoolean(KEY_CANCEL_INTERACT_EVENT),
             loadPresets(configuration),
             loadLogging(configuration)
         )
@@ -58,6 +61,7 @@ class Configuration private constructor(dataFolder: Path) {
         private const val KEY_LOGGING_ENABLED = "logging.enabled"
         private const val KEY_LOGGING_FORMAT = "logging.format"
         private const val KEY_PRESETS = "presets"
+        private const val KEY_CANCEL_INTERACT_EVENT = "cancel-interact-event"
 
         fun load(dataFolder: Path): Configuration {
             return Configuration(dataFolder)
@@ -65,7 +69,11 @@ class Configuration private constructor(dataFolder: Path) {
     }
 }
 
-private data class ConfigurationData(val presets: Presets, val logConfiguration: LogConfiguration)
+private data class ConfigurationData(
+    val cancelInteractEvent: Boolean,
+    val presets: Presets,
+    val logConfiguration: LogConfiguration
+)
 
 data class LogConfiguration(val enabled: Boolean, val format: String)
 
