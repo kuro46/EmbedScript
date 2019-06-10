@@ -1,8 +1,16 @@
+# Set whether to cancel the interact event
 cancel-interact-event: true
+# List of presets. This preset is used by '@preset'
 presets:
+  # A preset focused for interact event. This value is used by /sbinteract
   interact: "@listenClick [ALL] @listenPush [ALL]"
+  # A preset focused for walk event. This value is used by /sbwalk
   walk: "@listenMove [GROUND]"
+  # A preset for ScriptBlock's @bypass
   alternative-bypass: "@cmd.bypass []"
+# Logging configurations
 logging:
+  # Set whether to log script execution
   enabled: true
+  # Log is formatted by this string
   format: "<trigger> executed '<script>' at <trigger_world>: <trigger_x>, <trigger_y>, <trigger_z>"
