@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class ScriptProcessor(val embedScript: EmbedScript) {
     val keys = ConcurrentHashMap<String, KeyData>()
-    val executionLogger = ExecutionLogger(embedScript.logger, embedScript.configuration.logConfiguration)
+    val executionLogger = ExecutionLogger(embedScript.logger, embedScript.configuration)
     val scriptReplacer = Replacer<Player>()
 
     init {
