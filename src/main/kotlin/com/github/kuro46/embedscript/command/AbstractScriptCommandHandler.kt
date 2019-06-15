@@ -1,19 +1,27 @@
 package com.github.kuro46.embedscript.command
 
 import com.github.kuro46.embedscript.script.executor.ScriptProcessor
-import com.github.kuro46.embedscript.util.command.Arguments
-import com.github.kuro46.embedscript.util.command.TabCompleter
-import org.bukkit.command.CommandSender
+import com.github.kuro46.embedscript.util.command.ExecutionThreadType
+import com.github.kuro46.embedscript.util.command.CommandHandler
+import com.github.kuro46.embedscript.util.command.CommandSenderHolder
+import com.github.kuro46.embedscript.util.command.ArgumentInfoList
 
 /**
  * @author shirokuro
  */
-class ScriptTabCompleter(private val scriptProcessor: ScriptProcessor) : TabCompleter {
-    override fun onTabComplete(
-        sender: CommandSender,
-        uncompletedArg: String,
-        uncompletedArgIndex: Int,
-        completedArgs: Arguments
+abstract class AbstractScriptCommandHandler(
+    private val scriptProcessor: ScriptProcessor,
+    executionThreadType: ExecutionThreadType,
+    argumentInfoList: ArgumentInfoList
+) : CommandHandler(executionThreadType, argumentInfoList) {
+
+    abstract override fun handleCommand(senderHolder: CommandSenderHolder, args: Map<String, String>)
+
+    override fun handleTabComplete(
+        senderHolder: CommandSenderHolder,
+        commandName: String,
+        completedArgs: List<String>,
+        uncompletedArg: String
     ): List<String> {
         return if (isKey(completedArgs)) {
             // uncompleted arg is key

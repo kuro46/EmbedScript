@@ -5,15 +5,16 @@ import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.util.PageUtils
-import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.CommandHandler
+import com.github.kuro46.embedscript.util.command.ExecutionThreadType
+import com.github.kuro46.embedscript.util.command.ArgumentInfoList
+import com.github.kuro46.embedscript.util.command.CommandSenderHolder
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
-import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.io.Serializable
 import java.util.ArrayList
@@ -31,21 +32,32 @@ import java.util.function.Function as JavaFunction
 object ListHandlers {
     class ListHandler(
         private val scriptManager: ScriptManager
-    ) : CommandHandler(SenderType.Player()) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            val world = args.getOrElse(0) { player.world.name }
-            val pageNumber = args.getInt(sender, 1, 1) ?: return true
+    ) : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(
+            emptyList(),
+            OptionalArguments(listOf(
+                OptionalArgumentInfo("world", null),
+                OptionalArgumentInfo("pageNumber", "1")
+            ))
+        )
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            val player = senderHolder.tryCastToPlayerOrMessage() ?: return
+            val world = args.getOrElse("world") { player.world.name }
+            val pageNumber = args.getValue("pageNumber").toInt()
             val scope = ListScope.World(world)
             list(scriptManager, player, scope, null, pageNumber - 1)
-            return true
         }
 
-        override fun onTabComplete(
-            sender: CommandSender,
-            uncompletedArg: String,
-            uncompletedArgIndex: Int,
-            completedArgs: Arguments
+        override fun handleTabComplete(
+            senderHolder: CommandSenderHolder,
+            commandName: String,
+            completedArgs: List<String>,
+            uncompletedArg: String
         ): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
@@ -60,17 +72,33 @@ object ListHandlers {
 
     class ListAllHandler(
         private val scriptManager: ScriptManager
-    ) : CommandHandler(SenderType.Player()) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            val pageNumber = args.getInt(sender, 0, 1) ?: return true
+    ) : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(
+            emptyList(),
+            OptionalArguments(listOf(
+                OptionalArgumentInfo("pageNumber", "1")
+            ))
+        )
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            val player = senderHolder.tryCastToPlayerOrMessage() ?: return
+            val pageNumber = args.getValue("pageNumber").toInt()
             val scope = ListScope.Server
             list(scriptManager, player, scope, null, pageNumber - 1)
-            return true
         }
     }
 
-    fun list(scriptManager: ScriptManager, player: Player, scope: ListScope, filter: Script?, pageIndex: Int) {
+    fun list(
+        scriptManager: ScriptManager,
+        player: Player,
+        scope: ListScope,
+        filter: Script?,
+        pageIndex: Int
+    ) {
         val messages = scriptManager.getScripts().entries.stream()
             .filter { entry ->
                 when (scope) {
@@ -246,5 +274,4 @@ object ListHandlers {
             return false
         }
     }
-
 }

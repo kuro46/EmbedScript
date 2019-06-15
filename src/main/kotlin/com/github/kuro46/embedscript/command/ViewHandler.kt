@@ -8,9 +8,10 @@ import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtils
 import com.github.kuro46.embedscript.util.MojangUtils
 import com.github.kuro46.embedscript.util.PageUtils
-import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.CommandHandler
-import com.github.kuro46.embedscript.util.command.CommandHandlerUtil
+import com.github.kuro46.embedscript.util.command.ExecutionThreadType
+import com.github.kuro46.embedscript.util.command.ArgumentInfoList
+import com.github.kuro46.embedscript.util.command.CommandSenderHolder
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
@@ -29,31 +30,42 @@ import kotlin.streams.toList
 class ViewHandler(
     private val requests: Requests,
     private val scriptManager: ScriptManager
-) : CommandHandler() {
-    override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-        return when {
+) : CommandHandler(
+    ExecutionThreadType.ASYNCHRONOUS,
+    ArgumentInfoList(
+        emptyList(),
+        OptionalArguments(listOf(
+            OptionalArgumentInfo("world", null),
+            OptionalArgumentInfo("x", null),
+            OptionalArgumentInfo("y", null),
+            OptionalArgumentInfo("z", null),
+            OptionalArgumentInfo("pageNumber", "1")
+        ))
+    )
+) {
+    override fun handleCommand(
+        senderHolder: CommandSenderHolder,
+        args: Map<String, String>
+    ) {
+        when {
             // pass to InteractListener
             args.isEmpty() -> {
-                passToInteractListener(sender)
-                true
+                passToInteractListener(senderHolder)
             }
             // display script information to player!
-            args.isElementEnough(3) -> {
-                displayScriptInformation(args, sender)
-                true
+            else -> {
+                displayScriptInformation(args, senderHolder.commandSender)
             }
-            // We don't know
-            else -> false
         }
     }
 
-    override fun onTabComplete(
-        sender: CommandSender,
-        uncompletedArg: String,
-        uncompletedArgIndex: Int,
-        completedArgs: Arguments
+    override fun handleTabComplete(
+        senderHolder: CommandSenderHolder,
+        commandName: String,
+        completedArgs: List<String>,
+        uncompletedArg: String
     ): List<String> {
-        return if (uncompletedArgIndex == 0) {
+        return if (completedArgs.isEmpty()) {
             // wants suggest worlds
             Bukkit.getWorlds().stream().map { it.name }.toList()
         } else {
@@ -61,18 +73,21 @@ class ViewHandler(
         }
     }
 
-    private fun passToInteractListener(sender: CommandSender) {
-        val player = CommandHandlerUtil.castToPlayer(sender) ?: return
+    private fun passToInteractListener(senderHolder: CommandSenderHolder) {
+        val player = senderHolder.tryCastToPlayerOrMessage() ?: return
         player.sendMessage(Prefix.INFO + "Please click any block...")
         requests.putRequest(player, Request.View)
     }
 
-    private fun displayScriptInformation(args: Arguments, sender: CommandSender) {
-        val world = args[0]
-        val x = args.getInt(sender, 1) ?: return
-        val y = args.getInt(sender, 2) ?: return
-        val z = args.getInt(sender, 3) ?: return
-        val pageNumber = args.getInt(sender, 4, 1) ?: return
+    private fun displayScriptInformation(
+        args: Map<String, String>,
+        sender: CommandSender
+    ) {
+        val world = args.getValue("world")
+        val x = args.getValue("x").toInt()
+        val y = args.getValue("y").toInt()
+        val z = args.getValue("z").toInt()
+        val pageNumber = args.getValue("pageNumber").toInt()
 
         val position = ScriptPosition(world, x, y, z)
         val scripts = scriptManager.getScripts()

@@ -3,6 +3,8 @@ package com.github.kuro46.embedscript
 import com.github.kuro46.embedscript.api.EmbedScriptAPI
 import com.github.kuro46.embedscript.command.AliasCommandHandler
 import com.github.kuro46.embedscript.command.ESCommandHandler
+import com.github.kuro46.embedscript.util.command.CommandHandlerManager
+import com.github.kuro46.embedscript.util.Scheduler
 import com.github.kuro46.embedscript.listener.InteractListener
 import com.github.kuro46.embedscript.listener.MoveListener
 import com.github.kuro46.embedscript.permission.PermissionDetector
@@ -20,6 +22,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Arrays
 import java.util.logging.Logger
+import java.util.concurrent.Executor
 
 /**
  * @author shirokuro
@@ -100,20 +103,28 @@ class EmbedScript private constructor(val plugin: Plugin) {
     }
 
     private fun registerCommands() {
+        val commandHandlerManager = CommandHandlerManager(
+            object : Executor {
+                override fun execute(runnable: Runnable) {
+                    Scheduler.execute() { runnable.run() }
+                }
+            },
+            plugin
+        )
         for (eventType in EventType.values()) {
-            val handler = AliasCommandHandler(eventType, scriptProcessor, requests)
-            val pluginCommand = Bukkit.getPluginCommand(eventType.commandName)
-            pluginCommand.executor = handler
-            pluginCommand.tabCompleter = handler
+            AliasCommandHandler.registerHandlers(
+                commandHandlerManager,
+                eventType,
+                scriptProcessor,
+                requests
+            )
         }
-        val pluginCommand = Bukkit.getPluginCommand("embedscript")
-        val esCommandExecutor = ESCommandHandler(this)
-        pluginCommand.executor = esCommandExecutor
-        pluginCommand.tabCompleter = esCommandExecutor
+        ESCommandHandler(this, commandHandlerManager)
     }
 
     private fun registerESAPI() {
         Bukkit.getServicesManager().register(
+
             EmbedScriptAPI::class.java,
             EmbedScriptAPI(scriptProcessor),
             plugin,

@@ -7,7 +7,6 @@ enum class ClickType {
     RIGHT,
     LEFT;
 
-
     companion object {
 
         fun getByAction(action: Action): ClickType? {

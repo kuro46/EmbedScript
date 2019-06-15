@@ -82,7 +82,7 @@ class InteractListener(embedScript: EmbedScript) : Listener {
         }
 
         val pushTypeOfEvent = PushType.getByEvent(event) ?: return false
-        //Not PHYSICAL or Unknown material
+        // Not PHYSICAL or Unknown material
 
         for (pushType in pushTypes) {
             if (pushType == PushType.ALL || pushType == pushTypeOfEvent) {

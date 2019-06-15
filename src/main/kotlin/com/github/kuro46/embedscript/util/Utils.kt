@@ -13,6 +13,5 @@ object Utils {
         return if (!splitMatcher.find()) {
             null
         } else Pair(splitMatcher.group("left"), splitMatcher.group("right"))
-
     }
 }

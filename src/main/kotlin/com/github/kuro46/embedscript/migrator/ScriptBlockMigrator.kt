@@ -68,7 +68,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
     }
 
     private fun createPositionFromRawLocation(world: String, rawLocation: String): ScriptPosition {
-        //index0: world, 1: x, 2: y, 3: z
+        // index0: world, 1: x, 2: y, 3: z
         val coordinates = rawLocation.split(',').dropLastWhile { it.isEmpty() }
         return ScriptPosition(
             world,

@@ -8,10 +8,13 @@ import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptUtils
 import com.github.kuro46.embedscript.script.executor.ScriptProcessor
-import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.CommandHandler
-import com.github.kuro46.embedscript.util.command.RootCommandHandler
-import org.bukkit.command.CommandSender
+import com.github.kuro46.embedscript.util.command.CommandHandlerManager
+import com.github.kuro46.embedscript.util.command.ExecutionThreadType
+import com.github.kuro46.embedscript.util.command.ArgumentInfoList
+import com.github.kuro46.embedscript.util.command.LastArgument
+import com.github.kuro46.embedscript.util.command.CommandSenderHolder
+import com.github.kuro46.embedscript.util.command.LongArgumentInfo
 import org.bukkit.entity.Player
 
 /**
@@ -19,49 +22,57 @@ import org.bukkit.entity.Player
  *
  * @author shirokuro
  */
-class AliasCommandHandler(
-    eventType: EventType,
-    scriptProcessor: ScriptProcessor,
-    requests: Requests
-) : RootCommandHandler() {
-    init {
+object AliasCommandHandler {
+    fun registerHandlers(
+        manager: CommandHandlerManager,
+        eventType: EventType,
+        scriptProcessor: ScriptProcessor,
+        requests: Requests
+    ) {
+        val rootCommand = eventType.commandName
         val scriptRequester = ScriptRequester(eventType.presetName, scriptProcessor, requests)
 
-        registerChildHandler("help", HelpHandler(eventType))
-        registerChildHandler("add", ModifyCommandHandler(ModifyRequestType.Add, scriptRequester))
-        registerChildHandler("embed", ModifyCommandHandler(ModifyRequestType.Embed, scriptRequester))
-        registerChildHandler("sbAdd", SBModifyCommandHandler(
+        manager.registerHandler("$rootCommand help", HelpHandler(eventType))
+        manager.registerHandler("$rootCommand add", ModifyCommandHandler(
+            ModifyRequestType.Add,
+            scriptRequester
+        ))
+        manager.registerHandler("$rootCommand embed", ModifyCommandHandler(
+            ModifyRequestType.Embed,
+            scriptRequester
+        ))
+        manager.registerHandler("$rootCommand sbAdd", SBModifyCommandHandler(
             scriptRequester,
             ModifyRequestType.Add,
             eventType,
             scriptProcessor
         ))
-        registerChildHandler("sbCreate", SBModifyCommandHandler(
+        manager.registerHandler("$rootCommand sbCreate", SBModifyCommandHandler(
             scriptRequester,
             ModifyRequestType.Embed,
             eventType,
             scriptProcessor
         ))
     }
-
-    override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-        return false
-    }
 }
 
-private class HelpHandler(private val eventType: EventType) : CommandHandler() {
-    override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
+private class HelpHandler(private val eventType: EventType) : CommandHandler(
+    ExecutionThreadType.ASYNCHRONOUS,
+    ArgumentInfoList(emptyList(), LastArgument.NotAllow)
+) {
+    override fun handleCommand(
+        senderHolder: CommandSenderHolder,
+        args: Map<String, String>
+    ) {
         @Suppress("NAME_SHADOWING")
         val command = "/${eventType.commandName}"
-        sender.sendMessage("""
+        senderHolder.commandSender.sendMessage("""
             $command help - Displays this message.
             $command add - Adds a script to the clicked block. (prefixed with '@preset [${eventType.presetName}]')
             $command embed - Embeds a script to the clicked block. (prefixed with '@preset [${eventType.presetName}]')
             $command sbAdd - Add a script to the clicked block. (similar to '/sb${eventType.name.toLowerCase()} add')
             $command sbCreate - Embeds a script to the clicked block. (similar to '/sb${eventType.name.toLowerCase()} create')
         """.trimIndent())
-
-        return true
     }
 }
 
@@ -70,34 +81,43 @@ private class SBModifyCommandHandler(
     private val requestType: ModifyRequestType,
     private val eventType: EventType,
     private val processor: ScriptProcessor
-) : CommandHandler(SenderType.Player()) {
-    override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-        @Suppress("NAME_SHADOWING")
-        val sender = sender as Player
+) : CommandHandler(
+    ExecutionThreadType.ASYNCHRONOUS,
+    ArgumentInfoList(emptyList(), LongArgumentInfo("script", true))
+) {
+    override fun handleCommand(
+        senderHolder: CommandSenderHolder,
+        args: Map<String, String>
+    ) {
+        val player = senderHolder.tryCastToPlayerOrMessage() ?: return
         val script = try {
             ScriptUtils.createScriptFromLegacyFormat(
                 processor,
-                sender.uniqueId,
+                player.uniqueId,
                 eventType,
-                args.joinToString(" ")
+                args.getValue("script")
             )
         } catch (e: ParseException) {
-            sender.sendMessage(Prefix.ERROR + "Failed to parse the script: ${e.message}")
-            return true
+            player.sendMessage(Prefix.ERROR + "Failed to parse the script: ${e.message}")
+            return
         }
-        scriptRequester.request(sender, script, requestType)
-
-        return true
+        scriptRequester.request(player, script, requestType)
     }
 }
 
 private class ModifyCommandHandler(
     private val requestType: ModifyRequestType,
     private val scriptRequester: ScriptRequester
-) : CommandHandler(SenderType.Player()) {
-    override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-        scriptRequester.request(sender as Player, args, requestType)
-        return true
+) : CommandHandler(
+    ExecutionThreadType.ASYNCHRONOUS,
+    ArgumentInfoList(emptyList(), LongArgumentInfo("script", true))
+) {
+    override fun handleCommand(
+        senderHolder: CommandSenderHolder,
+        args: Map<String, String>
+    ) {
+        val player = senderHolder.tryCastToPlayerOrMessage() ?: return
+        scriptRequester.request(player, args.getValue("script"), requestType)
     }
 }
 
@@ -106,13 +126,19 @@ private class ScriptRequester(
     private val scriptProcessor: ScriptProcessor,
     private val requests: Requests
 ) {
-    fun request(player: Player, args: Arguments, modifyRequestType: ModifyRequestType): Boolean {
-        if (args.isEmpty()) {
-            return false
-        }
+    fun request(
+        player: Player,
+        stringScript: String,
+        modifyRequestType: ModifyRequestType
+    ): Boolean {
         val script: Script = try {
-            val stringScript = "@preset ${ScriptUtils.toString(presetName)} ${args.joinToString(" ")}"
-            scriptProcessor.parse(System.currentTimeMillis(), player.uniqueId, stringScript)
+            @Suppress("NAME_SHADOWING")
+            val stringScript = "@preset ${ScriptUtils.toString(presetName)} $stringScript"
+            scriptProcessor.parse(
+                System.currentTimeMillis(),
+                player.uniqueId,
+                stringScript
+            )
         } catch (e: ParseException) {
             player.sendMessage(Prefix.ERROR + "Failed to parse script. ${e.message}")
             return true

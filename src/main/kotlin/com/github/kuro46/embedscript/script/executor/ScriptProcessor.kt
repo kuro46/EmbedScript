@@ -59,7 +59,7 @@ class ScriptProcessor(val embedScript: EmbedScript) {
 
     private fun applyPreset(target: String): String {
         val parsed = StringParser.parse(target)
-        val presets = parsed["preset"] ?: return target// @preset is not present
+        val presets = parsed["preset"] ?: return target // @preset is not present
 
         val applied = StringJoiner(" ")
         for (preset in presets) {

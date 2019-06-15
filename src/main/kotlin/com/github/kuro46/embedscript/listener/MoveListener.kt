@@ -64,9 +64,9 @@ class MoveListener(embedScript: EmbedScript) : Listener {
 
     private fun validateGroundMoveType(event: PlayerMoveEvent): Boolean {
         val to = event.to
-        //Expects air
+        // Expects air
         val upperSurface = to.block
-        //Expects non-air
+        // Expects non-air
         val downerSurface = upperSurface.getRelative(BlockFace.DOWN)
 
         return upperSurface.type == Material.AIR &&

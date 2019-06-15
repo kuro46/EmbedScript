@@ -52,10 +52,10 @@ class StringParser private constructor(target: String) {
             return State.KEY
         }
         // value to other
-        if (currentState == State.VALUE
-            && iterator.peekPrev() != '\\'
-            && iterator.current() == ']'
-            && iterator.peekNext() == ' '
+        if (currentState == State.VALUE &&
+            iterator.peekPrev() != '\\' &&
+            iterator.current() == ']' &&
+            iterator.peekNext() == ' '
         ) {
             return State.OTHER
         }
@@ -118,8 +118,8 @@ private class ValueParser private constructor(target: String) {
             return State.DELIMITER
         }
 
-        if (currentState == State.DELIMITER
-            && iterator.current() == '['
+        if (currentState == State.DELIMITER &&
+            iterator.current() == '['
         ) {
 
             return if (iterator.peekNext() == ']') {
@@ -128,9 +128,9 @@ private class ValueParser private constructor(target: String) {
                 State.VALUE
             }
         }
-        if (currentState == State.VALUE
-            && iterator.current() != '\\'
-            && iterator.peekNext() == ']'
+        if (currentState == State.VALUE &&
+            iterator.current() != '\\' &&
+            iterator.peekNext() == ']'
         ) {
             return State.DELIMITER
         }

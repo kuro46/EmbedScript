@@ -9,15 +9,16 @@ import com.github.kuro46.embedscript.request.Request
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
-import com.github.kuro46.embedscript.util.command.Arguments
 import com.github.kuro46.embedscript.util.command.CommandHandler
-import com.github.kuro46.embedscript.util.command.CommandHandlerUtil
-import com.github.kuro46.embedscript.util.command.RootCommandHandler
+import com.github.kuro46.embedscript.util.command.CommandHandlerManager
+import com.github.kuro46.embedscript.util.command.ExecutionThreadType
+import com.github.kuro46.embedscript.util.command.ArgumentInfoList
+import com.github.kuro46.embedscript.util.command.LastArgument
+import com.github.kuro46.embedscript.util.command.CommandSenderHolder
+import com.github.kuro46.embedscript.util.command.LongArgumentInfo
 import org.bukkit.Bukkit
 import org.bukkit.Location
-import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.plugin.Plugin
 import java.nio.file.Files
 import kotlin.streams.toList
 
@@ -25,8 +26,9 @@ import kotlin.streams.toList
  * @author shirokuro
  */
 class ESCommandHandler constructor(
-    embedScript: EmbedScript
-) : RootCommandHandler() {
+    embedScript: EmbedScript,
+    commandHandlerManager: CommandHandlerManager
+) {
     private val scriptProcessor = embedScript.scriptProcessor
     private val requests = embedScript.requests
 
@@ -34,46 +36,109 @@ class ESCommandHandler constructor(
         val scriptManager = embedScript.scriptManager
         val scriptExporter = embedScript.scriptExporter
 
-        registerChildHandler("help", HelpHandler())
-        registerChildHandler("migrate", MigrateHandler(embedScript))
-        registerChildHandler("export", ExportHandler(scriptExporter))
-        registerChildHandler("import", ImportHandler(scriptExporter))
-        registerChildHandler("reload", ReloadHandler(
-            embedScript.configuration,
-            scriptManager,
-            embedScript.permissionDetector
-        ))
-        registerChildHandler("teleport", TeleportHandler(embedScript.plugin))
-        registerChildHandler("list", ListHandlers.ListHandler(scriptManager))
-        registerChildHandler("listAll", ListHandlers.ListAllHandler(scriptManager))
-        registerChildHandler("view", ViewHandler(requests, scriptManager))
-        registerChildHandler("remove", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, _ ->
-            val player = sender as Player
-            player.sendMessage(Prefix.INFO + "Please click any block...")
-            requests.putRequest(player, Request.Remove)
-            true
-        })
-        val scriptTabCompleter = ScriptTabCompleter(scriptProcessor)
-        registerChildHandler("embed", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, args ->
-            val player = sender as Player
-            modifyAction(player, args, false)
-        }.apply { this.tabCompleter = scriptTabCompleter })
-        registerChildHandler("add", CommandHandlerUtil.newHandler(SenderType.Player()) { sender, _, args ->
-            val player = sender as Player
-            modifyAction(player, args, true)
-        }.apply { this.tabCompleter = scriptTabCompleter })
+        commandHandlerManager.registerHandler("embedscript help", HelpHandler())
+        commandHandlerManager.registerHandler(
+            "embedscript migrate",
+            MigrateHandler(embedScript)
+        )
+        commandHandlerManager.registerHandler(
+            "embedscript export",
+            ExportHandler(scriptExporter)
+        )
+        commandHandlerManager.registerHandler(
+            "embedscript import",
+            ImportHandler(scriptExporter)
+        )
+        commandHandlerManager.registerHandler(
+            "embedscript reload",
+            ReloadHandler(
+                embedScript.configuration,
+                scriptManager,
+                embedScript.permissionDetector
+            )
+        )
+        commandHandlerManager.registerHandler(
+            "embedscript teleport",
+            TeleportHandler()
+        )
+        commandHandlerManager.registerHandler(
+            "embedscript list",
+            ListHandlers.ListHandler(scriptManager)
+        )
+        commandHandlerManager.registerHandler(
+            "embedscript listAll",
+            ListHandlers.ListAllHandler(scriptManager)
+        )
+        commandHandlerManager.registerHandler(
+            "embedscript view",
+            ViewHandler(requests, scriptManager)
+        )
+        commandHandlerManager.registerHandler(
+            "embedscript remove",
+            object : CommandHandler(
+                ExecutionThreadType.ASYNCHRONOUS,
+                ArgumentInfoList(
+                    emptyList(),
+                    LastArgument.NotAllow
+                )
+            ) {
+                override fun handleCommand(
+                    senderHolder: CommandSenderHolder,
+                    args: Map<String, String>
+                ) {
+                    val player = senderHolder.tryCastToPlayerOrMessage() ?: return
+                    player.sendMessage(Prefix.INFO + "Please click any block...")
+                    requests.putRequest(player, Request.Remove)
+                }
+            }
+        )
+        commandHandlerManager.registerHandler(
+            "embedscript embed",
+            object : AbstractScriptCommandHandler(
+                scriptProcessor,
+                ExecutionThreadType.ASYNCHRONOUS,
+                ArgumentInfoList(
+                    emptyList(),
+                    LongArgumentInfo("script", true)
+                )
+            ) {
+                override fun handleCommand(
+                    senderHolder: CommandSenderHolder,
+                    args: Map<String, String>
+                ) {
+                    val player = senderHolder.tryCastToPlayerOrMessage() ?: return
+                    modifyAction(player, args.getValue("script"), false)
+                }
+            }
+        )
+        commandHandlerManager.registerHandler(
+            "embedscript add",
+            object : AbstractScriptCommandHandler(
+                scriptProcessor,
+                ExecutionThreadType.ASYNCHRONOUS,
+                ArgumentInfoList(
+                    emptyList(),
+                    LongArgumentInfo("script", true)
+                )
+            ) {
+                override fun handleCommand(
+                    senderHolder: CommandSenderHolder,
+                    args: Map<String, String>
+                ) {
+                    val player = senderHolder.tryCastToPlayerOrMessage() ?: return
+                    modifyAction(player, args.getValue("script"), true)
+                }
+            }
+        )
     }
 
-    override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-        return false
-    }
-
-    private fun modifyAction(player: Player, args: Arguments, add: Boolean): Boolean {
-        if (args.isEmpty()) {
-            return false
-        }
+    private fun modifyAction(
+        player: Player,
+        stringScript: String,
+        add: Boolean
+    ): Boolean {
         val script = try {
-            scriptProcessor.parse(System.currentTimeMillis(), player.uniqueId, args.joinToString(" "))
+            scriptProcessor.parse(System.currentTimeMillis(), player.uniqueId, stringScript)
         } catch (e: ParseException) {
             player.sendMessage(Prefix.ERROR + "Failed to parse script. ${e.message}")
             return true
@@ -86,9 +151,18 @@ class ESCommandHandler constructor(
         return true
     }
 
-    private class HelpHandler : CommandHandler() {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            sender.sendMessage(
+    private class HelpHandler : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(
+            emptyList(),
+            LastArgument.NotAllow
+        )
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            senderHolder.commandSender.sendMessage(
                 """/es help - Displays this message.
                     |/es reload - Reloads configuration and scripts
                     |/es migrate - Migrates from ScriptBlock to this plugin.
@@ -102,12 +176,21 @@ class ESCommandHandler constructor(
                     |/es export <world> [fileName] - Exports all scripts in the <world> to [fileName] or <world>.
                     |/es import <fileName> Imports all scripts in the <fileName>.""".trimMargin()
             )
-            return true
         }
     }
 
-    private class MigrateHandler(val embedScript: EmbedScript) : CommandHandler() {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
+    private class MigrateHandler(val embedScript: EmbedScript) : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(
+            emptyList(),
+            LastArgument.NotAllow
+        )
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            val sender = senderHolder.commandSender
             sender.sendMessage(Prefix.INFO + "Migrating data of ScriptBlock...")
             val migrationResult = runCatching { ScriptBlockMigrator.migrate(embedScript) }
             migrationResult.exceptionOrNull()?.also {
@@ -117,19 +200,25 @@ class ESCommandHandler constructor(
             } ?: run {
                 sender.sendMessage(Prefix.SUCCESS + "Successfully migrated!")
             }
-            return true
         }
     }
 
-    private class ExportHandler(val scriptExporter: ScriptExporter) : CommandHandler() {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            if (args.isElementNotEnough(0)) {
-                return false
-            }
+    private class ExportHandler(val scriptExporter: ScriptExporter) : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(
+            listOf(RequiedArgumentInfo("world")),
+            OptionalArguments(listOf(OptionalArgumentInfo("fileName", null)))
+        )
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            val sender = senderHolder.commandSender
 
             sender.sendMessage(Prefix.INFO + "Exporting...")
-            val world = args[0]
-            val fileName = ScriptExporter.appendJsonExtensionIfNeeded(args.getOrElse(1) { world })
+            val world = args.getValue("world")
+            val fileName = ScriptExporter.appendJsonExtensionIfNeeded(args.getOrElse("fileName") { world })
             val filePath = scriptExporter.resolveByExportFolder(fileName)
 
             if (Files.exists(filePath)) {
@@ -141,14 +230,13 @@ class ESCommandHandler constructor(
                         "All scripts in the '$world' was successfully exported to '$fileName'!"
                 )
             }
-            return true
         }
 
-        override fun onTabComplete(
-            sender: CommandSender,
-            uncompletedArg: String,
-            uncompletedArgIndex: Int,
-            completedArgs: Arguments
+        override fun handleTabComplete(
+            senderHolder: CommandSenderHolder,
+            commandName: String,
+            completedArgs: List<String>,
+            uncompletedArg: String
         ): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
@@ -161,14 +249,21 @@ class ESCommandHandler constructor(
         }
     }
 
-    private class ImportHandler(val scriptExporter: ScriptExporter) : CommandHandler() {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            if (args.isElementNotEnough(0)) {
-                return false
-            }
+    private class ImportHandler(val scriptExporter: ScriptExporter) : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(
+            listOf(RequiedArgumentInfo("fileName")),
+            LastArgument.NotAllow
+        )
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            val sender = senderHolder.commandSender
 
             sender.sendMessage(Prefix.INFO + "Importing...")
-            val fileName = args[0]
+            val fileName = args.getValue("fileName")
             val filePath = scriptExporter.resolveByExportFolder(fileName)
             if (Files.notExists(filePath)) {
                 sender.sendMessage(Prefix.ERROR + "File: '$fileName' not exists!")
@@ -176,15 +271,13 @@ class ESCommandHandler constructor(
                 scriptExporter.import(filePath)
                 sender.sendMessage(Prefix.SUCCESS + "Scripts were successfully imported from '$fileName'!")
             }
-
-            return true
         }
 
-        override fun onTabComplete(
-            sender: CommandSender,
-            uncompletedArg: String,
-            uncompletedArgIndex: Int,
-            completedArgs: Arguments
+        override fun handleTabComplete(
+            senderHolder: CommandSenderHolder,
+            commandName: String,
+            completedArgs: List<String>,
+            uncompletedArg: String
         ): List<String> {
             // TODO: Returns list of files in the EmbedScript/export
             return emptyList()
@@ -195,53 +288,69 @@ class ESCommandHandler constructor(
         val configuration: Configuration,
         val scriptManager: ScriptManager,
         val permissionDetector: PermissionDetector
-    ) : CommandHandler() {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
+    ) : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(emptyList(), LastArgument.NotAllow)
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            val sender = senderHolder.commandSender
+
             sender.sendMessage(Prefix.INFO + "Reloading configuration and scripts...")
 
             val cfgReloadResult = runCatching { configuration.reload() }
             cfgReloadResult.exceptionOrNull()?.let {
                 sender.sendMessage(Prefix.ERROR + "Reload failed! (error: " + it.message + ")")
                 it.printStackTrace()
-                return true
+                return
             }
 
             val scriptReloadResult = runCatching { scriptManager.reload() }
             scriptReloadResult.exceptionOrNull()?.let {
                 sender.sendMessage(Prefix.ERROR + "Reload failed! (error: " + it.message + ")")
                 it.printStackTrace()
-                return true
+                return
             }
 
             runCatching { permissionDetector.reload() }.exceptionOrNull()?.let {
                 sender.sendMessage(Prefix.ERROR + "Reload failed! (error: ${it.message})")
                 it.printStackTrace()
-                return true
+                return
             }
 
             sender.sendMessage(Prefix.SUCCESS + "Successfully reloaded!")
-            return true
         }
     }
 
-    private class TeleportHandler(plugin: Plugin) :
-        CommandHandler(SenderType.Player(), HandlingMode.Synchronous(plugin)) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            if (args.isElementNotEnough(3)) {
-                return false
-            }
-            val world = args.getOrNull(0)?.let {
-                Bukkit.getWorld(it)
-            } ?: run {
-                player.sendMessage(Prefix.ERROR + "World: " + args[0] + " not exists.")
-                return true
+    private class TeleportHandler() : CommandHandler(
+        ExecutionThreadType.SYNCHRONOUS,
+        ArgumentInfoList(
+            listOf(
+                RequiedArgumentInfo("world"),
+                RequiedArgumentInfo("x"),
+                RequiedArgumentInfo("y"),
+                RequiedArgumentInfo("z")
+            ),
+            LastArgument.NotAllow
+        )
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            val player = senderHolder.tryCastToPlayerOrMessage() ?: return
+
+            val world = Bukkit.getWorld(args["world"]) ?: run {
+                player.sendMessage(Prefix.ERROR + "World: ${args["world"]} not exists.")
+                return
             }
 
             val playerLocation = player.location
-            val x = args.getInt(sender, 1) ?: return true
-            val y = args.getInt(sender, 2) ?: return true
-            val z = args.getInt(sender, 3) ?: return true
+            val x = args.getValue("x").toInt()
+            val y = args.getValue("y").toInt()
+            val z = args.getValue("z").toInt()
             player.teleport(
                 Location(
                     world,
@@ -254,7 +363,6 @@ class ESCommandHandler constructor(
             )
 
             player.sendMessage(Prefix.SUCCESS + "Teleported.")
-            return true
         }
     }
 }

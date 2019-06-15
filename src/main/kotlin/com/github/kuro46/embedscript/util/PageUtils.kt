@@ -88,7 +88,7 @@ object PageUtils {
         }
         if (buffer.isNotEmpty()) {
             val lastPage = ArrayList(buffer)
-            //last page pad with space
+            // last page pad with space
             val padLines = maximumLines - lastPage.size
             for (i in 0 until padLines) {
                 lastPage.add(TextComponent.fromLegacyText(""))
