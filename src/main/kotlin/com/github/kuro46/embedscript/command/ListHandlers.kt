@@ -9,6 +9,9 @@ import com.github.kuro46.embedscript.util.command.CommandHandler
 import com.github.kuro46.embedscript.util.command.ExecutionThreadType
 import com.github.kuro46.embedscript.util.command.ArgumentInfoList
 import com.github.kuro46.embedscript.util.command.CommandSenderHolder
+import com.github.kuro46.embedscript.util.command.RequiedArgumentInfo
+import com.github.kuro46.embedscript.util.command.OptionalArgumentInfo
+import com.github.kuro46.embedscript.util.command.OptionalArguments
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.ComponentBuilder

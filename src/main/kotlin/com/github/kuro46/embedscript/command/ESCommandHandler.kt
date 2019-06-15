@@ -16,6 +16,9 @@ import com.github.kuro46.embedscript.util.command.ArgumentInfoList
 import com.github.kuro46.embedscript.util.command.LastArgument
 import com.github.kuro46.embedscript.util.command.CommandSenderHolder
 import com.github.kuro46.embedscript.util.command.LongArgumentInfo
+import com.github.kuro46.embedscript.util.command.RequiedArgumentInfo
+import com.github.kuro46.embedscript.util.command.OptionalArgumentInfo
+import com.github.kuro46.embedscript.util.command.OptionalArguments
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Player
