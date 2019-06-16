@@ -5,25 +5,28 @@ import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.util.PageUtils
-import com.github.kuro46.embedscript.util.command.Arguments
+import com.github.kuro46.embedscript.util.command.ArgumentInfoList
 import com.github.kuro46.embedscript.util.command.CommandHandler
+import com.github.kuro46.embedscript.util.command.CommandSenderHolder
+import com.github.kuro46.embedscript.util.command.ExecutionThreadType
+import com.github.kuro46.embedscript.util.command.OptionalArgumentInfo
+import com.github.kuro46.embedscript.util.command.OptionalArguments
+import java.io.Serializable
+import java.util.ArrayList
+import java.util.Comparator
+import java.util.function.BiConsumer
+import java.util.function.BinaryOperator
+import java.util.function.Function as JavaFunction
+import java.util.function.Supplier
+import java.util.stream.Collector
+import kotlin.streams.toList
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
-import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import java.io.Serializable
-import java.util.ArrayList
-import java.util.Comparator
-import java.util.function.BiConsumer
-import java.util.function.BinaryOperator
-import java.util.function.Supplier
-import java.util.stream.Collector
-import kotlin.streams.toList
-import java.util.function.Function as JavaFunction
 
 /**
  * @author shirokuro
@@ -31,21 +34,35 @@ import java.util.function.Function as JavaFunction
 object ListHandlers {
     class ListHandler(
         private val scriptManager: ScriptManager
-    ) : CommandHandler(SenderType.Player()) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            val world = args.getOrElse(0) { player.world.name }
-            val pageNumber = args.getInt(sender, 1, 1) ?: return true
+    ) : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(
+            emptyList(),
+            OptionalArguments(
+                listOf(
+                    OptionalArgumentInfo("world", null),
+                    OptionalArgumentInfo("pageNumber", "1")
+                )
+            )
+        ),
+        "Displays list of scripts in the [world] or current world."
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            val player = senderHolder.tryCastToPlayerOrMessage() ?: return
+            val world = args.getOrElse("world") { player.world.name }
+            val pageNumber = args.getValue("pageNumber").toInt()
             val scope = ListScope.World(world)
             list(scriptManager, player, scope, null, pageNumber - 1)
-            return true
         }
 
-        override fun onTabComplete(
-            sender: CommandSender,
-            uncompletedArg: String,
-            uncompletedArgIndex: Int,
-            completedArgs: Arguments
+        override fun handleTabComplete(
+            senderHolder: CommandSenderHolder,
+            commandName: String,
+            completedArgs: List<String>,
+            uncompletedArg: String
         ): List<String> {
             return if (completedArgs.isEmpty()) {
                 // player wants world list
@@ -60,26 +77,46 @@ object ListHandlers {
 
     class ListAllHandler(
         private val scriptManager: ScriptManager
-    ) : CommandHandler(SenderType.Player()) {
-        override fun onCommand(sender: CommandSender, command: String, args: Arguments): Boolean {
-            val player = sender as Player
-            val pageNumber = args.getInt(sender, 0, 1) ?: return true
+    ) : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(
+            emptyList(),
+            OptionalArguments(
+                listOf(
+                    OptionalArgumentInfo("pageNumber", "1")
+                )
+            )
+        ),
+        "Displays list of scripts in this server."
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            val player = senderHolder.tryCastToPlayerOrMessage() ?: return
+            val pageNumber = args.getValue("pageNumber").toInt()
             val scope = ListScope.Server
             list(scriptManager, player, scope, null, pageNumber - 1)
-            return true
         }
     }
 
-    fun list(scriptManager: ScriptManager, player: Player, scope: ListScope, filter: Script?, pageIndex: Int) {
-        val messages = scriptManager.getScripts().entries.stream()
-            .filter { entry ->
-                when (scope) {
-                    is ListScope.Server -> true
-                    is ListScope.World -> scope.name.equals(entry.key.world, true)
+    fun list(
+        scriptManager: ScriptManager,
+        player: Player,
+        scope: ListScope,
+        filter: Script?,
+        pageIndex: Int
+    ) {
+        val messages =
+            scriptManager.getScripts().entries.stream()
+                .filter { entry ->
+                    when (scope) {
+                        is ListScope.Server -> true
+                        is ListScope.World -> scope.name.equals(entry.key.world, true)
+                    }
                 }
-            }
-            .sorted(ScriptPositionComparator())
-            .collect(ScriptCollector(filter))
+                .sorted(ScriptPositionComparator())
+                .collect(ScriptCollector(filter))
 
         val target = if (scope is ListScope.World) scope.name else "this server"
 
@@ -143,45 +180,47 @@ object ListHandlers {
                     return@BiConsumer
                 }
 
-                val viewCommand = "/embedscript view ${position.world} ${position.x} ${position.y} ${position.z}"
+                val viewCommand = "/embedscript viewat ${position.world} ${position.x} ${position.y} ${position.z}"
                 val tpCommand = "/embedscript teleport ${position.world} ${position.x} ${position.y} ${position.z}"
-                val mainMessage = "[${messages.size + 1}] ${position.world}, ${position.x}, " +
-                    "${position.y}, ${position.z} "
-                val message = ComponentBuilder(mainMessage)
-                    .append(
-                        ComponentBuilder("[detail]")
-                            .event(
-                                HoverEvent(
-                                    HoverEvent.Action.SHOW_TEXT,
-                                    TextComponent.fromLegacyText(viewCommand)
+                val mainMessage =
+                    "[${messages.size + 1}] ${position.world}, ${position.x}, " +
+                        "${position.y}, ${position.z} "
+                val message =
+                    ComponentBuilder(mainMessage)
+                        .append(
+                            ComponentBuilder("[detail]")
+                                .event(
+                                    HoverEvent(
+                                        HoverEvent.Action.SHOW_TEXT,
+                                        TextComponent.fromLegacyText(viewCommand)
+                                    )
                                 )
-                            )
-                            .event(
-                                ClickEvent(
-                                    ClickEvent.Action.RUN_COMMAND,
-                                    viewCommand
+                                .event(
+                                    ClickEvent(
+                                        ClickEvent.Action.RUN_COMMAND,
+                                        viewCommand
+                                    )
                                 )
-                            )
-                            .create()
-                    )
-                    .append(" ")
-                    .append(
-                        ComponentBuilder("[teleport]")
-                            .event(
-                                HoverEvent(
-                                    HoverEvent.Action.SHOW_TEXT,
-                                    TextComponent.fromLegacyText(tpCommand)
+                                .create()
+                        )
+                        .append(" ")
+                        .append(
+                            ComponentBuilder("[teleport]")
+                                .event(
+                                    HoverEvent(
+                                        HoverEvent.Action.SHOW_TEXT,
+                                        TextComponent.fromLegacyText(tpCommand)
+                                    )
                                 )
-                            )
-                            .event(
-                                ClickEvent(
-                                    ClickEvent.Action.RUN_COMMAND,
-                                    tpCommand
+                                .event(
+                                    ClickEvent(
+                                        ClickEvent.Action.RUN_COMMAND,
+                                        tpCommand
+                                    )
                                 )
-                            )
-                            .create()
-                    )
-                    .create()
+                                .create()
+                        )
+                        .create()
                 messages.add(message)
             }
         }
@@ -204,9 +243,10 @@ object ListHandlers {
         }
 
         private fun isFilterable(target: Script, filter: Script): Boolean {
-            val firstCheck = isFilterable(target.clickTypes, filter.clickTypes) ||
-                isFilterable(target.moveTypes, filter.moveTypes) ||
-                isFilterable(target.pushTypes, filter.pushTypes)
+            val firstCheck =
+                isFilterable(target.clickTypes, filter.clickTypes) ||
+                    isFilterable(target.moveTypes, filter.moveTypes) ||
+                    isFilterable(target.pushTypes, filter.pushTypes)
             if (firstCheck) {
                 return true
             }
@@ -246,5 +286,4 @@ object ListHandlers {
             return false
         }
     }
-
 }

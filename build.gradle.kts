@@ -1,11 +1,12 @@
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.3.31"
     id("com.github.johnrengelman.shadow") version "5.0.0"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC14"
+    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC15"
+    id("org.jlleitschuh.gradle.ktlint") version "8.0.0"
     java
     maven
 }
@@ -29,16 +30,16 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+ktlint {
+    enableExperimentalRules.set(true)
+}
+
 tasks.withType<Jar> {
     archiveFileName.set("EmbedScript.jar")
 }
 
 tasks.withType<ProcessResources> {
     filter { it.replace("\$version", version.toString()) }
-}
-
-tasks.withType<Detekt> {
-    input = files("src/main/kotlin")
 }
 
 tasks.withType<Wrapper> {

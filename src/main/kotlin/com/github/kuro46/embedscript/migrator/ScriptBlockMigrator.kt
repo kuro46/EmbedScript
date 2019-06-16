@@ -6,13 +6,13 @@ import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtils
 import com.github.kuro46.embedscript.util.MojangUtils
-import org.bukkit.configuration.file.FileConfiguration
-import org.bukkit.configuration.file.YamlConfiguration
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.UUID
 import java.util.regex.Pattern
+import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.configuration.file.YamlConfiguration
 
 /**
  * @author shirokuro
@@ -68,7 +68,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
     }
 
     private fun createPositionFromRawLocation(world: String, rawLocation: String): ScriptPosition {
-        //index0: world, 1: x, 2: y, 3: z
+        // index0: world, 1: x, 2: y, 3: z
         val coordinates = rawLocation.split(',').dropLastWhile { it.isEmpty() }
         return ScriptPosition(
             world,

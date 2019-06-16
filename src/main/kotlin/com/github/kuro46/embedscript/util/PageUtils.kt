@@ -1,13 +1,13 @@
 package com.github.kuro46.embedscript.util
 
 import com.github.kuro46.embedscript.Prefix
+import java.util.ArrayList
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.TextComponent
 import org.apache.commons.lang.StringUtils
 import org.bukkit.command.CommandSender
-import java.util.ArrayList
 
 /**
  * @author shirokuro
@@ -88,7 +88,7 @@ object PageUtils {
         }
         if (buffer.isNotEmpty()) {
             val lastPage = ArrayList(buffer)
-            //last page pad with space
+            // last page pad with space
             val padLines = maximumLines - lastPage.size
             for (i in 0 until padLines) {
                 lastPage.add(TextComponent.fromLegacyText(""))

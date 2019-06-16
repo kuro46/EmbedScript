@@ -10,11 +10,11 @@ import com.github.kuro46.embedscript.script.parser.StringParser
 import com.github.kuro46.embedscript.util.PlaceholderData
 import com.github.kuro46.embedscript.util.Replacer
 import com.github.kuro46.embedscript.util.Scheduler
-import org.bukkit.Bukkit
-import org.bukkit.entity.Player
 import java.util.StringJoiner
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 
 /**
  * @author shirokuro
@@ -26,10 +26,12 @@ class ScriptProcessor(val embedScript: EmbedScript) {
 
     init {
         // dummy
-        registerKey(KeyData.parent(
-            key = "preset",
-            parser = Parser.NO_OP_PARSER
-        ))
+        registerKey(
+            KeyData.parent(
+                key = "preset",
+                parser = Parser.NO_OP_PARSER
+            )
+        )
         Executors.registerAll(this)
 
         scriptReplacer.add(PlaceholderData("<player>") { it.name })
@@ -59,7 +61,7 @@ class ScriptProcessor(val embedScript: EmbedScript) {
 
     private fun applyPreset(target: String): String {
         val parsed = StringParser.parse(target)
-        val presets = parsed["preset"] ?: return target// @preset is not present
+        val presets = parsed["preset"] ?: return target // @preset is not present
 
         val applied = StringJoiner(" ")
         for (preset in presets) {
@@ -114,18 +116,20 @@ class ScriptProcessor(val embedScript: EmbedScript) {
     }
 
     private fun processKey(player: Player, parentKeyData: ParentKeyData): Pair<ExecutorData.ParentExecutorData, ExecutionResult> {
-        val parentExecutorData = keys.getValue(parentKeyData.key).executorData
-            ?.let { it as ExecutorData.ParentExecutorData }
-            ?: throw IllegalStateException("ExecutionData for '${parentKeyData.key}' not found!")
+        val parentExecutorData =
+            keys.getValue(parentKeyData.key).executorData
+                ?.let { it as ExecutorData.ParentExecutorData }
+                ?: throw IllegalStateException("ExecutionData for '${parentKeyData.key}' not found!")
 
         val result = runByExecMode(parentExecutorData.executionMode) {
             val listeners = ArrayList<EndListener>()
 
             try {
                 for (child in parentKeyData.children) {
-                    val childExecutorData = keys.getValue(child.key).executorData
-                        ?.let { it as ExecutorData.ChildExecutorData }
-                        ?: throw IllegalStateException("ExecutionData for '${child.key}' not found!")
+                    val childExecutorData =
+                        keys.getValue(child.key).executorData
+                            ?.let { it as ExecutorData.ChildExecutorData }
+                            ?: throw IllegalStateException("ExecutionData for '${child.key}' not found!")
                     val result = childExecutorData.executor.execute(player, child.values)
 
                     result.endListener?.let { listeners.add(it) }

@@ -13,13 +13,16 @@ import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptSerializer
 import com.github.kuro46.embedscript.script.executor.ScriptProcessor
-import org.bukkit.Bukkit
-import org.bukkit.plugin.Plugin
-import org.bukkit.plugin.ServicePriority
+import com.github.kuro46.embedscript.util.Scheduler
+import com.github.kuro46.embedscript.util.command.CommandHandlerManager
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Arrays
+import java.util.concurrent.Executor
 import java.util.logging.Logger
+import org.bukkit.Bukkit
+import org.bukkit.plugin.Plugin
+import org.bukkit.plugin.ServicePriority
 
 /**
  * @author shirokuro
@@ -100,20 +103,28 @@ class EmbedScript private constructor(val plugin: Plugin) {
     }
 
     private fun registerCommands() {
+        val commandHandlerManager = CommandHandlerManager(
+            object : Executor {
+                override fun execute(runnable: Runnable) {
+                    Scheduler.execute() { runnable.run() }
+                }
+            },
+            plugin
+        )
         for (eventType in EventType.values()) {
-            val handler = AliasCommandHandler(eventType, scriptProcessor, requests)
-            val pluginCommand = Bukkit.getPluginCommand(eventType.commandName)
-            pluginCommand.executor = handler
-            pluginCommand.tabCompleter = handler
+            AliasCommandHandler.registerHandlers(
+                commandHandlerManager,
+                eventType,
+                scriptProcessor,
+                requests
+            )
         }
-        val pluginCommand = Bukkit.getPluginCommand("embedscript")
-        val esCommandExecutor = ESCommandHandler(this)
-        pluginCommand.executor = esCommandExecutor
-        pluginCommand.tabCompleter = esCommandExecutor
+        ESCommandHandler(this, commandHandlerManager)
     }
 
     private fun registerESAPI() {
         Bukkit.getServicesManager().register(
+
             EmbedScriptAPI::class.java,
             EmbedScriptAPI(scriptProcessor),
             plugin,

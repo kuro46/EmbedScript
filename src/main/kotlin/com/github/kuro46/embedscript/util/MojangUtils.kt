@@ -14,20 +14,23 @@ import java.util.concurrent.TimeUnit
  * @author shirokuro
  */
 object MojangUtils {
-    private val NAME_CACHE: Cache<UUID, String> = CacheBuilder.newBuilder()
-        .expireAfterAccess(1, TimeUnit.HOURS)
-        .build()
-    private val UUID_CACHE: Cache<String, UUID> = CacheBuilder.newBuilder()
-        .expireAfterAccess(1, TimeUnit.HOURS)
-        .build()
+    private val NAME_CACHE: Cache<UUID, String> =
+        CacheBuilder.newBuilder()
+            .expireAfterAccess(1, TimeUnit.HOURS)
+            .build()
+    private val UUID_CACHE: Cache<String, UUID> =
+        CacheBuilder.newBuilder()
+            .expireAfterAccess(1, TimeUnit.HOURS)
+            .build()
 
     fun getName(uniqueId: UUID): String? {
         NAME_CACHE.getIfPresent(uniqueId)?.let {
             return it
         }
 
-        val url = uniqueId.toString().replace("-", "")
-            .let { "https://api.mojang.com/user/profiles/$it/names" }
+        val url =
+            uniqueId.toString().replace("-", "")
+                .let { "https://api.mojang.com/user/profiles/$it/names" }
         var name: String? = null
 
         newReader(url).use { reader ->

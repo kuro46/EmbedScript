@@ -6,9 +6,9 @@ import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtils
 import com.github.kuro46.embedscript.util.PlaceholderData
 import com.github.kuro46.embedscript.util.Replacer
-import org.bukkit.entity.Player
 import java.util.StringJoiner
 import java.util.logging.Logger
+import org.bukkit.entity.Player
 
 /**
  * @author shirokuro
@@ -26,16 +26,18 @@ class ExecutionLogger(val logger: Logger, val configuration: Configuration) {
         replacer.add(PlaceholderData("<script_x>") { it.scriptPosition.x })
         replacer.add(PlaceholderData("<script_y>") { it.scriptPosition.y })
         replacer.add(PlaceholderData("<script_z>") { it.scriptPosition.z })
-        replacer.add(PlaceholderData("<script>") {
-            val script = it.script
-            val joiner = StringJoiner(" ")
-            for (parentKeyData in script.keys) {
-                for ((key, values) in parentKeyData) {
-                    joiner.add("@$key ${ScriptUtils.toString(values)}")
+        replacer.add(
+            PlaceholderData("<script>") {
+                val script = it.script
+                val joiner = StringJoiner(" ")
+                for (parentKeyData in script.keys) {
+                    for ((key, values) in parentKeyData) {
+                        joiner.add("@$key ${ScriptUtils.toString(values)}")
+                    }
                 }
+                joiner.toString()
             }
-            joiner.toString()
-        })
+        )
     }
 
     fun log(logData: LogData) {

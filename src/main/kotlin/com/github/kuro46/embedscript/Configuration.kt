@@ -1,10 +1,10 @@
 package com.github.kuro46.embedscript
 
-import org.bukkit.configuration.file.YamlConfiguration
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Collections
 import java.util.HashMap
+import org.bukkit.configuration.file.YamlConfiguration
 
 /**
  * @author shirokuro
