@@ -30,6 +30,10 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+ktlint {
+    enableExperimentalRules.set(true)
+}
+
 tasks.withType<Jar> {
     archiveFileName.set("EmbedScript.jar")
 }
