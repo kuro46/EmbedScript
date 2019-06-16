@@ -4,9 +4,9 @@ import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
+import java.util.WeakHashMap
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import java.util.WeakHashMap
 
 /**
  * @author shirokuro
@@ -29,7 +29,7 @@ class Requests(private val scriptManager: ScriptManager) {
     fun executeRequest(player: Player, position: ScriptPosition): Boolean {
         when (val request = removeRequest(player) ?: return false) {
             is Request.View -> {
-                player.performCommand("embedscript view ${position.world} ${position.x} ${position.y} ${position.z}")
+                player.performCommand("embedscript viewat ${position.world} ${position.x} ${position.y} ${position.z}")
             }
             is Request.Remove -> remove(player, position)
             is Request.Embed -> embed(player, position, request.script)

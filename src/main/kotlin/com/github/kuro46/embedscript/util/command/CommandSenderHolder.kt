@@ -1,7 +1,7 @@
 package com.github.kuro46.embedscript.util.command
 
-import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.command.CommandSender
+import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
 
 class CommandSenderHolder(

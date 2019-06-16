@@ -1,15 +1,15 @@
 package com.github.kuro46.embedscript.util.command
 
+import com.github.kuro46.embedscript.Prefix
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
-
-import com.github.kuro46.embedscript.Prefix
-import org.bukkit.command.CommandExecutor
-import org.bukkit.command.TabCompleter
-import org.bukkit.command.CommandSender
-import org.bukkit.command.Command
-import org.bukkit.plugin.Plugin
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
+import org.bukkit.command.Command
+import org.bukkit.command.CommandExecutor
+import org.bukkit.command.CommandSender
+import org.bukkit.command.TabCompleter
+import org.bukkit.plugin.Plugin
 
 /**
  * A class for manages command handler.
@@ -49,37 +49,8 @@ class CommandHandlerManager(
         if (!handlers.containsKey(commandName)) {
             handlers[commandName] = RootCommandHandler(commandName)
         }
-    }
-
-    private inner class RootCommandHandler(private val commandName: String) : CommandHandler(
-        ExecutionThreadType.ASYNCHRONOUS,
-        ArgumentInfoList(
-            emptyList(),
-            LastArgument.NotAllow
-        )
-    ) {
-        override fun handleCommand(
-            senderHolder: CommandSenderHolder,
-            args: Map<String, String>
-        ) {
-            senderHolder.commandSender.sendMessage(
-                Prefix.ERROR + "Incorrect usage. Please try perform '/$commandName help'."
-            )
-        }
-
-        override fun handleTabComplete(
-            senderHolder: CommandSenderHolder,
-            commandName: String,
-            completedArgs: List<String>,
-            uncompletedArg: String
-        ): List<String> {
-            val targetString = commandName + " " + completedArgs.joinToString(" ") + uncompletedArg
-            val neededIndex = completedArgs.lastIndex + 1 /* for 'commandName' */ + 1 /* for 'uncompletedArg' */
-            val suggestions = HashSet<String>()
-            handlers.keys
-                .filter { it.startsWith(targetString) }
-                .forEach { suggestions.add(it.split(' ')[neededIndex]) }
-            return suggestions.toList()
+        if (!handlers.containsKey("$commandName help")) {
+            handlers["$commandName help"] = HelpCommandHandler(commandName)
         }
     }
 
@@ -104,7 +75,7 @@ class CommandHandlerManager(
         executor.execute {
             val commandWithArgs = appendCommandAndArgs(command.name, args.toList())
             val commandSenderHolder = holdCommandSender(sender)
-            val (handler, notParsedArgs) = getCommandData(commandWithArgs)
+            val (handlerCommand, handler, notParsedArgs) = getCommandData(commandWithArgs)
             val parseResult = handler.argumentInfoList.parse(notParsedArgs)
             if (parseResult is ParseResult.Success) {
                 handler.executionThreadType.executeAtSyncOrCurrentThread(plugin) {
@@ -120,6 +91,7 @@ class CommandHandlerManager(
                         sender.sendMessage(Prefix.ERROR + "Arguments not enough.")
                     }
                 }
+                sender.sendMessage(Prefix.ERROR + "Usage: " + handlerToString(handlerCommand, handler))
             } else {
                 throw IllegalStateException()
             }
@@ -139,7 +111,7 @@ class CommandHandlerManager(
     ): List<String> {
         val commandWithArgs = appendCommandAndArgs(command.name, args.toList())
         val commandSenderHolder = holdCommandSender(sender)
-        val (handler, argsForHandler) = getCommandData(commandWithArgs)
+        val (_, handler, argsForHandler) = getCommandData(commandWithArgs)
 
         @Suppress("NAME_SHADOWING")
         val spaceFiltered = argsForHandler.filter { it.isNotEmpty() }
@@ -192,8 +164,9 @@ class CommandHandlerManager(
      */
     private fun getCommandData(
         commandWithArgs: List<String>
-    ): Pair<CommandHandler, List<String>> {
+    ): Triple<String, CommandHandler, List<String>> {
         var handler: CommandHandler? = null
+        var handlerString: String? = null
         val argsForHandler = ArrayList<String>()
         val consumedElements = StringBuilder()
         for (element in commandWithArgs) {
@@ -205,6 +178,7 @@ class CommandHandlerManager(
             if (nullableHandler != null) {
                 argsForHandler.clear()
                 handler = nullableHandler
+                handlerString = consumedElements.toString().toLowerCase()
             }
 
             if (nullableHandler == null && handler != null) {
@@ -214,6 +188,134 @@ class CommandHandlerManager(
 
         handler ?: throw IllegalStateException("handler for '${commandWithArgs.joinToString(" ")}' not found!")
 
-        return Pair(handler, argsForHandler)
+        return Triple(handlerString!!, handler, argsForHandler)
+    }
+
+    private fun handlerToString(
+        commandOfHandler: String,
+        handler: CommandHandler
+    ): String {
+        val requiedArgs = requiedArgInfoListToString(handler.argumentInfoList.requied)
+        val lastArg = lastArgInfoToString(handler.argumentInfoList.last)
+
+        val builder =
+            StringBuilder()
+                .append(ChatColor.GOLD)
+                .append('/')
+                .append(commandOfHandler)
+                .append(ChatColor.GRAY)
+
+        if (requiedArgs.isNotEmpty()) {
+            builder.append(' ')
+            builder.append(requiedArgs)
+        }
+
+        if (lastArg.isNotEmpty()) {
+            builder.append(' ')
+            builder.append(lastArg)
+        }
+
+        builder.append(ChatColor.RESET)
+
+        return builder.toString()
+    }
+
+    private fun requiedArgInfoListToString(requiedArgInfoList: List<RequiedArgumentInfo>): String {
+        val stringBuilder = StringBuilder()
+        for (info in requiedArgInfoList) {
+            if (stringBuilder.isNotEmpty()) {
+                stringBuilder.append(' ')
+            }
+            stringBuilder.append("<${info.name}>")
+        }
+        return stringBuilder.toString()
+    }
+
+    private fun lastArgInfoToString(lastArgInfo: LastArgument): String {
+        return when (lastArgInfo) {
+            is LastArgument.NotAllow -> ""
+            is OptionalArguments -> {
+                val stringBuilder = StringBuilder()
+                for (info in lastArgInfo.arguments) {
+                    if (stringBuilder.isNotEmpty()) {
+                        stringBuilder.append(' ')
+                    }
+                    stringBuilder.append("[${info.name}]")
+                }
+                stringBuilder.toString()
+            }
+            is LongArgumentInfo -> {
+                if (lastArgInfo.requied) {
+                    "<${lastArgInfo.name}>"
+                } else {
+                    "${lastArgInfo.name}]"
+                }
+            }
+        }
+    }
+
+    private inner class RootCommandHandler(private val commandName: String) : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(
+            emptyList(),
+            LongArgumentInfo("dummy", false)
+        )
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            senderHolder.commandSender.sendMessage(
+                Prefix.ERROR + "Incorrect usage. Please try perform '/$commandName help'."
+            )
+        }
+
+        override fun handleTabComplete(
+            senderHolder: CommandSenderHolder,
+            commandName: String,
+            completedArgs: List<String>,
+            uncompletedArg: String
+        ): List<String> {
+            val targetString = commandName + " " + completedArgs.joinToString(" ") + uncompletedArg
+            val neededIndex = completedArgs.lastIndex + 1 /* for 'commandName' */ + 1 /* for 'uncompletedArg' */
+            val suggestions = HashSet<String>()
+            handlers.keys
+                .filter { it.startsWith(targetString) }
+                .forEach { suggestions.add(it.split(' ')[neededIndex]) }
+            return suggestions.toList()
+        }
+    }
+
+    private inner class HelpCommandHandler(val commandName: String) : CommandHandler(
+        ExecutionThreadType.ASYNCHRONOUS,
+        ArgumentInfoList(
+            emptyList(),
+            LastArgument.NotAllow
+        ),
+        "Displays help message."
+    ) {
+        override fun handleCommand(
+            senderHolder: CommandSenderHolder,
+            args: Map<String, String>
+        ) {
+            val sender = senderHolder.commandSender
+
+            sender.sendMessage(Prefix.INFO + "Help for '/$commandName'")
+            handlers.forEach { (command, handler) ->
+                if (command.startsWith(commandName)) {
+                    if (handler is RootCommandHandler) {
+                        return@forEach
+                    }
+
+                    val argumentInfoList = handler.argumentInfoList
+                    val argumentString = StringBuilder(requiedArgInfoListToString(argumentInfoList.requied))
+                    if (argumentString.isNotEmpty()) argumentString.append(' ')
+                    argumentString.append(lastArgInfoToString(argumentInfoList.last))
+                    if (!argumentString.endsWith(' ')) argumentString.append(' ')
+                    if (!argumentString.startsWith(' ')) argumentString.insert(0, ' ')
+                    sender.sendMessage(Prefix.INFO + "${handlerToString(command, handler)} ${ChatColor.YELLOW}- ${ChatColor.RESET}${handler.description}")
+                }
+            }
+        }
     }
 }

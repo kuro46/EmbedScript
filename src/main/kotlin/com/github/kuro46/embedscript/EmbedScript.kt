@@ -3,8 +3,6 @@ package com.github.kuro46.embedscript
 import com.github.kuro46.embedscript.api.EmbedScriptAPI
 import com.github.kuro46.embedscript.command.AliasCommandHandler
 import com.github.kuro46.embedscript.command.ESCommandHandler
-import com.github.kuro46.embedscript.util.command.CommandHandlerManager
-import com.github.kuro46.embedscript.util.Scheduler
 import com.github.kuro46.embedscript.listener.InteractListener
 import com.github.kuro46.embedscript.listener.MoveListener
 import com.github.kuro46.embedscript.permission.PermissionDetector
@@ -15,14 +13,16 @@ import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptSerializer
 import com.github.kuro46.embedscript.script.executor.ScriptProcessor
-import org.bukkit.Bukkit
-import org.bukkit.plugin.Plugin
-import org.bukkit.plugin.ServicePriority
+import com.github.kuro46.embedscript.util.Scheduler
+import com.github.kuro46.embedscript.util.command.CommandHandlerManager
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Arrays
-import java.util.logging.Logger
 import java.util.concurrent.Executor
+import java.util.logging.Logger
+import org.bukkit.Bukkit
+import org.bukkit.plugin.Plugin
+import org.bukkit.plugin.ServicePriority
 
 /**
  * @author shirokuro

@@ -7,13 +7,13 @@ import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
-import java.util.UUID
-import java.util.concurrent.TimeUnit
 
 /**
  * @author shirokuro
@@ -23,9 +23,10 @@ class InteractListener(embedScript: EmbedScript) : Listener {
         private const val EXECUTION_INTERVAL = 300L
     }
 
-    private val coolTime: Cache<UUID, Boolean> = CacheBuilder.newBuilder()
-        .expireAfterWrite(EXECUTION_INTERVAL, TimeUnit.MILLISECONDS)
-        .build()
+    private val coolTime: Cache<UUID, Boolean> =
+        CacheBuilder.newBuilder()
+            .expireAfterWrite(EXECUTION_INTERVAL, TimeUnit.MILLISECONDS)
+            .build()
     private val scriptManager = embedScript.scriptManager
     private val scriptProcessor = embedScript.scriptProcessor
     private val requests = embedScript.requests

@@ -4,12 +4,12 @@ import com.github.kuro46.embedscript.permission.PermissionDetector
 import com.github.kuro46.embedscript.script.ExecutionMode
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.parser.ScriptBuilder
+import java.util.Locale
+import java.util.stream.Collectors
 import net.md_5.bungee.chat.ComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
-import java.util.Locale
-import java.util.stream.Collectors
 
 /**
  * @author shirokuro
@@ -22,62 +22,86 @@ object Executors {
             ExecutionMode.SYNCHRONOUS
         }
 
-        processor.registerKey(KeyData.parent(
-            "neededPerm",
-            ExecutorData.parent(execModeForPermOP, NEEDED_PERMISSION_EXECUTOR)
-        ))
-        processor.registerKey(KeyData.parent(
-            "unneededPerm",
-            ExecutorData.parent(execModeForPermOP, UNNEEDED_PERMISSION_EXECUTOR)
-        ))
-        processor.registerKey(KeyData.parent(
-            "cmd",
-            ExecutorData.parent(ExecutionMode.SYNCHRONOUS, COMMAND_EXECUTOR),
-            COMMAND_PARSER
-        ))
+        processor.registerKey(
+            KeyData.parent(
+                "neededPerm",
+                ExecutorData.parent(execModeForPermOP, NEEDED_PERMISSION_EXECUTOR)
+            )
+        )
+        processor.registerKey(
+            KeyData.parent(
+                "unneededPerm",
+                ExecutorData.parent(execModeForPermOP, UNNEEDED_PERMISSION_EXECUTOR)
+            )
+        )
+        processor.registerKey(
+            KeyData.parent(
+                "cmd",
+                ExecutorData.parent(ExecutionMode.SYNCHRONOUS, COMMAND_EXECUTOR),
+                COMMAND_PARSER
+            )
+        )
         CommandBypassExecutor(
             processor.embedScript.plugin,
             processor.embedScript.permissionDetector
         ).apply {
-            processor.registerKey(KeyData.child(
-                "cmd.bypass",
-                ExecutorData.child(this),
-                this
-            ))
+            processor.registerKey(
+                KeyData.child(
+                    "cmd.bypass",
+                    ExecutorData.child(this),
+                    this
+                )
+            )
         }
-        processor.registerKey(KeyData.parent(
-            "console",
-            ExecutorData.parent(ExecutionMode.SYNCHRONOUS, CONSOLE_EXECUTOR),
-            COMMAND_PARSER
-        ))
-        processor.registerKey(KeyData.parent(
-            "say",
-            ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, SAY_EXECUTOR)
-        ))
-        processor.registerKey(KeyData.parent(
-            "sayRaw",
-            ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, SAY_RAW_EXECUTOR)
-        ))
-        processor.registerKey(KeyData.parent(
-            "broadcast",
-            ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, BROADCAST_EXECUTOR)
-        ))
-        processor.registerKey(KeyData.parent(
-            "broadcastRaw",
-            ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, BROADCAST_RAW_EXECUTOR)
-        ))
-        processor.registerKey(KeyData.parent(
-            key = "listenClick",
-            parser = LISTEN_CLICK_PARSER
-        ))
-        processor.registerKey(KeyData.parent(
-            key = "listenMove",
-            parser = LISTEN_MOVE_PARSER
-        ))
-        processor.registerKey(KeyData.parent(
-            key = "listenPush",
-            parser = LISTEN_PUSH_PARSER
-        ))
+        processor.registerKey(
+            KeyData.parent(
+                "console",
+                ExecutorData.parent(ExecutionMode.SYNCHRONOUS, CONSOLE_EXECUTOR),
+                COMMAND_PARSER
+            )
+        )
+        processor.registerKey(
+            KeyData.parent(
+                "say",
+                ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, SAY_EXECUTOR)
+            )
+        )
+        processor.registerKey(
+            KeyData.parent(
+                "sayRaw",
+                ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, SAY_RAW_EXECUTOR)
+            )
+        )
+        processor.registerKey(
+            KeyData.parent(
+                "broadcast",
+                ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, BROADCAST_EXECUTOR)
+            )
+        )
+        processor.registerKey(
+            KeyData.parent(
+                "broadcastRaw",
+                ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, BROADCAST_RAW_EXECUTOR)
+            )
+        )
+        processor.registerKey(
+            KeyData.parent(
+                key = "listenClick",
+                parser = LISTEN_CLICK_PARSER
+            )
+        )
+        processor.registerKey(
+            KeyData.parent(
+                key = "listenMove",
+                parser = LISTEN_MOVE_PARSER
+            )
+        )
+        processor.registerKey(
+            KeyData.parent(
+                key = "listenPush",
+                parser = LISTEN_PUSH_PARSER
+            )
+        )
     }
 
     val NEEDED_PERMISSION_EXECUTOR = object : Executor() {
@@ -154,28 +178,30 @@ object Executors {
 
     val COMMAND_PARSER = object : Parser {
         override fun parse(key: String, parseFrom: List<String>, parseTo: ScriptBuilder) {
-            val modifiedForCommand = parseFrom.stream()
-                // remove slash char if needed
-                .map { commandWithArgs ->
-                    if (commandWithArgs.startsWith("/"))
-                        commandWithArgs.substring(1)
-                    else
-                        commandWithArgs
-                }
-                // canonicalize the command
-                .map { commandWithArgs ->
-                    val splitCommandWithArgs = commandWithArgs.split(" ")
-                    val pluginCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0])
-                    val canonicalizedCommand = if (pluginCommand == null)
-                        splitCommandWithArgs[0]
-                    else
-                        pluginCommand.name
-                    val args = splitCommandWithArgs.stream()
-                        .skip(1)
-                        .collect(Collectors.joining(" "))
-                    "$canonicalizedCommand $args"
-                }
-                .collect(Collectors.toList())
+            val modifiedForCommand =
+                parseFrom.stream()
+                    // remove slash char if needed
+                    .map { commandWithArgs ->
+                        if (commandWithArgs.startsWith("/"))
+                            commandWithArgs.substring(1)
+                        else
+                            commandWithArgs
+                    }
+                    // canonicalize the command
+                    .map { commandWithArgs ->
+                        val splitCommandWithArgs = commandWithArgs.split(" ")
+                        val pluginCommand = Bukkit.getPluginCommand(splitCommandWithArgs[0])
+                        val canonicalizedCommand = if (pluginCommand == null)
+                            splitCommandWithArgs[0]
+                        else
+                            pluginCommand.name
+                        val args =
+                            splitCommandWithArgs.stream()
+                                .skip(1)
+                                .collect(Collectors.joining(" "))
+                        "$canonicalizedCommand $args"
+                    }
+                    .collect(Collectors.toList())
             parseTo.flatRootEntry.getOrPut(key) { ArrayList() }.addAll(modifiedForCommand)
         }
     }
@@ -245,9 +271,11 @@ private class CommandBypassExecutor(
                 .map { it.split(' ') }
                 .flatMap {
                     permissionDetector.getPreferredPermission(it)
-                        ?: throw ParseException("Could not detect permissions for" +
-                            " '${it.joinToString(" ")}'\n" +
-                            "Please add command information to command_permissions.yml")
+                        ?: throw ParseException(
+                            "Could not detect permissions for" +
+                                " '${it.joinToString(" ")}'\n" +
+                                "Please add command information to command_permissions.yml"
+                        )
                 }
         } else {
             parseFrom

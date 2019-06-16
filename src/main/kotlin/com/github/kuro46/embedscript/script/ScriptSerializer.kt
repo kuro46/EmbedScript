@@ -66,18 +66,21 @@ object ScriptSerializer {
             executing!!.cancel(false)
         }
 
-        executing = EXECUTOR.schedule({
-            // "schedule" method do not notifies exception to UncaughtExceptionHandler
-            try {
-                serialize(path, scriptManager)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        executing = EXECUTOR.schedule(
+            {
+                // "schedule" method do not notifies exception to UncaughtExceptionHandler
+                try {
+                    serialize(path, scriptManager)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
 
-            synchronized(ScriptSerializer::class.java) {
-                executing = null
-            }
-        }, 1, TimeUnit.SECONDS)
+                synchronized(ScriptSerializer::class.java) {
+                    executing = null
+                }
+            },
+            1, TimeUnit.SECONDS
+        )
     }
 
     private fun write(writer: JsonTableWriter, value: ScriptManager) {
@@ -127,25 +130,26 @@ object ScriptSerializer {
                 record.getAsType("z")
             )
 
-            val scripts = record.getAsJsonArray("scripts")
-                .map { it.asJsonObject }
-                .map { jsonScript ->
-                    val scriptMultimap: ListMultimap<String, String> = ArrayListLinkedMultimap.create()
-                    jsonScript.getAsJsonObject("script").forEach { key, value ->
-                        scriptMultimap.putAll(key, value.asType<List<String>>())
-                    }
+            val scripts =
+                record.getAsJsonArray("scripts")
+                    .map { it.asJsonObject }
+                    .map { jsonScript ->
+                        val scriptMultimap: ListMultimap<String, String> = ArrayListLinkedMultimap.create()
+                        jsonScript.getAsJsonObject("script").forEach { key, value ->
+                            scriptMultimap.putAll(key, value.asType<List<String>>())
+                        }
 
-                    @Suppress("UnstableApiUsage")
-                    Script(
-                        jsonScript.getAsType("createdAt"),
-                        jsonScript.getAsType("author"),
-                        ParentKeyData.fromMap(Multimaps.asMap(scriptMultimap)),
-                        jsonScript.getAsType("clickTypes"),
-                        jsonScript.getAsType("moveTypes"),
-                        jsonScript.getAsType("pushTypes")
-                    )
-                }
-                .toList()
+                        @Suppress("UnstableApiUsage")
+                        Script(
+                            jsonScript.getAsType("createdAt"),
+                            jsonScript.getAsType("author"),
+                            ParentKeyData.fromMap(Multimaps.asMap(scriptMultimap)),
+                            jsonScript.getAsType("clickTypes"),
+                            jsonScript.getAsType("moveTypes"),
+                            jsonScript.getAsType("pushTypes")
+                        )
+                    }
+                    .toList()
 
             result.addAll(position, scripts)
         }

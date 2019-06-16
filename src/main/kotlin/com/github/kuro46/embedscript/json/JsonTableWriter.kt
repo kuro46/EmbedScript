@@ -67,7 +67,7 @@ class JsonTableWriter(
 ) : AutoCloseable {
 
     constructor(path: Path, metadata: Metadata) :
-        this(JsonWriter(Files.newBufferedWriter(path)), metadata)
+    this(JsonWriter(Files.newBufferedWriter(path)), metadata)
 
     init {
         writer.beginObject()

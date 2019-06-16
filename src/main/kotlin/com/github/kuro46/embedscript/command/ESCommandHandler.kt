@@ -9,21 +9,21 @@ import com.github.kuro46.embedscript.request.Request
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
+import com.github.kuro46.embedscript.util.command.ArgumentInfoList
 import com.github.kuro46.embedscript.util.command.CommandHandler
 import com.github.kuro46.embedscript.util.command.CommandHandlerManager
-import com.github.kuro46.embedscript.util.command.ExecutionThreadType
-import com.github.kuro46.embedscript.util.command.ArgumentInfoList
-import com.github.kuro46.embedscript.util.command.LastArgument
 import com.github.kuro46.embedscript.util.command.CommandSenderHolder
+import com.github.kuro46.embedscript.util.command.ExecutionThreadType
+import com.github.kuro46.embedscript.util.command.LastArgument
 import com.github.kuro46.embedscript.util.command.LongArgumentInfo
-import com.github.kuro46.embedscript.util.command.RequiedArgumentInfo
 import com.github.kuro46.embedscript.util.command.OptionalArgumentInfo
 import com.github.kuro46.embedscript.util.command.OptionalArguments
+import com.github.kuro46.embedscript.util.command.RequiedArgumentInfo
+import java.nio.file.Files
+import kotlin.streams.toList
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Player
-import java.nio.file.Files
-import kotlin.streams.toList
 
 /**
  * @author shirokuro
@@ -39,7 +39,6 @@ class ESCommandHandler constructor(
         val scriptManager = embedScript.scriptManager
         val scriptExporter = embedScript.scriptExporter
 
-        commandHandlerManager.registerHandler("embedscript help", HelpHandler())
         commandHandlerManager.registerHandler(
             "embedscript migrate",
             MigrateHandler(embedScript)
@@ -77,13 +76,18 @@ class ESCommandHandler constructor(
             ViewHandler(requests, scriptManager)
         )
         commandHandlerManager.registerHandler(
+            "embedscript viewat",
+            ViewAtHandler(scriptManager)
+        )
+        commandHandlerManager.registerHandler(
             "embedscript remove",
             object : CommandHandler(
                 ExecutionThreadType.ASYNCHRONOUS,
                 ArgumentInfoList(
                     emptyList(),
                     LastArgument.NotAllow
-                )
+                ),
+                "Removes all scripts in the clicked block."
             ) {
                 override fun handleCommand(
                     senderHolder: CommandSenderHolder,
@@ -103,7 +107,8 @@ class ESCommandHandler constructor(
                 ArgumentInfoList(
                     emptyList(),
                     LongArgumentInfo("script", true)
-                )
+                ),
+                "Embeds a script to the clicked block."
             ) {
                 override fun handleCommand(
                     senderHolder: CommandSenderHolder,
@@ -122,7 +127,8 @@ class ESCommandHandler constructor(
                 ArgumentInfoList(
                     emptyList(),
                     LongArgumentInfo("script", true)
-                )
+                ),
+                "Adds a script to the clicked block."
             ) {
                 override fun handleCommand(
                     senderHolder: CommandSenderHolder,
@@ -154,40 +160,13 @@ class ESCommandHandler constructor(
         return true
     }
 
-    private class HelpHandler : CommandHandler(
-        ExecutionThreadType.ASYNCHRONOUS,
-        ArgumentInfoList(
-            emptyList(),
-            LastArgument.NotAllow
-        )
-    ) {
-        override fun handleCommand(
-            senderHolder: CommandSenderHolder,
-            args: Map<String, String>
-        ) {
-            senderHolder.commandSender.sendMessage(
-                """/es help - Displays this message.
-                    |/es reload - Reloads configuration and scripts
-                    |/es migrate - Migrates from ScriptBlock to this plugin.
-                    |/es list [world] [page] - Displays list of scripts in the [world] or current world.
-                    |/es listAll [page] - Displays list of scripts in this server.
-                    |/es view - Displays information about script in the clicked block.
-                    |/es view <world> <x> <y> <z> [page] - Displays information about scripts in the specified coordinate.
-                    |/es remove - Removes all scripts in the clicked block.
-                    |/es embed <script> - Embeds a script to the clicked block.
-                    |/es add <script> - Adds a script to the clicked block
-                    |/es export <world> [fileName] - Exports all scripts in the <world> to [fileName] or <world>.
-                    |/es import <fileName> Imports all scripts in the <fileName>.""".trimMargin()
-            )
-        }
-    }
-
     private class MigrateHandler(val embedScript: EmbedScript) : CommandHandler(
         ExecutionThreadType.ASYNCHRONOUS,
         ArgumentInfoList(
             emptyList(),
             LastArgument.NotAllow
-        )
+        ),
+        "Migrates from ScriptBlock to this plugin."
     ) {
         override fun handleCommand(
             senderHolder: CommandSenderHolder,
@@ -211,7 +190,8 @@ class ESCommandHandler constructor(
         ArgumentInfoList(
             listOf(RequiedArgumentInfo("world")),
             OptionalArguments(listOf(OptionalArgumentInfo("fileName", null)))
-        )
+        ),
+        "Exports all scripts in the <world> to [fileName] or <world>."
     ) {
         override fun handleCommand(
             senderHolder: CommandSenderHolder,
@@ -257,7 +237,8 @@ class ESCommandHandler constructor(
         ArgumentInfoList(
             listOf(RequiedArgumentInfo("fileName")),
             LastArgument.NotAllow
-        )
+        ),
+        "Imports all scripts in the <fileName>."
     ) {
         override fun handleCommand(
             senderHolder: CommandSenderHolder,
@@ -293,7 +274,8 @@ class ESCommandHandler constructor(
         val permissionDetector: PermissionDetector
     ) : CommandHandler(
         ExecutionThreadType.ASYNCHRONOUS,
-        ArgumentInfoList(emptyList(), LastArgument.NotAllow)
+        ArgumentInfoList(emptyList(), LastArgument.NotAllow),
+        "Reloads configuration and scripts."
     ) {
         override fun handleCommand(
             senderHolder: CommandSenderHolder,
@@ -337,7 +319,8 @@ class ESCommandHandler constructor(
                 RequiedArgumentInfo("z")
             ),
             LastArgument.NotAllow
-        )
+        ),
+        "An internal command."
     ) {
         override fun handleCommand(
             senderHolder: CommandSenderHolder,

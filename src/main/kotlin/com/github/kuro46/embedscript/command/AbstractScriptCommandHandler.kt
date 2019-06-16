@@ -1,10 +1,10 @@
 package com.github.kuro46.embedscript.command
 
 import com.github.kuro46.embedscript.script.executor.ScriptProcessor
-import com.github.kuro46.embedscript.util.command.ExecutionThreadType
+import com.github.kuro46.embedscript.util.command.ArgumentInfoList
 import com.github.kuro46.embedscript.util.command.CommandHandler
 import com.github.kuro46.embedscript.util.command.CommandSenderHolder
-import com.github.kuro46.embedscript.util.command.ArgumentInfoList
+import com.github.kuro46.embedscript.util.command.ExecutionThreadType
 
 /**
  * @author shirokuro
@@ -12,8 +12,9 @@ import com.github.kuro46.embedscript.util.command.ArgumentInfoList
 abstract class AbstractScriptCommandHandler(
     private val scriptProcessor: ScriptProcessor,
     executionThreadType: ExecutionThreadType,
-    argumentInfoList: ArgumentInfoList
-) : CommandHandler(executionThreadType, argumentInfoList) {
+    argumentInfoList: ArgumentInfoList,
+    description: String = "Description not present."
+) : CommandHandler(executionThreadType, argumentInfoList, description) {
 
     abstract override fun handleCommand(senderHolder: CommandSenderHolder, args: Map<String, String>)
 

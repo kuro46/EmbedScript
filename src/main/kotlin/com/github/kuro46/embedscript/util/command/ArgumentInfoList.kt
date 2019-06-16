@@ -44,7 +44,7 @@ class ArgumentInfoList(
         args: List<String>
     ) {
         for ((index, argumentInfo) in optionalArguments.withIndex()) {
-            val argument = args.getOrElse(requied.lastIndex + index) {
+            val argument = args.getOrElse(requied.size + index) {
                 argumentInfo.defaultValue
             } ?: continue
 

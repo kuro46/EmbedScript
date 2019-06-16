@@ -6,13 +6,13 @@ import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtils
 import com.github.kuro46.embedscript.util.MojangUtils
-import org.bukkit.configuration.file.FileConfiguration
-import org.bukkit.configuration.file.YamlConfiguration
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.UUID
 import java.util.regex.Pattern
+import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.configuration.file.YamlConfiguration
 
 /**
  * @author shirokuro

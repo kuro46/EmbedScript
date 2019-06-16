@@ -1,8 +1,8 @@
 package com.github.kuro46.embedscript
 
+import java.util.logging.Level
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
-import java.util.logging.Level
 
 /**
  * @author shirokuro

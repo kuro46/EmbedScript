@@ -8,12 +8,11 @@ import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptUtils
 import com.github.kuro46.embedscript.script.executor.ScriptProcessor
+import com.github.kuro46.embedscript.util.command.ArgumentInfoList
 import com.github.kuro46.embedscript.util.command.CommandHandler
 import com.github.kuro46.embedscript.util.command.CommandHandlerManager
-import com.github.kuro46.embedscript.util.command.ExecutionThreadType
-import com.github.kuro46.embedscript.util.command.ArgumentInfoList
-import com.github.kuro46.embedscript.util.command.LastArgument
 import com.github.kuro46.embedscript.util.command.CommandSenderHolder
+import com.github.kuro46.embedscript.util.command.ExecutionThreadType
 import com.github.kuro46.embedscript.util.command.LongArgumentInfo
 import org.bukkit.entity.Player
 
@@ -32,47 +31,40 @@ object AliasCommandHandler {
         val rootCommand = eventType.commandName
         val scriptRequester = ScriptRequester(eventType.presetName, scriptProcessor, requests)
 
-        manager.registerHandler("$rootCommand help", HelpHandler(eventType))
-        manager.registerHandler("$rootCommand add", ModifyCommandHandler(
-            ModifyRequestType.Add,
-            scriptRequester
-        ))
-        manager.registerHandler("$rootCommand embed", ModifyCommandHandler(
-            ModifyRequestType.Embed,
-            scriptRequester
-        ))
-        manager.registerHandler("$rootCommand sbAdd", SBModifyCommandHandler(
-            scriptRequester,
-            ModifyRequestType.Add,
-            eventType,
-            scriptProcessor
-        ))
-        manager.registerHandler("$rootCommand sbCreate", SBModifyCommandHandler(
-            scriptRequester,
-            ModifyRequestType.Embed,
-            eventType,
-            scriptProcessor
-        ))
-    }
-}
-
-private class HelpHandler(private val eventType: EventType) : CommandHandler(
-    ExecutionThreadType.ASYNCHRONOUS,
-    ArgumentInfoList(emptyList(), LastArgument.NotAllow)
-) {
-    override fun handleCommand(
-        senderHolder: CommandSenderHolder,
-        args: Map<String, String>
-    ) {
-        @Suppress("NAME_SHADOWING")
-        val command = "/${eventType.commandName}"
-        senderHolder.commandSender.sendMessage("""
-            $command help - Displays this message.
-            $command add - Adds a script to the clicked block. (prefixed with '@preset [${eventType.presetName}]')
-            $command embed - Embeds a script to the clicked block. (prefixed with '@preset [${eventType.presetName}]')
-            $command sbAdd - Add a script to the clicked block. (similar to '/sb${eventType.name.toLowerCase()} add')
-            $command sbCreate - Embeds a script to the clicked block. (similar to '/sb${eventType.name.toLowerCase()} create')
-        """.trimIndent())
+        manager.registerHandler(
+            "$rootCommand add",
+            ModifyCommandHandler(
+                ModifyRequestType.Add,
+                scriptRequester,
+                eventType
+            )
+        )
+        manager.registerHandler(
+            "$rootCommand embed",
+            ModifyCommandHandler(
+                ModifyRequestType.Embed,
+                scriptRequester,
+                eventType
+            )
+        )
+        manager.registerHandler(
+            "$rootCommand sbAdd",
+            SBModifyCommandHandler(
+                scriptRequester,
+                ModifyRequestType.Add,
+                eventType,
+                scriptProcessor
+            )
+        )
+        manager.registerHandler(
+            "$rootCommand sbCreate",
+            SBModifyCommandHandler(
+                scriptRequester,
+                ModifyRequestType.Embed,
+                eventType,
+                scriptProcessor
+            )
+        )
     }
 }
 
@@ -83,7 +75,8 @@ private class SBModifyCommandHandler(
     private val processor: ScriptProcessor
 ) : CommandHandler(
     ExecutionThreadType.ASYNCHRONOUS,
-    ArgumentInfoList(emptyList(), LongArgumentInfo("script", true))
+    ArgumentInfoList(emptyList(), LongArgumentInfo("script", true)),
+    "${requestType.javaClass.simpleName}s a script to the clicked block. (prefixed with '@preset [${eventType.presetName}]')"
 ) {
     override fun handleCommand(
         senderHolder: CommandSenderHolder,
@@ -107,10 +100,13 @@ private class SBModifyCommandHandler(
 
 private class ModifyCommandHandler(
     private val requestType: ModifyRequestType,
-    private val scriptRequester: ScriptRequester
+    private val scriptRequester: ScriptRequester,
+    eventType: EventType
 ) : CommandHandler(
     ExecutionThreadType.ASYNCHRONOUS,
-    ArgumentInfoList(emptyList(), LongArgumentInfo("script", true))
+    ArgumentInfoList(emptyList(), LongArgumentInfo("script", true)),
+    "${requestType.javaClass.simpleName} a script to the clicked block." +
+        " (similar to '/sb${eventType.name.toLowerCase()} ${requestType.javaClass.simpleName.toLowerCase()}')"
 ) {
     override fun handleCommand(
         senderHolder: CommandSenderHolder,

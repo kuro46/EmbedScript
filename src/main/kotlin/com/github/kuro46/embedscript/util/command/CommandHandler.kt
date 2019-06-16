@@ -2,7 +2,8 @@ package com.github.kuro46.embedscript.util.command
 
 abstract class CommandHandler(
     val executionThreadType: ExecutionThreadType,
-    val argumentInfoList: ArgumentInfoList
+    val argumentInfoList: ArgumentInfoList,
+    val description: String = "No description provided."
 ) {
 
     abstract fun handleCommand(
