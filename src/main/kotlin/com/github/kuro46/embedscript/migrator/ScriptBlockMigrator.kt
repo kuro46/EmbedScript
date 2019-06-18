@@ -43,10 +43,10 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
                 val dataList = worldSection.getStringList(coordinate)
 
                 val author = getAuthorFromData(dataList[0]) ?: throw ParseException("Failed to find author")
-                val script = ScriptUtils.createScriptFromLegacyFormat(processor, author, eventType, dataList[1])
+                val scripts = ScriptUtils.createScriptFromLegacyFormat(processor, author, eventType, dataList[1])
                 val position = createPositionFromRawLocation(world, coordinate)
 
-                mergeTo.add(position, script)
+                mergeTo.addAll(position, scripts)
             }
         }
     }

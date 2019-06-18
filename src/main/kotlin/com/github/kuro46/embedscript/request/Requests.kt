@@ -32,8 +32,8 @@ class Requests(private val scriptManager: ScriptManager) {
                 player.performCommand("embedscript viewat ${position.world} ${position.x} ${position.y} ${position.z}")
             }
             is Request.Remove -> remove(player, position)
-            is Request.Embed -> embed(player, position, request.script)
-            is Request.Add -> add(player, position, request.script)
+            is Request.Embed -> embed(player, position, request.scripts)
+            is Request.Add -> add(player, position, request.scripts)
         }
         return true
     }
@@ -41,14 +41,14 @@ class Requests(private val scriptManager: ScriptManager) {
     fun embed(
         sender: CommandSender,
         position: ScriptPosition,
-        script: Script
+        scripts: List<Script>
     ) {
         if (scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR + "Script already exists in that place.")
             return
         }
 
-        scriptManager.add(position, script)
+        scriptManager.addAll(position, scripts)
 
         sender.sendMessage(Prefix.SUCCESS + "Script was successfully embedded.")
     }
@@ -56,13 +56,13 @@ class Requests(private val scriptManager: ScriptManager) {
     fun add(
         sender: CommandSender,
         position: ScriptPosition,
-        script: Script
+        scripts: List<Script>
     ) {
         if (!scriptManager.contains(position)) {
             sender.sendMessage(Prefix.ERROR + "Script not exists in that place.")
             return
         }
-        scriptManager.add(position, script)
+        scriptManager.addAll(position, scripts)
 
         sender.sendMessage(Prefix.SUCCESS + "Script was successfully added.")
     }

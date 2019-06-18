@@ -27,14 +27,14 @@ class SBCommandHandler(
         commandHandlerManager.registerHandler(
             "$commandName add",
             SBActionHandler(
-                { script -> Request.Add(script) },
+                { scripts -> Request.Add(scripts) },
                 "Add a script to the clicked block. (Uses ScriptBlock's format.')"
             )
         )
         commandHandlerManager.registerHandler(
             "$commandName create",
             SBActionHandler(
-                { script -> Request.Embed(script) },
+                { scripts -> Request.Embed(scripts) },
                 "Embed a script to the clicked block. (Uses ScriptBlock's format.')"
             )
         )
@@ -49,7 +49,7 @@ class SBCommandHandler(
         requests.putRequest(player, request)
     }
 
-    private fun createScriptOrNull(player: Player, stringScript: String): Script? {
+    private fun createScriptOrNull(player: Player, stringScript: String): List<Script>? {
         return try {
             ScriptUtils.createScriptFromLegacyFormat(
                 processor,
@@ -66,7 +66,7 @@ class SBCommandHandler(
     }
 
     private inner class SBActionHandler(
-        val requestFactory: (Script) -> Request,
+        val requestFactory: (List<Script>) -> Request,
         val commandDescription: String
     ) : CommandHandler(
         ExecutionThreadType.ASYNCHRONOUS,
@@ -85,10 +85,10 @@ class SBCommandHandler(
         ) {
             val player = senderHolder.tryCastToPlayerOrMessage() ?: return
 
-            val script =
+            val scripts =
                 createScriptOrNull(player, args.getValue("script")) ?: return
 
-            queueRequest(player, requestFactory(script))
+            queueRequest(player, requestFactory(scripts))
         }
     }
 
