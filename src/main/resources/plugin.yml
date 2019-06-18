@@ -9,14 +9,10 @@ main: com.github.kuro46.embedscript.EmbedScriptPlugin
 commands:
   esinteract:
     description: Operations for interact event.
-    aliases:
-      - sbinteract
     usage: "Usage: /<command> help"
     permission: embedscript.admin
   eswalk:
     description: Operations for walk event.
-    aliases:
-      - sbwalk
     usage: "Usage: /<command> help"
     permission: embedscript.admin
   embedscript:
@@ -25,6 +21,14 @@ commands:
     permission: embedscript.admin
     aliases:
       - es
+  sbinteract:
+    description: Operations for interact event. You can use ScriptBlock's script format.
+    usage: "Usage: /<command> help"
+    permission: embedscript.admin
+  sbwalk:
+    description: Operations for walk event. You can use ScriptBlock's script format.
+    usage: "Usage: /<command> help"
+    permission: embedscript.admin
 permissions:
   embedscript.*:
     default: op

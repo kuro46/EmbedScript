@@ -47,54 +47,6 @@ object AliasCommandHandler {
                 eventType
             )
         )
-        manager.registerHandler(
-            "$rootCommand sbAdd",
-            SBModifyCommandHandler(
-                scriptRequester,
-                ModifyRequestType.Add,
-                eventType,
-                scriptProcessor
-            )
-        )
-        manager.registerHandler(
-            "$rootCommand sbCreate",
-            SBModifyCommandHandler(
-                scriptRequester,
-                ModifyRequestType.Embed,
-                eventType,
-                scriptProcessor
-            )
-        )
-    }
-}
-
-private class SBModifyCommandHandler(
-    private val scriptRequester: ScriptRequester,
-    private val requestType: ModifyRequestType,
-    private val eventType: EventType,
-    private val processor: ScriptProcessor
-) : CommandHandler(
-    ExecutionThreadType.ASYNCHRONOUS,
-    ArgumentInfoList(emptyList(), LongArgumentInfo("script", true)),
-    "${requestType.javaClass.simpleName}s a script to the clicked block. (prefixed with '@preset [${eventType.presetName}]')"
-) {
-    override fun handleCommand(
-        senderHolder: CommandSenderHolder,
-        args: Map<String, String>
-    ) {
-        val player = senderHolder.tryCastToPlayerOrMessage() ?: return
-        val script = try {
-            ScriptUtils.createScriptFromLegacyFormat(
-                processor,
-                player.uniqueId,
-                eventType,
-                args.getValue("script")
-            )
-        } catch (e: ParseException) {
-            player.sendMessage(Prefix.ERROR + "Failed to parse the script: ${e.message}")
-            return
-        }
-        scriptRequester.request(player, script, requestType)
     }
 }
 
