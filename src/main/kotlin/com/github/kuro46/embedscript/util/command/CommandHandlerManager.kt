@@ -54,6 +54,10 @@ class CommandHandlerManager(
         }
     }
 
+    fun registerAlias(command: String, aliasOf: String) {
+        registerHandler(command, handlers.getValue(aliasOf))
+    }
+
     /**
      * Returns command name of specified command with args
      *

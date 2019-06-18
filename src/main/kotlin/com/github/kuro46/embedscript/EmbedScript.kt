@@ -3,6 +3,7 @@ package com.github.kuro46.embedscript
 import com.github.kuro46.embedscript.api.EmbedScriptAPI
 import com.github.kuro46.embedscript.command.AliasCommandHandler
 import com.github.kuro46.embedscript.command.ESCommandHandler
+import com.github.kuro46.embedscript.command.SBCommandHandler
 import com.github.kuro46.embedscript.listener.InteractListener
 import com.github.kuro46.embedscript.listener.MoveListener
 import com.github.kuro46.embedscript.permission.PermissionDetector
@@ -111,6 +112,7 @@ class EmbedScript private constructor(val plugin: Plugin) {
             },
             plugin
         )
+        ESCommandHandler(this, commandHandlerManager)
         for (eventType in EventType.values()) {
             AliasCommandHandler.registerHandlers(
                 commandHandlerManager,
@@ -118,13 +120,17 @@ class EmbedScript private constructor(val plugin: Plugin) {
                 scriptProcessor,
                 requests
             )
+            SBCommandHandler.register(
+                commandHandlerManager,
+                eventType,
+                scriptProcessor,
+                requests
+            )
         }
-        ESCommandHandler(this, commandHandlerManager)
     }
 
     private fun registerESAPI() {
         Bukkit.getServicesManager().register(
-
             EmbedScriptAPI::class.java,
             EmbedScriptAPI(scriptProcessor),
             plugin,
