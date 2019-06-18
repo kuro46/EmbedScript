@@ -42,6 +42,10 @@ class SBCommandHandler(
             "$commandName remove",
             "embedscript remove"
         )
+        commandHandlerManager.registerAlias(
+            "$commandName view",
+            "embedscript view"
+        )
     }
 
     private fun queueRequest(player: Player, request: Request) {
