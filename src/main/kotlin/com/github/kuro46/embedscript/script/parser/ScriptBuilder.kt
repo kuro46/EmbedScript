@@ -2,7 +2,7 @@ package com.github.kuro46.embedscript.script.parser
 
 import com.github.kuro46.embedscript.script.ClickType
 import com.github.kuro46.embedscript.script.MoveType
-import com.github.kuro46.embedscript.script.ParentKeyData
+import com.github.kuro46.embedscript.script.ParentOption
 import com.github.kuro46.embedscript.script.PushType
 import com.github.kuro46.embedscript.script.Script
 import java.util.UUID
@@ -17,7 +17,7 @@ class ScriptBuilder(
     val pushTypes: MutableSet<PushType> = HashSet()
 ) {
     fun build(author: UUID, createdAt: Long = System.currentTimeMillis()): Script {
-        val keys = ParentKeyData.fromMap(flatRootEntry)
+        val keys = ParentOption.fromMap(flatRootEntry)
 
         return Script(
             createdAt,

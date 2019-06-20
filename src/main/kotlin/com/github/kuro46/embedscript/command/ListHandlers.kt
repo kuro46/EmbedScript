@@ -242,24 +242,24 @@ object ListHandlers {
             return emptySet()
         }
 
-        private fun isFilterable(target: Script, filter: Script): Boolean {
+        private fun isFilterable(targetScript: Script, targetFilter: Script): Boolean {
             val firstCheck =
-                isFilterable(target.clickTypes, filter.clickTypes) ||
-                    isFilterable(target.moveTypes, filter.moveTypes) ||
-                    isFilterable(target.pushTypes, filter.pushTypes)
+                isFilterable(targetScript.clickTypes, targetFilter.clickTypes) ||
+                    isFilterable(targetScript.moveTypes, targetFilter.moveTypes) ||
+                    isFilterable(targetScript.pushTypes, targetFilter.pushTypes)
             if (firstCheck) {
                 return true
             }
 
-            for (filterParentKeyData in filter.keys) {
-                for (targetParentKeyData in target.keys) {
-                    if (isFilterable(filterParentKeyData.values, targetParentKeyData.values)) {
+            for (filterParentOption in targetFilter.keys) {
+                for (targetParentOption in targetScript.keys) {
+                    if (isFilterable(filterParentOption.values, targetParentOption.values)) {
                         return true
                     }
 
-                    for (filterChildKeyData in filterParentKeyData.children) {
-                        for (targetChildKeyData in targetParentKeyData.children) {
-                            if (isFilterable(filterChildKeyData.values, targetChildKeyData.values)) {
+                    for (filterChildOption in filterParentOption.children) {
+                        for (targetChildOption in targetParentOption.children) {
+                            if (isFilterable(filterChildOption.values, targetChildOption.values)) {
                                 return true
                             }
                         }

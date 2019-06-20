@@ -23,19 +23,19 @@ object Executors {
         }
 
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 "neededPerm",
                 ExecutorData.parent(execModeForPermOP, NEEDED_PERMISSION_EXECUTOR)
             )
         )
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 "unneededPerm",
                 ExecutorData.parent(execModeForPermOP, UNNEEDED_PERMISSION_EXECUTOR)
             )
         )
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 "cmd",
                 ExecutorData.parent(ExecutionMode.SYNCHRONOUS, COMMAND_EXECUTOR),
                 COMMAND_PARSER
@@ -46,7 +46,7 @@ object Executors {
             processor.embedScript.permissionDetector
         ).apply {
             processor.registerKey(
-                KeyData.child(
+                Option.child(
                     "cmd.bypass",
                     ExecutorData.child(this),
                     this
@@ -54,50 +54,50 @@ object Executors {
             )
         }
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 "console",
                 ExecutorData.parent(ExecutionMode.SYNCHRONOUS, CONSOLE_EXECUTOR),
                 COMMAND_PARSER
             )
         )
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 "say",
                 ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, SAY_EXECUTOR)
             )
         )
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 "sayRaw",
                 ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, SAY_RAW_EXECUTOR)
             )
         )
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 "broadcast",
                 ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, BROADCAST_EXECUTOR)
             )
         )
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 "broadcastRaw",
                 ExecutorData.parent(ExecutionMode.ASYNCHRONOUS, BROADCAST_RAW_EXECUTOR)
             )
         )
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 key = "listenClick",
                 parser = LISTEN_CLICK_PARSER
             )
         )
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 key = "listenMove",
                 parser = LISTEN_MOVE_PARSER
             )
         )
         processor.registerKey(
-            KeyData.parent(
+            Option.parent(
                 key = "listenPush",
                 parser = LISTEN_PUSH_PARSER
             )

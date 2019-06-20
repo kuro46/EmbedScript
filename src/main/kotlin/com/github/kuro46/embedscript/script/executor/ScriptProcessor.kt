@@ -2,7 +2,7 @@ package com.github.kuro46.embedscript.script.executor
 
 import com.github.kuro46.embedscript.EmbedScript
 import com.github.kuro46.embedscript.script.ExecutionMode
-import com.github.kuro46.embedscript.script.ParentKeyData
+import com.github.kuro46.embedscript.script.ParentOption
 import com.github.kuro46.embedscript.script.Script
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.parser.ScriptBuilder
@@ -20,14 +20,14 @@ import org.bukkit.entity.Player
  * @author shirokuro
  */
 class ScriptProcessor(val embedScript: EmbedScript) {
-    val keys = ConcurrentHashMap<String, KeyData>()
+    val keys = ConcurrentHashMap<String, Option>()
     val executionLogger = ExecutionLogger(embedScript.logger, embedScript.configuration)
     val scriptReplacer = Replacer<Player>()
 
     init {
         // dummy
         registerKey(
-            KeyData.parent(
+            Option.parent(
                 key = "preset",
                 parser = Parser.NO_OP_PARSER
             )
@@ -38,20 +38,20 @@ class ScriptProcessor(val embedScript: EmbedScript) {
         scriptReplacer.add(PlaceholderData("<world>") { it.world.name })
     }
 
-    fun registerKey(keyData: KeyData) {
-        keys[keyData.key] = keyData
+    fun registerKey(option: Option) {
+        keys[option.key] = option
     }
 
     fun parse(createdAt: Long, author: UUID, stringScript: String): Script {
         val preparsed = StringParser.parse(applyPreset(stringScript))
-        val keyDataList = ParentKeyData.fromMap(preparsed)
+        val optionList = ParentOption.fromMap(preparsed)
 
         val builder = ScriptBuilder()
 
-        for (keyData in keyDataList) {
-            keys.getValue(keyData.key).parser.parse(keyData.key, keyData.values, builder)
+        for (option in optionList) {
+            keys.getValue(option.key).parser.parse(option.key, option.values, builder)
 
-            for (child in keyData.children) {
+            for (child in option.children) {
                 keys.getValue(child.key).parser.parse(child.key, child.values, builder)
             }
         }
@@ -84,10 +84,10 @@ class ScriptProcessor(val embedScript: EmbedScript) {
         val listeners = ArrayList<Pair<ExecutionMode, EndListener>>()
 
         try {
-            for (scriptParentKeyData in script.keys) {
+            for (scriptParentOption in script.keys) {
                 val (executorData, result) = processKey(
                     player,
-                    compileKeyData(player, scriptParentKeyData)
+                    compileOption(player, scriptParentOption)
                 )
                 result.endListener?.let { listeners.add(Pair(executorData.executionMode, it)) }
 
@@ -104,28 +104,28 @@ class ScriptProcessor(val embedScript: EmbedScript) {
         executionLogger.log(LogData(player, position, script))
     }
 
-    private fun compileKeyData(player: Player, parentKeyData: ParentKeyData): ParentKeyData {
+    private fun compileOption(player: Player, parentOption: ParentOption): ParentOption {
         fun compileValues(values: List<String>): List<String> {
             return values.map {
                 scriptReplacer.execute(it, player)
             }
         }
 
-        val children = parentKeyData.children.map { com.github.kuro46.embedscript.script.KeyData(it.key, compileValues(it.values)) }
-        return ParentKeyData(parentKeyData.key, compileValues(parentKeyData.values), children)
+        val children = parentOption.children.map { com.github.kuro46.embedscript.script.Option(it.key, compileValues(it.values)) }
+        return ParentOption(parentOption.key, compileValues(parentOption.values), children)
     }
 
-    private fun processKey(player: Player, parentKeyData: ParentKeyData): Pair<ExecutorData.ParentExecutorData, ExecutionResult> {
+    private fun processKey(player: Player, parentOption: ParentOption): Pair<ExecutorData.ParentExecutorData, ExecutionResult> {
         val parentExecutorData =
-            keys.getValue(parentKeyData.key).executorData
+            keys.getValue(parentOption.key).executorData
                 ?.let { it as ExecutorData.ParentExecutorData }
-                ?: throw IllegalStateException("ExecutionData for '${parentKeyData.key}' not found!")
+                ?: throw IllegalStateException("ExecutionData for '${parentOption.key}' not found!")
 
         val result = runByExecMode(parentExecutorData.executionMode) {
             val listeners = ArrayList<EndListener>()
 
             try {
-                for (child in parentKeyData.children) {
+                for (child in parentOption.children) {
                     val childExecutorData =
                         keys.getValue(child.key).executorData
                             ?.let { it as ExecutorData.ChildExecutorData }
@@ -139,7 +139,7 @@ class ScriptProcessor(val embedScript: EmbedScript) {
                     }
                 }
 
-                return@runByExecMode parentExecutorData.executor.execute(player, parentKeyData.values)
+                return@runByExecMode parentExecutorData.executor.execute(player, parentOption.values)
             } finally {
                 for (listener in listeners) {
                     runCatching(listener).exceptionOrNull()?.printStackTrace()

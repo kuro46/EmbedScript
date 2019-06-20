@@ -30,8 +30,8 @@ class ExecutionLogger(val logger: Logger, val configuration: Configuration) {
             PlaceholderData("<script>") {
                 val script = it.script
                 val joiner = StringJoiner(" ")
-                for (parentKeyData in script.keys) {
-                    for ((key, values) in parentKeyData) {
+                for (parentOption in script.keys) {
+                    for ((key, values) in parentOption) {
                         joiner.add("@$key ${ScriptUtils.toString(values)}")
                     }
                 }

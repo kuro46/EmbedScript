@@ -104,8 +104,8 @@ object ScriptSerializer {
 
                 record.writer.name("script")
                 record.writer.beginObject()
-                script.keys.forEach { parentKeyData ->
-                    parentKeyData.forEach { (key, values) ->
+                script.keys.forEach { parentOption ->
+                    parentOption.forEach { (key, values) ->
                         record.addObject(key, values)
                     }
                 }
@@ -143,7 +143,7 @@ object ScriptSerializer {
                         Script(
                             jsonScript.getAsType("createdAt"),
                             jsonScript.getAsType("author"),
-                            ParentKeyData.fromMap(Multimaps.asMap(scriptMultimap)),
+                            ParentOption.fromMap(Multimaps.asMap(scriptMultimap)),
                             jsonScript.getAsType("clickTypes"),
                             jsonScript.getAsType("moveTypes"),
                             jsonScript.getAsType("pushTypes")
@@ -276,7 +276,7 @@ object ScriptSerializer {
                 val script = Script(
                     -1,
                     author!!,
-                    ParentKeyData.fromMap(Multimaps.asMap(multimap)),
+                    ParentOption.fromMap(Multimaps.asMap(multimap)),
                     if (eventType == EventType.INTERACT) setOf(ClickType.ALL) else setOf(),
                     if (eventType == EventType.WALK) setOf(MoveType.GROUND) else setOf(),
                     if (eventType == EventType.INTERACT) setOf(PushType.ALL) else setOf()

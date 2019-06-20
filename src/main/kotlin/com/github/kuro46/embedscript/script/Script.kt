@@ -8,33 +8,33 @@ import java.util.UUID
 class Script(
     val createdAt: Long,
     val author: UUID,
-    val keys: List<ParentKeyData>,
+    val keys: List<ParentOption>,
     val clickTypes: Set<ClickType>,
     val moveTypes: Set<MoveType>,
     val pushTypes: Set<PushType>
 )
 
-data class KeyData(val key: AbsoluteKey, val values: List<String>)
+data class Option(val key: AbsoluteKey, val values: List<String>)
 
-data class ParentKeyData(val key: AbsoluteKey, val values: List<String>, val children: List<KeyData>) :
-    Iterable<KeyData> {
-    override fun iterator(): Iterator<KeyData> {
-        val base = ArrayList<KeyData>(children.size + 1)
-        base.add(KeyData(key, values))
+data class ParentOption(val key: AbsoluteKey, val values: List<String>, val children: List<Option>) :
+    Iterable<Option> {
+    override fun iterator(): Iterator<Option> {
+        val base = ArrayList<Option>(children.size + 1)
+        base.add(Option(key, values))
         base.addAll(children)
 
         return base.iterator()
     }
 
     companion object {
-        fun fromMap(from: Map<String, List<String>>): List<ParentKeyData> {
+        fun fromMap(from: Map<String, List<String>>): List<ParentOption> {
             // fill parents
-            val parents = LinkedHashMap<String, ParentKeyData>()
+            val parents = LinkedHashMap<String, ParentOption>()
             for ((key, values) in from) {
                 if (key.contains('.')) {
                     continue
                 }
-                parents[key] = ParentKeyData(key, values, emptyList())
+                parents[key] = ParentOption(key, values, emptyList())
             }
 
             // fill children
@@ -46,9 +46,9 @@ data class ParentKeyData(val key: AbsoluteKey, val values: List<String>, val chi
                 val parentKey = split[0]
 
                 val parent = parents.getValue(parentKey)
-                val added = ArrayList<KeyData>(parent.children.size + 1)
+                val added = ArrayList<Option>(parent.children.size + 1)
                 added.addAll(parent.children)
-                added.add(KeyData(key, values))
+                added.add(Option(key, values))
 
                 parents.replace(parentKey, parent.copy(children = added))
             }

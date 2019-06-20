@@ -8,29 +8,28 @@ import java.util.Locale
  *
  * @author shirokuro
  */
-// FIXME: NAMING
-sealed class KeyData(
+sealed class Option(
     key: String,
     var executorData: ExecutorData?,
     var parser: Parser
 ) {
     val key: String = key.toLowerCase(Locale.ENGLISH)
 
-    class ParentKeyData(
+    class ParentOption(
         key: String,
         executorData: ExecutorData.ParentExecutorData? = null,
         parser: Parser = Parser.DEFAULT_PARSER
-    ) : KeyData(
+    ) : Option(
         key,
         executorData,
         parser
     )
 
-    class ChildKeyData(
+    class ChildOption(
         key: String,
         executorData: ExecutorData.ChildExecutorData? = null,
         parser: Parser = Parser.DEFAULT_PARSER
-    ) : KeyData(
+    ) : Option(
         key,
         executorData,
         parser
@@ -41,16 +40,16 @@ sealed class KeyData(
             key: String,
             executorData: ExecutorData.ParentExecutorData? = null,
             parser: Parser = Parser.DEFAULT_PARSER
-        ): ParentKeyData {
-            return ParentKeyData(key, executorData, parser)
+        ): ParentOption {
+            return ParentOption(key, executorData, parser)
         }
 
         fun child(
             key: String,
             executorData: ExecutorData.ChildExecutorData? = null,
             parser: Parser = Parser.DEFAULT_PARSER
-        ): ChildKeyData {
-            return ChildKeyData(key, executorData, parser)
+        ): ChildOption {
+            return ChildOption(key, executorData, parser)
         }
     }
 }
