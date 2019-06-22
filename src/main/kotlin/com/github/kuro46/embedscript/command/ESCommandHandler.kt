@@ -310,7 +310,7 @@ class ESCommandHandler constructor(
         }
     }
 
-    private class TeleportHandler() : CommandHandler(
+    private class TeleportHandler : CommandHandler(
         ExecutionThreadType.SYNCHRONOUS,
         ArgumentInfoList(
             listOf(

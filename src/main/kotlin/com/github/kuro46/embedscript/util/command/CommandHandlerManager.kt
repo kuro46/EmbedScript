@@ -80,24 +80,22 @@ class CommandHandlerManager(
             val commandWithArgs = appendCommandAndArgs(command.name, args.toList())
             val commandSenderHolder = holdCommandSender(sender)
             val (handlerCommand, handler, notParsedArgs) = getCommandData(commandWithArgs)
-            val parseResult = handler.argumentInfoList.parse(notParsedArgs)
-            if (parseResult is ParseResult.Success) {
-                handler.executionThreadType.executeAtSyncOrCurrentThread(plugin) {
+            when (val parseResult = handler.argumentInfoList.parse(notParsedArgs)) {
+                is ParseResult.Success -> handler.executionThreadType.executeAtSyncOrCurrentThread(plugin) {
                     handler.handleCommand(commandSenderHolder, parseResult.arguments)
                 }
-            } else if (parseResult is ParseResult.Failed) {
-                val errorType = parseResult.errorType
-                when (errorType) {
-                    ErrorType.TOO_MANY_ARGUMENTS -> {
-                        sender.sendMessage(Prefix.ERROR + "Too many arguments!")
+                is ParseResult.Failed -> {
+                    when (parseResult.errorType) {
+                        ErrorType.TOO_MANY_ARGUMENTS -> {
+                            sender.sendMessage(Prefix.ERROR + "Too many arguments!")
+                        }
+                        ErrorType.REQUIED_ARGUMENT_NOT_ENOUGH -> {
+                            sender.sendMessage(Prefix.ERROR + "Arguments not enough.")
+                        }
                     }
-                    ErrorType.REQUIED_ARGUMENT_NOT_ENOUGH -> {
-                        sender.sendMessage(Prefix.ERROR + "Arguments not enough.")
-                    }
+                    sender.sendMessage(Prefix.ERROR + "Usage: " + handlerToString(handlerCommand, handler))
                 }
-                sender.sendMessage(Prefix.ERROR + "Usage: " + handlerToString(handlerCommand, handler))
-            } else {
-                throw IllegalStateException()
+                else -> throw IllegalStateException()
             }
         }
 

@@ -230,7 +230,7 @@ object Executors {
     ) {
         for (string in strings) {
             try {
-                collection.add(java.lang.Enum.valueOf<T>(T::class.java, string.toUpperCase(Locale.ENGLISH)))
+                collection.add(java.lang.Enum.valueOf(T::class.java, string.toUpperCase(Locale.ENGLISH)))
             } catch (e: IllegalArgumentException) {
                 throw ParseException("'$string' is unavailable value!")
             }

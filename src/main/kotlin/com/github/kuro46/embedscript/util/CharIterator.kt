@@ -5,7 +5,7 @@ package com.github.kuro46.embedscript.util
  */
 class CharIterator(source: String) : Iterator<Char> {
     private var index = -1
-    val chars = source.toCharArray()
+    private val chars = source.toCharArray()
 
     override fun hasNext(): Boolean {
         val nextIndex = index + 1

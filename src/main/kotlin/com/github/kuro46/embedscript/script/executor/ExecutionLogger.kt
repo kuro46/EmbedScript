@@ -13,7 +13,7 @@ import org.bukkit.entity.Player
 /**
  * @author shirokuro
  */
-class ExecutionLogger(val logger: Logger, val configuration: Configuration) {
+class ExecutionLogger(private val logger: Logger, private val configuration: Configuration) {
     val replacer = Replacer<LogData>()
 
     init {

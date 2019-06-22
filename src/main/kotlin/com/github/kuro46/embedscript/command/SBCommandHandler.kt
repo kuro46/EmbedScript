@@ -18,10 +18,10 @@ import com.github.kuro46.embedscript.util.command.LongArgumentInfo
 import org.bukkit.entity.Player
 
 class SBCommandHandler(
-    val commandHandlerManager: CommandHandlerManager,
-    val eventType: EventType,
-    val processor: ScriptProcessor,
-    val requests: Requests
+    commandHandlerManager: CommandHandlerManager,
+    private val eventType: EventType,
+    private val processor: ScriptProcessor,
+    private val requests: Requests
 ) {
     init {
         val commandName = "sb" + eventType.name.toLowerCase()
@@ -72,7 +72,7 @@ class SBCommandHandler(
 
     private inner class SBActionHandler(
         val requestFactory: (List<Script>) -> Request,
-        val commandDescription: String
+        commandDescription: String
     ) : CommandHandler(
         ExecutionThreadType.ASYNCHRONOUS,
         ArgumentInfoList(

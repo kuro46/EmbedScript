@@ -4,7 +4,7 @@ import org.bukkit.Bukkit
 import org.bukkit.plugin.Plugin
 
 enum class ExecutionThreadType {
-    SYNCHRONOUS() {
+    SYNCHRONOUS {
         override fun executeAtSyncOrCurrentThread(
             plugin: Plugin,
             function: () -> Unit
@@ -12,7 +12,7 @@ enum class ExecutionThreadType {
             Bukkit.getScheduler().callSyncMethod(plugin, function).get()
         }
     },
-    ASYNCHRONOUS() {
+    ASYNCHRONOUS {
         override fun executeAtSyncOrCurrentThread(
             plugin: Plugin,
             function: () -> Unit

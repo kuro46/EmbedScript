@@ -13,7 +13,7 @@ import org.bukkit.configuration.file.YamlConfiguration
  */
 class PermissionDetector(parentPath: Path, fileName: String = "command_permissions.yml") {
     private var commandDataList: List<CommandData>
-    val filePath = parentPath.resolve(fileName)
+    val filePath: Path = parentPath.resolve(fileName)
 
     init {
         if (Files.notExists(filePath)) {

@@ -33,7 +33,7 @@ sealed class Author {
             return name
         }
 
-        fun getLatestName(): String {
+        private fun getLatestName(): String {
             Bukkit.getPlayer(uuid)?.let { return it.name }
 
             val url =
@@ -49,7 +49,7 @@ sealed class Author {
                     .use { gson.fromJson(it, JsonArray::class.java) }
 
             val lastObject = names.last() as JsonObject
-            return lastObject.get("name").getAsString()
+            return lastObject.get("name").asString
         }
     }
 
@@ -80,15 +80,14 @@ sealed class Author {
 
     companion object {
         fun fromJson(json: JsonObject): Author {
-            val kind = json.get("kind").getAsString()
-            return when (kind) {
+            return when (val kind = json.get("kind").asString) {
                 "Player" -> {
-                    val uuidString = json.get("uuid").getAsString()
+                    val uuidString = json.get("uuid").asString
                     val uuid = UUID.fromString(uuidString)
                     Player(uuid)
                 }
                 "UnknownPlayer" -> {
-                    UnknownPlayer(json.get("name").getAsString())
+                    UnknownPlayer(json.get("name").asString)
                 }
                 else -> throw IllegalArgumentException("Unknown kind: $kind")
             }

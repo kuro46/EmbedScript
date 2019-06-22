@@ -105,11 +105,7 @@ class EmbedScript private constructor(val plugin: Plugin) {
 
     private fun registerCommands() {
         val commandHandlerManager = CommandHandlerManager(
-            object : Executor {
-                override fun execute(runnable: Runnable) {
-                    Scheduler.execute() { runnable.run() }
-                }
-            },
+            Executor { runnable -> Scheduler.execute { runnable.run() } },
             plugin
         )
         ESCommandHandler(this, commandHandlerManager)

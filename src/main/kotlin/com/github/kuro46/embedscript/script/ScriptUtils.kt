@@ -82,7 +82,7 @@ object ScriptUtils {
             return processor.parse(-1, author, substring)
         }
 
-        val pattern = Pattern.compile("\\[([^\\[\\]]+)\\]")
+        val pattern = Pattern.compile("\\[([^\\[\\]]+)]")
         val matcher = pattern.matcher(legacy)
         val scripts = ArrayList<Script>()
         while (matcher.find()) {
