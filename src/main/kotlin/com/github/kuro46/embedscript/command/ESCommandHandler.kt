@@ -6,6 +6,7 @@ import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.migrator.ScriptBlockMigrator
 import com.github.kuro46.embedscript.permission.PermissionDetector
 import com.github.kuro46.embedscript.request.Request
+import com.github.kuro46.embedscript.script.Author
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.ScriptExporter
 import com.github.kuro46.embedscript.script.ScriptManager
@@ -147,7 +148,7 @@ class ESCommandHandler constructor(
         add: Boolean
     ): Boolean {
         val script = try {
-            scriptProcessor.parse(System.currentTimeMillis(), player.uniqueId, stringScript)
+            scriptProcessor.parse(System.currentTimeMillis(), Author.Player(player.uniqueId), stringScript)
         } catch (e: ParseException) {
             player.sendMessage(Prefix.ERROR + "Failed to parse script. ${e.message}")
             return true

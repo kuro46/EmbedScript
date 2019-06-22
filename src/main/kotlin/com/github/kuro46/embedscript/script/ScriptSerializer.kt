@@ -96,7 +96,7 @@ object ScriptSerializer {
             scriptList.forEach { script ->
                 record.writer.beginObject()
 
-                record.add("author", script.author.toString())
+                record.addObject("author", script.author.toJson())
                 record.add("createdAt", script.createdAt)
                 record.addObject("moveTypes", script.moveTypes)
                 record.addObject("pushTypes", script.pushTypes)
@@ -142,7 +142,7 @@ object ScriptSerializer {
                         @Suppress("UnstableApiUsage")
                         Script(
                             jsonScript.getAsType("createdAt"),
-                            jsonScript.getAsType("author"),
+                            Author.fromJson(jsonScript.getAsType("author")),
                             ParentOption.fromMap(Multimaps.asMap(scriptMultimap)),
                             jsonScript.getAsType("clickTypes"),
                             jsonScript.getAsType("moveTypes"),
@@ -275,7 +275,7 @@ object ScriptSerializer {
                 @Suppress("UnstableApiUsage")
                 val script = Script(
                     -1,
-                    author!!,
+                    Author.Player(author!!),
                     ParentOption.fromMap(Multimaps.asMap(multimap)),
                     if (eventType == EventType.INTERACT) setOf(ClickType.ALL) else setOf(),
                     if (eventType == EventType.WALK) setOf(MoveType.GROUND) else setOf(),

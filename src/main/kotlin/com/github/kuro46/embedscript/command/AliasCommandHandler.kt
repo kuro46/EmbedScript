@@ -3,6 +3,7 @@ package com.github.kuro46.embedscript.command
 import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.request.Request
 import com.github.kuro46.embedscript.request.Requests
+import com.github.kuro46.embedscript.script.Author
 import com.github.kuro46.embedscript.script.EventType
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.Script
@@ -84,7 +85,7 @@ private class ScriptRequester(
             val stringScript = "@preset ${ScriptUtils.toString(presetName)} $stringScript"
             scriptProcessor.parse(
                 System.currentTimeMillis(),
-                player.uniqueId,
+                Author.Player(player.uniqueId),
                 stringScript
             )
         } catch (e: ParseException) {

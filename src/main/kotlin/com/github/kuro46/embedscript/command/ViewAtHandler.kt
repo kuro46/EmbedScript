@@ -4,7 +4,6 @@ import com.github.kuro46.embedscript.Prefix
 import com.github.kuro46.embedscript.script.ScriptManager
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtils
-import com.github.kuro46.embedscript.util.MojangUtils
 import com.github.kuro46.embedscript.util.PageUtils
 import com.github.kuro46.embedscript.util.command.ArgumentInfoList
 import com.github.kuro46.embedscript.util.command.CommandHandler
@@ -17,12 +16,10 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.ArrayList
-import java.util.UUID
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
-import org.bukkit.command.CommandSender
 
 class ViewAtHandler(
     val scriptManager: ScriptManager
@@ -59,7 +56,7 @@ class ViewAtHandler(
         val messages: MutableList<Array<BaseComponent>> = ArrayList()
         for (script in scripts.getValue(position)) {
             // null if failed to find name of author
-            val author = getUserName(sender, script.author) ?: return
+            val author = script.author.getAuthorName()
             val timestamp = if (script.createdAt != -1L) {
                 "at ${formatTime(script.createdAt)}"
             } else {
@@ -103,16 +100,6 @@ class ViewAtHandler(
 
         val string = ScriptUtils.toString(values.map { it.toString() + ChatColor.RESET })
         addTo.add(TextComponent.fromLegacyText("$key $string"))
-    }
-
-    private fun getUserName(sender: CommandSender, uuid: UUID): String? {
-        return Bukkit.getPlayer(uuid)?.name ?: run {
-            val result = MojangUtils.getName(uuid)
-            if (result == null) {
-                sender.sendMessage(Prefix.ERROR + "Failed to find user name")
-            }
-            result
-        }
     }
 
     private fun formatTime(time: Long): String {

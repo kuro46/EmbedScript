@@ -3,7 +3,6 @@ package com.github.kuro46.embedscript.script
 import com.github.kuro46.embedscript.script.executor.ScriptProcessor
 import com.github.kuro46.embedscript.util.Utils
 import java.util.Locale
-import java.util.UUID
 import java.util.regex.Pattern
 
 /**
@@ -28,7 +27,7 @@ object ScriptUtils {
      */
     fun createScriptFromLegacyFormat(
         processor: ScriptProcessor,
-        author: UUID,
+        author: Author,
         eventType: EventType,
         legacy: String
     ): List<Script> {

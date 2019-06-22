@@ -1,6 +1,7 @@
 package com.github.kuro46.embedscript.script.executor
 
 import com.github.kuro46.embedscript.EmbedScript
+import com.github.kuro46.embedscript.script.Author
 import com.github.kuro46.embedscript.script.ExecutionMode
 import com.github.kuro46.embedscript.script.ParentOption
 import com.github.kuro46.embedscript.script.Script
@@ -11,7 +12,6 @@ import com.github.kuro46.embedscript.util.PlaceholderData
 import com.github.kuro46.embedscript.util.Replacer
 import com.github.kuro46.embedscript.util.Scheduler
 import java.util.StringJoiner
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -42,7 +42,7 @@ class ScriptProcessor(val embedScript: EmbedScript) {
         keys[option.key] = option
     }
 
-    fun parse(createdAt: Long, author: UUID, stringScript: String): Script {
+    fun parse(createdAt: Long, author: Author, stringScript: String): Script {
         val preparsed = StringParser.parse(applyPreset(stringScript))
         val optionList = ParentOption.fromMap(preparsed)
 

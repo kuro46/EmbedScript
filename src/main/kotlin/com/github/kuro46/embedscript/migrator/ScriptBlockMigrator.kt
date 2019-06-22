@@ -1,15 +1,14 @@
 package com.github.kuro46.embedscript.migrator
 
 import com.github.kuro46.embedscript.EmbedScript
+import com.github.kuro46.embedscript.script.Author
 import com.github.kuro46.embedscript.script.EventType
 import com.github.kuro46.embedscript.script.ParseException
 import com.github.kuro46.embedscript.script.ScriptPosition
 import com.github.kuro46.embedscript.script.ScriptUtils
-import com.github.kuro46.embedscript.util.MojangUtils
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.UUID
 import java.util.regex.Pattern
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
@@ -42,7 +41,7 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
             for (coordinate in worldSection.getKeys(false)) {
                 val dataList = worldSection.getStringList(coordinate)
 
-                val author = getAuthorFromData(dataList[0]) ?: throw ParseException("Failed to find author")
+                val author = getAuthorFromData(dataList[0])
                 val scripts = ScriptUtils.createScriptFromLegacyFormat(processor, author, eventType, dataList[1])
                 val position = createPositionFromRawLocation(world, coordinate)
 
@@ -51,14 +50,14 @@ class ScriptBlockMigrator private constructor(embedScript: EmbedScript) {
         }
     }
 
-    private fun getAuthorFromData(data: String): UUID? {
+    private fun getAuthorFromData(data: String): Author {
         // Author:<MCID>/<Group>
         val matcher = Pattern.compile("Author:(.+)/.+").matcher(data)
         if (!matcher.find()) {
             throw ParseException("Illegal data")
         }
         val mcid = matcher.group(1)
-        return MojangUtils.getUUID(mcid)
+        return Author.UnknownPlayer(mcid)
     }
 
     private fun loadScriptFile(path: Path): FileConfiguration {

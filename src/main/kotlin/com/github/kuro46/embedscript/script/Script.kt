@@ -1,13 +1,11 @@
 package com.github.kuro46.embedscript.script
 
-import java.util.UUID
-
 /**
  * @author shirokuro
  */
 class Script(
     val createdAt: Long,
-    val author: UUID,
+    val author: Author,
     val keys: List<ParentOption>,
     val clickTypes: Set<ClickType>,
     val moveTypes: Set<MoveType>,
