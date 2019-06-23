@@ -59,6 +59,12 @@ sealed class Author {
         }
     }
 
+    object System : Author() {
+        override fun getAuthorName(): String {
+            return "[System]"
+        }
+    }
+
     abstract fun getAuthorName(): String
 
     fun toJson(): JsonObject {
@@ -72,6 +78,7 @@ sealed class Author {
                 result.addProperty("name", name)
                 "UnknownPlayer"
             }
+            is System -> "System"
         }
         result.addProperty("kind", kind)
 
@@ -86,9 +93,8 @@ sealed class Author {
                     val uuid = UUID.fromString(uuidString)
                     Player(uuid)
                 }
-                "UnknownPlayer" -> {
-                    UnknownPlayer(json.get("name").asString)
-                }
+                "UnknownPlayer" -> UnknownPlayer(json.get("name").asString)
+                "System" -> System
                 else -> throw IllegalArgumentException("Unknown kind: $kind")
             }
         }
